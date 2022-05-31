@@ -1,0 +1,5 @@
+repos:
+  - name: canonical/kfp-operators
+actions:
+  - type: shellCommand
+    run: find . -name metadata.yaml -exec sed -i '/display-name/d' {} \;

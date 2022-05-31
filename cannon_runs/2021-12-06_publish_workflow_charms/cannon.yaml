@@ -1,0 +1,20 @@
+repos:
+  - name: canonical/admission-webhook-operator
+  - name: canonical/dex-auth-operator
+  - name: canonical/envoy-operator
+  - name: canonical/kfserving-operator
+  - name: canonical/kubeflow-dashboard-operator
+  - name: canonical/kubeflow-profiles-operator
+  - name: canonical/kubeflow-volumes-operator
+  - name: canonical/minio-operator
+  - name: canonical/mlmd-operator
+  - name: canonical/metacontroller-operator
+  - name: canonical/training-operator
+  - name: canonical/oidc-gatekeeper-operator
+  - name: canonical/seldon-core-operator
+actions:
+  - type: shellCommand
+    run: find . -name metadata.yaml -exec sed -i '/display-name/d' {} \;
+  - type: createOrReplaceFile
+    srcPath: publish.yaml
+    dstPath: .github/workflows/publish.yaml

@@ -1,0 +1,17 @@
+repos:
+  - name: canonical/argo-operators
+  - name: canonical/kfp-operators
+  - name: canonical/notebook-operators
+  - name: canonical/mlflow-operator
+  - name: canonical/kubeflow-tensorboards-operator
+actions:
+  # Update CI
+  - type: createOrReplaceFile
+    srcPath: publish.yaml
+    dstPath: .github/workflows/publish.yaml
+  - type: createOrReplaceFile
+    srcPath: get-charm-paths.sh
+    dstPath: .github/workflows/get-charm-paths.sh
+  - type: createOrReplaceFile
+    srcPath: publish-bundle.sh
+    dstPath: .github/workflows/publish-bundle.sh

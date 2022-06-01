@@ -29,6 +29,7 @@ jobs:
         run: |
           sudo snap install juju --classic
           sudo snap install juju-wait --classic
+          sudo snap install yq --classic
 
       # fail to add credential so far
       - name: Bootstrap onto AWS
@@ -38,7 +39,11 @@ jobs:
           JUJU_AWS_CRED_NAME: github-ci
         run: |
           set -eux
-          juju autoload-credentials --client aws
+          touch aws-credential.yaml
+          yq '.aws.$JUJU_AWS_CRED_NAME.auth-type = "access-key"' -i aws-credential.yaml
+          yq '.aws.$JUJU_AWS_CRED_NAME.access-key = "${{ secrets.AWS_ACCESS_KEY_ID }}"' -i aws-credential.yaml
+          yq '.aws.$JUJU_AWS_CRED_NAME.secret-key = "${{ secrets.AWS_SECRET_ACCESS_KEY }}"' -i aws-credential.yaml
+          juju add-credential aws -f ./aws-credential.yaml --client
           juju bootstrap aws/us-east-1 uk8saws --debug --show-log --config test-mode=true --model-default test-mode=true
           juju deploy ubuntu --constraints 'instance-type=t3a.xlarge root-disk=80G'
           juju wait -vw

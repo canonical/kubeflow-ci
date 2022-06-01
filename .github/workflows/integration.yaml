@@ -42,8 +42,6 @@ jobs:
           yq '.credentials.aws.github-ci.auth-type = "access-key"' -i aws-credential.yaml
           yq '.credentials.aws.github-ci.access-key = "${{ secrets.AWS_ACCESS_KEY_ID }}"' -i aws-credential.yaml
           yq '.credentials.aws.github-ci.secret-key = "${{ secrets.AWS_SECRET_ACCESS_KEY }}"' -i aws-credential.yaml
-          pwd
-          ls -al
           juju add-credential aws -f aws-credential.yaml --client
           juju bootstrap aws/us-east-1 uk8saws --debug --show-log --config test-mode=true --model-default test-mode=true
           juju deploy ubuntu --constraints 'instance-type=t3a.xlarge root-disk=80G'
@@ -68,7 +66,6 @@ jobs:
             sudo snap install microk8s --classic --channel ${{ matrix.microk8s }}
             sudo apt update
             sudo apt install -y libssl-dev firefox-geckodriver python3-pip
-            cd bundle-kubeflow
             sudo pip3 install tox
             sudo usermod -a -G microk8s ubuntu
           EOF
@@ -77,7 +74,6 @@ jobs:
         run: |
           juju ssh ubuntu/0 <<EOF
             set -eux
-            cd bundle-kubeflow
             git clone git://git.launchpad.net/canonical-osm
             cp -r canonical-osm/charms/interfaces/juju-relation-mysql mysql
             python3 ./scripts/cli.py microk8s setup --test-mode
@@ -88,7 +84,6 @@ jobs:
         run: |
           juju ssh ubuntu/0 <<EOF
             set -eux
-            cd bundle-kubeflow
             export KUBEFLOW_AUTH_USERNAME=${{ secrets.KUBEFLOW_AUTH_USERNAME }}
             export KUBEFLOW_AUTH_PASSWORD=${{ secrets.KUBEFLOW_AUTH_PASSWORD }}
             tox -e tests -- -m ${{ matrix.bundle }} -k 'not selenium'

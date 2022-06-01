@@ -40,9 +40,9 @@ jobs:
         run: |
           set -eux
           touch aws-credential.yaml
-          yq '.aws.$JUJU_AWS_CRED_NAME.auth-type = "access-key"' -i aws-credential.yaml
-          yq '.aws.$JUJU_AWS_CRED_NAME.access-key = "${{ secrets.AWS_ACCESS_KEY_ID }}"' -i aws-credential.yaml
-          yq '.aws.$JUJU_AWS_CRED_NAME.secret-key = "${{ secrets.AWS_SECRET_ACCESS_KEY }}"' -i aws-credential.yaml
+          yq '.credentials.aws.$JUJU_AWS_CRED_NAME.auth-type = "access-key"' -i aws-credential.yaml
+          yq '.credentials.aws.$JUJU_AWS_CRED_NAME.access-key = "${{ secrets.AWS_ACCESS_KEY_ID }}"' -i aws-credential.yaml
+          yq '.credentials.aws.$JUJU_AWS_CRED_NAME.secret-key = "${{ secrets.AWS_SECRET_ACCESS_KEY }}"' -i aws-credential.yaml
           pwd
           ls -al
           juju add-credential aws -f aws-credential.yaml --client

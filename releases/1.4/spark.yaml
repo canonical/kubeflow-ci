@@ -1,0 +1,4 @@
+bundle: kubernetes
+name: spark
+applications:
+  spark: { charm: spark-k8s, channel: v1beta2-1.2.3/stable, scale: 1 }

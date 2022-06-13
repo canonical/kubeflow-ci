@@ -1,8 +1,16 @@
 bundle: kubernetes
 name: mlflow-overlay
 applications:
-  mlflow-server: { charm: mlflow-server,           channel: 1.13.1/stable, scale: 1 }
-  mlflow-db:     { charm: charmed-osm-mariadb-k8s, channel: latest/stable, scale: 1, options: { database: mlflow }}
+  mlflow-server:
+    charm: mlflow-server
+    channel: 1.13.1/stable
+    scale: 1
+  mlflow-db:
+    charm: charmed-osm-mariadb-k8s
+    channel: latest/stable
+    scale: 1
+    options:
+      database: mlflow
 relations:
   - [mlflow-server, mlflow-db]
   - [mlflow-server, minio]

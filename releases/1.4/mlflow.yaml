@@ -5,6 +5,7 @@ applications:
     charm: mlflow-server
     channel: 1.13.1/stable
     scale: 1
+    _github_repo_name: mlflow-operator
   mlflow-db:
     charm: charmed-osm-mariadb-k8s
     channel: latest/stable

@@ -11,6 +11,7 @@ MAIN_BRANCH_NAMES = ["main", "master"]
 
 headers = {"content-type": "application/vnd.github.v3+json"}
 logger = logging.getLogger(__name__)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 def trim_charmcraft_dict(full_bundle_dict):
@@ -56,14 +57,6 @@ def parse_yamls(release_directory):
         raise Exception(f"Cannot proceed with script. Failed to find directory {path}")
 
 
-def does_branch_exists(
-    github_repo_name, branch_name, github_repo_owner=DEFAULT_REPO_OWNER
-):
-    get_branch_api = f"{GITHUB_API_URL}/repos/{github_repo_owner}/{github_repo_name}/branches/{branch_name}"
-    res = requests.get(get_branch_api, timeout=60)
-    return res.status_code == 200
-
-
 def get_latest_commit_sha(github_repo_name, github_repo_owner=DEFAULT_REPO_OWNER):
     latest_sha = ""
     for main_branch_name in MAIN_BRANCH_NAMES:
@@ -79,10 +72,12 @@ def get_latest_commit_sha(github_repo_name, github_repo_owner=DEFAULT_REPO_OWNER
 def create_git_branch(
     github_repo_name, new_branch_name, github_repo_owner=DEFAULT_REPO_OWNER
 ):
-    latest_sha = get_latest_commit_sha(github_repo_name)
+    latest_sha = get_latest_commit_sha(
+        github_repo_name, github_repo_owner=github_repo_owner
+    )
     if not latest_sha:
         logger.error(
-            f"Failed to get latest sha from branch main or master for repository named {github_repo_name}"
+            f"Failed to get latest sha from branch main or master for repository named {github_repo_name}. Branch {new_branch_name} is not created."
         )
     create_ref_api = (
         f"{GITHUB_API_URL}/repos/{DEFAULT_REPO_OWNER}/{github_repo_name}/git/refs"

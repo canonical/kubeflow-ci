@@ -1,0 +1,28 @@
+bundle: kubernetes
+name: some-bundle
+applications:
+  admission-webhook:
+    charm: admission-webhook
+    channel: 1.4/stable
+    scale: 1
+    _github_repo_name: admission-webhook-operator
+  argo-controller:
+    charm: argo-controller
+    channel: 3.1/stable
+    scale: 1
+    _github_repo_name: argo-operators
+  dex-auth:
+    charm: dex-auth
+    channel: 2.28/stable
+    scale: 1
+    trust: true
+    _github_repo_name: dex-auth-operator
+  katib-db:
+    charm: charmed-osm-mariadb-k8s
+    channel: latest/stable
+    scale: 1
+    options:
+      database: katib
+relations:
+  - [argo-controller, dex-auth]
+  - [dex-auth, admission-webhook]

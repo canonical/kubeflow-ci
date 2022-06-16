@@ -1,7 +1,18 @@
+# Copyright 2022 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 import pytest
 from requests_mock.mocker import Mocker
 
-from scripts.branch_track_creation import *
+from scripts.branch_track_creation import (
+    DEFAULT_REPO_OWNER,
+    GITHUB_API_URL,
+    create_git_branch,
+    get_latest_commit_sha,
+    get_modified_releases_dirs,
+    parse_yamls,
+    trim_charmcraft_dict,
+)
 
 
 def test_get_modified_releases_dirs_only_include_files_in_releases_dir():
@@ -21,7 +32,7 @@ def test_get_modified_releases_dirs_only_include_yaml_changes():
         "releases/1.4/script.py",
     ]
     result = get_modified_releases_dirs(file_paths)
-    assert result == set(["../releases/1.3"])
+    assert result == set(["releases/1.3"])
 
 
 def test_get_modified_releases_dirs_no_duplicates_in_return():
@@ -31,7 +42,7 @@ def test_get_modified_releases_dirs_no_duplicates_in_return():
         "releases/1.2/bundle.yaml",
     ]
     result = get_modified_releases_dirs(file_paths)
-    assert result == set(["../releases/1.4", "../releases/1.2"])
+    assert result == set(["releases/1.4", "releases/1.2"])
 
 
 def test_trim_charmcraft_dict_success():
@@ -102,7 +113,7 @@ def test_trim_charmcraft_dict_no_github_repo_name():
     assert result == {}
 
 
-def test_trim_charmcraft_dict_no_github_repo_name():
+def test_trim_charmcraft_dict_latest_track():
     charmcraft_dict = {
         "bundle": "kubernetes",
         "name": "some-bundle",
@@ -135,16 +146,14 @@ def test_trim_charmcraft_dict_input_missing_charm_key():
     charmcraft_dict = {
         "bundle": "kubernetes",
         "name": "some-bundle",
-        "applications": {
-            "dex-app": {"scale": 1, "_github_repo_name": "dex-auth-operator"}
-        },
+        "applications": {"dex-app": {"scale": 1, "_github_repo_name": "dex-auth-operator"}},
     }
     with pytest.raises(Exception):
         trim_charmcraft_dict(charmcraft_dict)
 
 
 def test_parse_yamls_success():
-    result = parse_yamls("./tests")
+    result = parse_yamls("scripts/tests")
     assert result == {
         "spark-k8s": {"version": "3.1", "github_repo_name": "spark-operator"},
         "admission-webhook": {
@@ -238,10 +247,7 @@ def test_create_git_branch_missing_sha(mocker, caplog):
     )
     mocked_get_latest_commit_sha.return_value = ""
     create_git_branch(github_repo_name, new_branch_name)
-    assert (
-        f"Failed to get latest sha from branch main or master for repository"
-        in caplog.text
-    )
+    assert "Failed to get latest sha from branch main or master for repository" in caplog.text
 
 
 def test_create_git_branch_branch_created_successfully(mocker, caplog, requests_mock):
@@ -310,4 +316,4 @@ def test_create_git_branch_other_errors(mocker, caplog, requests_mock):
         status_code=404,
     )
     create_git_branch(github_repo_name, new_branch_name)
-    assert f"Something went wrong." in caplog.text
+    assert "Something went wrong." in caplog.text

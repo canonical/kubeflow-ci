@@ -4,11 +4,34 @@ from requests_mock.mocker import Mocker
 from scripts.branch_track_creation import *
 
 
-def test_get_git_diff(mocker):
-    mocked_repo = mocker.patch("git.Repo")
-    mocked_repo.git.diff.return_value = "scripts/branch_track_creation.py\nscripts/tests/test_branch_track_creation.py\nscripts/tests/test_bundle.yaml\nscripts/tests/test_bundle2.yaml\ntox.ini"
-    result = get_git_diff()
+def test_get_modified_releases_dirs_only_include_files_in_releases_dir():
+    file_paths = [
+        "scripts/branch_track_creation.py",
+        "scripts/tests/test_branch_track_creation.py",
+        "scripts/tests/test_bundle.yaml",
+        "tox.ini",
+    ]
+    result = get_modified_releases_dirs(file_paths)
     assert result == set()
+
+
+def test_get_modified_releases_dirs_only_include_yaml_changes():
+    file_paths = [
+        "releases/1.3/charm.yaml",
+        "releases/1.4/script.py",
+    ]
+    result = get_modified_releases_dirs(file_paths)
+    assert result == set(["../releases/1.3"])
+
+
+def test_get_modified_releases_dirs_no_duplicates_in_return():
+    file_paths = [
+        "releases/1.4/charm.yaml",
+        "releases/1.4/bundle.yaml",
+        "releases/1.2/bundle.yaml",
+    ]
+    result = get_modified_releases_dirs(file_paths)
+    assert result == set(["../releases/1.4", "../releases/1.2"])
 
 
 def test_trim_charmcraft_dict_success():

@@ -12,25 +12,33 @@ from git import Repo
 GITHUB_API_URL = "https://api.github.com"
 DEFAULT_REPO_OWNER = "canonical"
 MAIN_BRANCH_NAMES = ["main", "master"]
+GITHUB_TOKEN_NAME = "KUBEFLOW_BOT_TOKEN"
 
-headers = {"content-type": "application/vnd.github.v3+json"}
+HEADERS = {"content-type": "application/vnd.github.v3+json"}
 logger = logging.getLogger(__name__)
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 def get_git_diff():
+    """() -> [str]
+    Return a list of file paths of files changed in the last commit
+    """
     cur_repo = Repo.init(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    print(
-        f"DEBUGGING ~ file: branch_track_creation.py ~ line 24 ~ cur_repo.git.diff(HEAD~1..HEAD, name_only=True): {cur_repo.git.diff('HEAD~1..HEAD', name_only=True)}"
-    )
     diff = cur_repo.git.diff("HEAD~1..HEAD", name_only=True).split("\n")
-    print(f"DEBUGGING ~ file: branch_track_creation.py ~ line 24 ~ diff: {diff}")
+    return diff
+
+
+def get_modified_releases_dirs(git_diff_file_paths):
+    """([str]) -> set(str)
+    Takes list of file paths as input, returns a list of releases directory path.
+    """
+    release_dir_name = "releases"
     result = []
-    for file_path in diff:
+    for file_path in git_diff_file_paths:
         splitted = file_path.split("/")
-        # check for duplicate
-        if splitted[0] == "releases":
-            result.append(splitted[1])
+        if splitted[0] == release_dir_name and splitted[-1].endswith(".yaml"):
+            # dir path relative to this file
+            result.append(f"../{release_dir_name}/{splitted[1]}")
     return set(result)
 
 
@@ -71,10 +79,9 @@ def parse_yamls(release_directory):
     """(str) -> dict or Exception
     Takes the path of directory as input (path relative to the location of this file),
     returns a dictionary
-    { "<app_name>": {"version": str, "_github_repo_name": str }}
+    { "<charm_name>": {"version": str, "_github_repo_name": str }}
     Exception is raised if the directory does not exists
     """
-    # TODO: add releases or not
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), release_directory))
 
     if os.path.isdir(path):
@@ -88,10 +95,13 @@ def parse_yamls(release_directory):
             )
         result = {}
         for yaml_file_name in yaml_files:
-            with open(os.path.join(path, yaml_file_name), "r") as file:
+            yaml_file_path = os.path.join(path, yaml_file_name)
+            logger.info(f"Parsing charms in yaml `{yaml_file_path}`")
+            with open(yaml_file_path, "r") as file:
                 file_content = yaml.safe_load(file)
                 result = {**result, **trim_charmcraft_dict(file_content)}
-
+        logger.info(f"Finished parsing yamls in `{release_directory}`.")
+        logger.info(f"Resulting charms info: {result}")
         return result
     else:
         raise Exception(f"Cannot proceed with script. Failed to find directory {path}")
@@ -104,12 +114,12 @@ def get_latest_commit_sha(github_repo_name, github_repo_owner=DEFAULT_REPO_OWNER
     latest_sha = ""
     for main_branch_name in MAIN_BRANCH_NAMES:
         get_ref_api = f"{GITHUB_API_URL}/repos/{github_repo_owner}/{github_repo_name}/git/ref/heads/{main_branch_name}"
-        res = requests.get(get_ref_api)
+        res = requests.get(get_ref_api, headers=HEADERS)
         if res.status_code == 200:
             body = res.json()
             latest_sha = body["object"]["sha"]
             logger.info(
-                f"func get_latest_commit_sha: Found latest commit SHA for repository `{github_repo_name}` in branch `{main_branch_name}`"
+                f"func get_latest_commit_sha: Found latest commit SHA `{latest_sha}` for repository `{github_repo_name}` in branch `{main_branch_name}`"
             )
             break
     return latest_sha
@@ -135,8 +145,14 @@ def create_git_branch(
         f"{GITHUB_API_URL}/repos/{DEFAULT_REPO_OWNER}/{github_repo_name}/git/refs"
     )
     payload = {"ref": f"refs/heads/{new_branch_name}", "sha": latest_sha}
-    # TODO: github auth token
-    r = requests.post(create_ref_api, data=json.dumps(payload))
+    r = requests.post(
+        create_ref_api,
+        data=json.dumps(payload),
+        headers={
+            **HEADERS,
+            "Authorization": f"Token {os.environ.get(GITHUB_TOKEN_NAME)}",
+        },
+    )
     if r.status_code == 201:
         logger.info(
             f"func create_git_branch: Branch `{new_branch_name}` is successfully created for repository `{github_repo_name}`"
@@ -151,7 +167,33 @@ def create_git_branch(
         )
 
 
+def branch_creation_automation(release_path):
+    """(str) -> None
+    Release directory path relative to this file as input
+    e.g. "../releases/1.4"
+    """
+    charms_info = parse_yamls(release_path)
+    for charm in charms_info:
+        logger.info(f"Start creating branch for charm `{charm}`")
+        create_git_branch(
+            charms_info[charm]["_github_repo_name"],
+            f"track/{charms_info[charm]['version']}",
+        )
+
+
 if __name__ == "__main__":
-    # parse_yamls("../releases/1.4")
-    # check git diff if release directory was not provided
-    create_git_branch("natasha-dummy-charm", "featureA", "agathanatasha")
+    if not os.environ.get(GITHUB_TOKEN_NAME):
+        logger.error(
+            f"Failed to find env var `{GITHUB_TOKEN_NAME}`. Unable to create branches without it."
+        )
+        sys.exit()
+    if len(sys.argv) == 1:
+        git_diff = get_git_diff()
+        release_changes = get_modified_releases_dirs(git_diff)
+        for release_path in release_changes:
+            branch_creation_automation(release_path)
+    # for manually triggered runs
+    elif len(sys.argv) == 2:
+        branch_creation_automation(sys.argv[1])
+    else:
+        logger.error("Specified too many arguments. Script exited.")

@@ -71,7 +71,7 @@ def trim_charmcraft_dict(full_bundle_dict):
                 }
             return result
     except KeyError:
-        sys.exit(
+        raise Exception(
             "Unexpecting yaml format. Expected `.applications`, `.applications.<app_name>.charm` and `.applications.<app_name>.channel` keys in yaml but failed to find."
         )
 
@@ -102,7 +102,7 @@ def parse_yamls(release_directory):
         logger.info(f"Resulting charms info: {result}")
         return result
     else:
-        sys.exit(f"Cannot proceed with script. Failed to find directory {path}")
+        raise Exception(f"Cannot proceed with script. Failed to find directory {path}")
 
 
 def get_latest_commit_sha(github_repo_name, github_repo_owner=DEFAULT_REPO_OWNER):

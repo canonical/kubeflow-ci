@@ -15,6 +15,15 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 def trim_charmcraft_dict(full_bundle_dict):
+    """(dict) -> dict or Exception
+    Take a dictionary following the charmcraft yaml format and return
+    a dictionary with only information needed for the script.
+    Charms with `latest` in channel or missing `_github_repo_name` would
+    be skipped and not included in the return dictionary.
+    The function would raise an exception if it misses key fields
+    in the yaml
+    { "<app_name>": {"version": str, "_github_repo_name": str }}
+    """
     result = {}
     try:
         if full_bundle_dict["applications"]:
@@ -39,13 +48,24 @@ def trim_charmcraft_dict(full_bundle_dict):
 
 
 def parse_yamls(release_directory):
+    """(str) -> dict or Exception
+    Takes the path of directory as input (path relative to the location of this file),
+    returns a dictionary
+    { "<app_name>": {"version": str, "_github_repo_name": str }}
+    Exception is raised if the directory does not exists
+    """
     # TODO: add releases or not
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), release_directory))
 
     if os.path.isdir(path):
-        files = os.listdir(path)
-        yaml_files = [file for file in files if file.endswith(".yaml")]
+        yaml_files = [
+            file_name for file_name in os.listdir(path) if file_name.endswith(".yaml")
+        ]
         # use yaml to parse each file
+        if not yaml_files:
+            logger.warning(
+                f"func parse_yamls: No yamls files are present in directory `{path}`"
+            )
         result = {}
         for yaml_file_name in yaml_files:
             with open(os.path.join(path, yaml_file_name), "r") as file:
@@ -58,6 +78,9 @@ def parse_yamls(release_directory):
 
 
 def get_latest_commit_sha(github_repo_name, github_repo_owner=DEFAULT_REPO_OWNER):
+    """(str, str) -> str
+    Loop through possible main branch names. Returns the first commit sha found.
+    """
     latest_sha = ""
     for main_branch_name in MAIN_BRANCH_NAMES:
         get_ref_api = f"{GITHUB_API_URL}/repos/{github_repo_owner}/{github_repo_name}/git/ref/heads/{main_branch_name}"
@@ -65,6 +88,9 @@ def get_latest_commit_sha(github_repo_name, github_repo_owner=DEFAULT_REPO_OWNER
         if res.status_code == 200:
             body = res.json()
             latest_sha = body["object"]["sha"]
+            logger.info(
+                f"func get_latest_commit_sha: Found latest commit SHA for repository `{github_repo_name}` in branch `{main_branch_name}`"
+            )
             break
     return latest_sha
 

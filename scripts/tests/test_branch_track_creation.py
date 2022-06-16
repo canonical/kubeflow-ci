@@ -197,3 +197,86 @@ def test_latest_commit_sha_repo_with_no_main_branches_found(requests_mock: Mocke
 
     result = get_latest_commit_sha(test_repo_name)
     assert result == ""
+
+
+def test_create_git_branch_missing_sha(mocker, caplog):
+    github_repo_name = "some-repo"
+    new_branch_name = "new-branch-name"
+    mocked_get_latest_commit_sha = mocker.patch(
+        "scripts.branch_track_creation.get_latest_commit_sha"
+    )
+    mocked_get_latest_commit_sha.return_value = ""
+    create_git_branch(github_repo_name, new_branch_name)
+    assert (
+        f"Failed to get latest sha from branch main or master for repository"
+        in caplog.text
+    )
+
+
+def test_create_git_branch_branch_created_successfully(mocker, caplog, requests_mock):
+    github_repo_name = "some-repo"
+    new_branch_name = "new-branch-name"
+    mocked_get_latest_commit_sha = mocker.patch(
+        "scripts.branch_track_creation.get_latest_commit_sha"
+    )
+    mocked_get_latest_commit_sha.return_value = "some-commit-sha"
+    requests_mock.post(
+        f"{GITHUB_API_URL}/repos/{DEFAULT_REPO_OWNER}/{github_repo_name}/git/refs",
+        json={
+            "ref": "refs/heads/new-branch-name",
+            "node_id": "REF_kwDOHFEUKrNyZWZzL2hlYWRzL2ZlYXR1cmVB",
+            "url": "https://api.github.com/repos/canonical/test-repo-name/git/refs/heads/new-branch-name",
+            "object": {
+                "sha": "some-commit-sha",
+                "type": "commit",
+                "url": "https://api.github.com/repos/canonical/test-repo-name/git/commits/some-commit-sha",
+            },
+        },
+        status_code=201,
+    )
+    create_git_branch(github_repo_name, new_branch_name)
+    assert (
+        f"Branch `{new_branch_name}` is successfully created for repository `{github_repo_name}`"
+        in caplog.text
+    )
+
+
+def test_create_git_branch_branch_already_exists(mocker, caplog, requests_mock):
+    github_repo_name = "some-repo"
+    new_branch_name = "new-branch-name"
+    mocked_get_latest_commit_sha = mocker.patch(
+        "scripts.branch_track_creation.get_latest_commit_sha"
+    )
+    mocked_get_latest_commit_sha.return_value = "some-commit-sha"
+    requests_mock.post(
+        f"{GITHUB_API_URL}/repos/{DEFAULT_REPO_OWNER}/{github_repo_name}/git/refs",
+        json={
+            "message": "Git ref already exists",
+            "documentation_url": "https://docs.github.com/rest/reference/git#create-a-reference",
+        },
+        status_code=422,
+    )
+    create_git_branch(github_repo_name, new_branch_name)
+    assert (
+        f"Branch `{new_branch_name}` already exists in repository `{github_repo_name}`"
+        in caplog.text
+    )
+
+
+def test_create_git_branch_other_errors(mocker, caplog, requests_mock):
+    github_repo_name = "some-repo"
+    new_branch_name = "new-branch-name"
+    mocked_get_latest_commit_sha = mocker.patch(
+        "scripts.branch_track_creation.get_latest_commit_sha"
+    )
+    mocked_get_latest_commit_sha.return_value = "some-commit-sha"
+    requests_mock.post(
+        f"{GITHUB_API_URL}/repos/{DEFAULT_REPO_OWNER}/{github_repo_name}/git/refs",
+        json={
+            "message": "Not found",
+            "documentation_url": "https://docs.github.com/rest/reference/git#create-a-reference",
+        },
+        status_code=404,
+    )
+    create_git_branch(github_repo_name, new_branch_name)
+    assert f"Something went wrong." in caplog.text

@@ -72,18 +72,37 @@ def get_latest_commit_sha(github_repo_name, github_repo_owner=DEFAULT_REPO_OWNER
 def create_git_branch(
     github_repo_name, new_branch_name, github_repo_owner=DEFAULT_REPO_OWNER
 ):
+    """(str, str, str) -> None
+    It creates the git branch using github api.
+    This function should NEVER raise an exception.
+    Success and error results are communicated through the logger.
+    """
     latest_sha = get_latest_commit_sha(
         github_repo_name, github_repo_owner=github_repo_owner
     )
     if not latest_sha:
         logger.error(
-            f"Failed to get latest sha from branch main or master for repository named {github_repo_name}. Branch {new_branch_name} is not created."
+            f"func create_git_branch: Failed to get latest sha from branch main or master for repository named {github_repo_name}. Branch {new_branch_name} is not created. Please check if the repository name is correct."
         )
+        return
     create_ref_api = (
         f"{GITHUB_API_URL}/repos/{DEFAULT_REPO_OWNER}/{github_repo_name}/git/refs"
     )
     payload = {"ref": f"refs/heads/{new_branch_name}", "sha": latest_sha}
+    # TODO: github auth token
     r = requests.post(create_ref_api, data=json.dumps(payload))
+    if r.status_code == 201:
+        logger.info(
+            f"func create_git_branch: Branch `{new_branch_name}` is successfully created for repository `{github_repo_name}`"
+        )
+    elif r.status_code == 422:
+        logger.info(
+            f"func create_git_branch: Branch `{new_branch_name}` already exists in repository `{github_repo_name}`"
+        )
+    else:
+        logger.info(
+            f"func create_git_branch: Something went wrong. Failed to create branch `{new_branch_name}` in repository `{github_repo_name}`. Check if authorization token is provided"
+        )
 
 
 if __name__ == "__main__":

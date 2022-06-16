@@ -1,0 +1,21 @@
+name: Lint and Test on Pull Request
+
+on:
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo apt update && sudo apt install tox
+      - run: tox -e lint
+
+  branch_track_tests:
+    name: Branch and Track Creation Script Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo apt update && sudo apt install tox
+      - run: tox -e test_branch_track_creation

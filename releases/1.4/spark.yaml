@@ -5,3 +5,4 @@ applications:
     charm: spark-k8s
     channel: 3.1/stable
     scale: 1
+    _github_repo_name: spark-operator

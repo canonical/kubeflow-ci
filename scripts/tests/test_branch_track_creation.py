@@ -1,6 +1,14 @@
 import pytest
 from requests_mock.mocker import Mocker
+
 from scripts.branch_track_creation import *
+
+
+def test_get_git_diff(mocker):
+    mocked_repo = mocker.patch("git.Repo")
+    mocked_repo.git.diff.return_value = "scripts/branch_track_creation.py\nscripts/tests/test_branch_track_creation.py\nscripts/tests/test_bundle.yaml\nscripts/tests/test_bundle2.yaml\ntox.ini"
+    result = get_git_diff()
+    assert result == set()
 
 
 def test_trim_charmcraft_dict_success():

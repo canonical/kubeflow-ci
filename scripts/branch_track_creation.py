@@ -1,17 +1,37 @@
+# Add docstring for each functions
+# add description on how to use it, and any gotchas
 import json
 import logging
-import yaml
 import os
+import sys
 
 import requests
+import yaml
+from git import Repo
 
 GITHUB_API_URL = "https://api.github.com"
-DEFAULT_REPO_OWNER = "Canonical"
+DEFAULT_REPO_OWNER = "canonical"
 MAIN_BRANCH_NAMES = ["main", "master"]
 
 headers = {"content-type": "application/vnd.github.v3+json"}
 logger = logging.getLogger(__name__)
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+
+def get_git_diff():
+    cur_repo = Repo.init(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+    print(
+        f"DEBUGGING ~ file: branch_track_creation.py ~ line 24 ~ cur_repo.git.diff(HEAD~1..HEAD, name_only=True): {cur_repo.git.diff('HEAD~1..HEAD', name_only=True)}"
+    )
+    diff = cur_repo.git.diff("HEAD~1..HEAD", name_only=True).split("\n")
+    print(f"DEBUGGING ~ file: branch_track_creation.py ~ line 24 ~ diff: {diff}")
+    result = []
+    for file_path in diff:
+        splitted = file_path.split("/")
+        # check for duplicate
+        if splitted[0] == "releases":
+            result.append(splitted[1])
+    return set(result)
 
 
 def trim_charmcraft_dict(full_bundle_dict):
@@ -132,6 +152,6 @@ def create_git_branch(
 
 
 if __name__ == "__main__":
-    parse_yamls("../releases/1.4")
+    # parse_yamls("../releases/1.4")
     # check git diff if release directory was not provided
-    print("Hello world")
+    create_git_branch("natasha-dummy-charm", "featureA", "agathanatasha")

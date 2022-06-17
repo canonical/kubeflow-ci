@@ -101,7 +101,7 @@ def parse_yamls(release_directory: str) -> dict | Exception:
         raise Exception(f"Cannot proceed with script. Failed to find directory {path}")
 
 
-def get_latest_commit_sha(github_repo_name: str, github_repo_owner=DEFAULT_REPO_OWNER: str) -> str:
+def get_latest_commit_sha(github_repo_name: str, github_repo_owner: str = DEFAULT_REPO_OWNER) -> str:
     """
     Loop through possible main branch names. Returns the first commit sha found.
     """
@@ -119,7 +119,7 @@ def get_latest_commit_sha(github_repo_name: str, github_repo_owner=DEFAULT_REPO_
     return latest_sha
 
 
-def create_git_branch(github_repo_name: str, new_branch_name: str, github_repo_owner=DEFAULT_REPO_OWNER: str) -> None:
+def create_git_branch(github_repo_name: str, new_branch_name: str, github_repo_owner: str = DEFAULT_REPO_OWNER) -> None:
     """
     It creates the git branch using github api.
     This function should NEVER raise an exception.

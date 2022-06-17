@@ -13,6 +13,7 @@ from git import Repo
 
 GITHUB_API_URL = "https://api.github.com"
 DEFAULT_REPO_OWNER = "canonical"
+RELEASE_DIR_NAME = "releases"
 MAIN_BRANCH_NAMES = ["main", "master"]
 GITHUB_TOKEN_NAME = "KUBEFLOW_BOT_TOKEN"
 
@@ -21,9 +22,8 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
-def get_git_diff():
-    """() -> [str]
-
+def get_git_diff() -> [str]:
+    """
     Return a list of file paths of files changed in the last commit
     """
     cur_repo = Repo.init(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -31,23 +31,20 @@ def get_git_diff():
     return diff
 
 
-def get_modified_releases_dirs(git_diff_file_paths):
-    """([str]) -> set(str)
-
+def get_modified_releases_dirs(git_diff_file_paths: [str]) -> set(str):
+    """
     Takes list of file paths as input, returns a list of releases directory path.
     """
-    release_dir_name = "releases"
     result = []
     for file_path in git_diff_file_paths:
         split_path = file_path.split("/")
-        if split_path[0] == release_dir_name and split_path[-1].endswith(".yaml"):
-            result.append(f"{release_dir_name}/{split_path[1]}")
+        if split_path[0] == RELEASE_DIR_NAME and split_path[-1].endswith(".yaml"):
+            result.append(f"{RELEASE_DIR_NAME}/{split_path[1]}")
     return set(result)
 
 
-def trim_charmcraft_dict(full_bundle_dict):
-    """(dict) -> dict or exit script
-
+def trim_charmcraft_dict(full_bundle_dict: dict) -> dict | Exception:
+    """
     Take a dictionary following the charmcraft yaml format and return
     a dictionary with only information needed for the script.
     Charms with `latest` in channel or missing `_github_repo_name` would
@@ -76,9 +73,8 @@ def trim_charmcraft_dict(full_bundle_dict):
         )
 
 
-def parse_yamls(release_directory):
-    """(str) -> dict or exit script
-
+def parse_yamls(release_directory: str) -> dict | Exception:
+    """
     Takes the path of directory as input (path relative to the root of this repo),
     returns a dictionary
     { "<charm_name>": {"version": str, "_github_repo_name": str }}
@@ -105,9 +101,8 @@ def parse_yamls(release_directory):
         raise Exception(f"Cannot proceed with script. Failed to find directory {path}")
 
 
-def get_latest_commit_sha(github_repo_name, github_repo_owner=DEFAULT_REPO_OWNER):
-    """(str, str) -> str
-
+def get_latest_commit_sha(github_repo_name: str, github_repo_owner=DEFAULT_REPO_OWNER: str) -> str:
+    """
     Loop through possible main branch names. Returns the first commit sha found.
     """
     latest_sha = ""
@@ -124,9 +119,8 @@ def get_latest_commit_sha(github_repo_name, github_repo_owner=DEFAULT_REPO_OWNER
     return latest_sha
 
 
-def create_git_branch(github_repo_name, new_branch_name, github_repo_owner=DEFAULT_REPO_OWNER):
-    """(str, str, str) -> None
-
+def create_git_branch(github_repo_name: str, new_branch_name: str, github_repo_owner=DEFAULT_REPO_OWNER: str) -> None:
+    """
     It creates the git branch using github api.
     This function should NEVER raise an exception.
     Success and error results are communicated through the logger.
@@ -161,9 +155,8 @@ def create_git_branch(github_repo_name, new_branch_name, github_repo_owner=DEFAU
         )
 
 
-def branch_creation_automation(release_path):
-    """(str) -> None
-
+def branch_creation_automation(release_path: str) -> None:
+    """
     Release directory path relative to the root of this repo as input
     e.g. "releases/1.4"
     """

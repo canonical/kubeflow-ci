@@ -29,10 +29,8 @@ def get_git_diff() -> [str]:
     return diff
 
 
-def get_modified_releases_dirs(git_diff_file_paths: [str]) -> Set[str]:
-    """
-    Takes list of file paths as input, returns a list of releases directory path.
-    """
+def get_modified_releases_dirs(git_diff_file_paths: [str]) -> set[str]:
+    """Takes list of file paths as input, returns a list of releases directory path."""
     result = []
     for file_path in git_diff_file_paths:
         split_path = file_path.split("/")
@@ -41,13 +39,14 @@ def get_modified_releases_dirs(git_diff_file_paths: [str]) -> Set[str]:
     return set(result)
 
 
-def trim_bundle_dict(full_bundle_dict: dict) -> dict | Exception:
-    """
+def trim_bundle_dict(full_bundle_dict: dict) -> dict:
+    """Return dictionary with charm information.
+
     Take a dictionary following the charmcraft yaml format and return
     a dictionary with only information needed for the script.
     Charms with `latest` in channel or missing `_github_repo_name` would
     be skipped and not included in the return dictionary.
-    The function would raise an exception if it misses key fields
+    The function would return an empty dict if it misses key fields
     in the yaml
     { "<app_name>": {"version": str, "_github_repo_name": str }}
     """
@@ -64,19 +63,20 @@ def trim_bundle_dict(full_bundle_dict: dict) -> dict | Exception:
                     "version": app_dict["channel"].split("/")[0],
                     "github_repo_name": app_dict["_github_repo_name"],
                 }
-            return result
     except KeyError:
-        raise Exception(
+        logger.error(
             "Unexpecting yaml format. Expected `.applications`, `.applications.<app_name>.charm` and `.applications.<app_name>.channel` keys in yaml but failed to find."
         )
+    return result
 
 
-def parse_yamls(release_directory: str) -> dict | Exception:
-    """Parse bundle yaml and retuns a dictionary.
+def parse_yamls(release_directory: str) -> dict:
+    """Parse bundle yaml and returns a dictionary.
+
     Takes the path of directory as input (path relative to the root of this repo),
     returns a dictionary
     { "<charm_name>": {"version": str, "_github_repo_name": str }}
-    Exception is raised if the directory does not exists
+    Error is logged if the directory does not exists
     """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", release_directory))
 
@@ -96,10 +96,12 @@ def parse_yamls(release_directory: str) -> dict | Exception:
         logger.info(f"Resulting charms info: {result}")
         return result
     else:
-        raise Exception(f"Cannot proceed with script. Failed to find directory {path}")
+        logger.error(f"Cannot proceed with script. Failed to find directory {path}")
 
 
-def get_latest_commit_sha(github_repo_name: str, github_repo_owner: str = DEFAULT_REPO_OWNER) -> str:
+def get_latest_commit_sha(
+    github_repo_name: str, github_repo_owner: str = DEFAULT_REPO_OWNER
+) -> str:
     """Loop through possible main branch names. Returns the first commit sha found."""
     latest_sha = ""
     for main_branch_name in MAIN_BRANCH_NAMES:
@@ -115,8 +117,11 @@ def get_latest_commit_sha(github_repo_name: str, github_repo_owner: str = DEFAUL
     return latest_sha
 
 
-def create_git_branch(github_repo_name: str, new_branch_name: str, github_repo_owner: str = DEFAULT_REPO_OWNER) -> None:
+def create_git_branch(
+    github_repo_name: str, new_branch_name: str, github_repo_owner: str = DEFAULT_REPO_OWNER
+) -> None:
     """It creates the git branch using github api.
+
     This function should NEVER raise an exception.
     Success and error results are communicated through the logger.
     """
@@ -152,6 +157,7 @@ def create_git_branch(github_repo_name: str, new_branch_name: str, github_repo_o
 
 def branch_creation_automation(release_path: str) -> None:
     """Release directory path relative to the root of this repo as input
+
     e.g. "releases/1.4"
     """
     charms_info = parse_yamls(release_path)

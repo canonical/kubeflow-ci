@@ -133,23 +133,23 @@ def test_trim_bundle_dict_latest_track():
     assert result == {}
 
 
-def test_trim_bundle_dict_input_missing_application_key():
+def test_trim_bundle_dict_input_missing_application_key(caplog):
     charmcraft_dict = {
         "bundle": "kubernetes",
         "name": "some-bundle",
     }
-    with pytest.raises(Exception):
-        trim_bundle_dict(charmcraft_dict)
+    trim_bundle_dict(charmcraft_dict)
+    assert "Unexpecting yaml format." in caplog.text
 
 
-def test_trim_bundle_dict_input_missing_charm_key():
+def test_trim_bundle_dict_input_missing_charm_key(caplog):
     charmcraft_dict = {
         "bundle": "kubernetes",
         "name": "some-bundle",
         "applications": {"dex-app": {"scale": 1, "_github_repo_name": "dex-auth-operator"}},
     }
-    with pytest.raises(Exception):
-        trim_bundle_dict(charmcraft_dict)
+    trim_bundle_dict(charmcraft_dict)
+    assert "Unexpecting yaml format." in caplog.text
 
 
 def test_parse_yamls_success():
@@ -165,9 +165,9 @@ def test_parse_yamls_success():
     }
 
 
-def test_parse_yaml_fail():
-    with pytest.raises(Exception):
-        parse_yamls("./nonexistent_directory")
+def test_parse_yaml_fail(caplog):
+    parse_yamls("./nonexistent_directory")
+    assert "Cannot proceed with script. Failed to find directory" in caplog.text
 
 
 def test_latest_commit_sha_repo_with_branch_main(requests_mock: Mocker):

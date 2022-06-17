@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from typing import List, Set
 
 import requests
 import yaml
@@ -22,14 +23,14 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
-def get_git_diff() -> [str]:
+def get_git_diff() -> List[str]:
     """Return a list of file paths of files changed in the last commit"""
     cur_repo = Repo.init(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     diff = cur_repo.git.diff("HEAD~1..HEAD", name_only=True).split("\n")
     return diff
 
 
-def get_modified_releases_dirs(git_diff_file_paths: [str]) -> set[str]:
+def get_modified_releases_dirs(git_diff_file_paths: List[str]) -> Set[str]:
     """Takes list of file paths as input, returns a list of releases directory path."""
     result = []
     for file_path in git_diff_file_paths:

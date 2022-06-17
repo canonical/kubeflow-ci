@@ -11,7 +11,7 @@ from scripts.branch_track_creation import (
     get_latest_commit_sha,
     get_modified_releases_dirs,
     parse_yamls,
-    trim_charmcraft_dict,
+    trim_bundle_dict,
 )
 
 
@@ -45,7 +45,7 @@ def test_get_modified_releases_dirs_no_duplicates_in_return():
     assert result == set(["releases/1.4", "releases/1.2"])
 
 
-def test_trim_charmcraft_dict_success():
+def test_trim_bundle_dict_success():
     charmcraft_dict = {
         "bundle": "kubernetes",
         "name": "some-bundle",
@@ -81,7 +81,7 @@ def test_trim_charmcraft_dict_success():
             ["dex-auth", "admission-webhook"],
         ],
     }
-    result = trim_charmcraft_dict(charmcraft_dict)
+    result = trim_bundle_dict(charmcraft_dict)
     assert result == {
         "admission-webhook": {
             "version": "1.4",
@@ -92,7 +92,7 @@ def test_trim_charmcraft_dict_success():
     }
 
 
-def test_trim_charmcraft_dict_no_github_repo_name():
+def test_trim_bundle_dict_no_github_repo_name():
     charmcraft_dict = {
         "bundle": "kubernetes",
         "name": "some-bundle",
@@ -109,11 +109,11 @@ def test_trim_charmcraft_dict_no_github_repo_name():
             ["dex-auth", "admission-webhook"],
         ],
     }
-    result = trim_charmcraft_dict(charmcraft_dict)
+    result = trim_bundle_dict(charmcraft_dict)
     assert result == {}
 
 
-def test_trim_charmcraft_dict_latest_track():
+def test_trim_bundle_dict_latest_track():
     charmcraft_dict = {
         "bundle": "kubernetes",
         "name": "some-bundle",
@@ -129,27 +129,27 @@ def test_trim_charmcraft_dict_latest_track():
             ["dex-auth", "admission-webhook"],
         ],
     }
-    result = trim_charmcraft_dict(charmcraft_dict)
+    result = trim_bundle_dict(charmcraft_dict)
     assert result == {}
 
 
-def test_trim_charmcraft_dict_input_missing_application_key():
+def test_trim_bundle_dict_input_missing_application_key():
     charmcraft_dict = {
         "bundle": "kubernetes",
         "name": "some-bundle",
     }
     with pytest.raises(Exception):
-        trim_charmcraft_dict(charmcraft_dict)
+        trim_bundle_dict(charmcraft_dict)
 
 
-def test_trim_charmcraft_dict_input_missing_charm_key():
+def test_trim_bundle_dict_input_missing_charm_key():
     charmcraft_dict = {
         "bundle": "kubernetes",
         "name": "some-bundle",
         "applications": {"dex-app": {"scale": 1, "_github_repo_name": "dex-auth-operator"}},
     }
     with pytest.raises(Exception):
-        trim_charmcraft_dict(charmcraft_dict)
+        trim_bundle_dict(charmcraft_dict)
 
 
 def test_parse_yamls_success():

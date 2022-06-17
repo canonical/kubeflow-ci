@@ -23,15 +23,13 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 def get_git_diff() -> [str]:
-    """
-    Return a list of file paths of files changed in the last commit
-    """
+    """Return a list of file paths of files changed in the last commit"""
     cur_repo = Repo.init(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     diff = cur_repo.git.diff("HEAD~1..HEAD", name_only=True).split("\n")
     return diff
 
 
-def get_modified_releases_dirs(git_diff_file_paths: [str]) -> set(str):
+def get_modified_releases_dirs(git_diff_file_paths: [str]) -> Set[str]:
     """
     Takes list of file paths as input, returns a list of releases directory path.
     """
@@ -43,7 +41,7 @@ def get_modified_releases_dirs(git_diff_file_paths: [str]) -> set(str):
     return set(result)
 
 
-def trim_charmcraft_dict(full_bundle_dict: dict) -> dict | Exception:
+def trim_bundle_dict(full_bundle_dict: dict) -> dict | Exception:
     """
     Take a dictionary following the charmcraft yaml format and return
     a dictionary with only information needed for the script.
@@ -74,7 +72,7 @@ def trim_charmcraft_dict(full_bundle_dict: dict) -> dict | Exception:
 
 
 def parse_yamls(release_directory: str) -> dict | Exception:
-    """
+    """Parse bundle yaml and retuns a dictionary.
     Takes the path of directory as input (path relative to the root of this repo),
     returns a dictionary
     { "<charm_name>": {"version": str, "_github_repo_name": str }}
@@ -93,7 +91,7 @@ def parse_yamls(release_directory: str) -> dict | Exception:
             logger.info(f"Parsing charms in yaml `{yaml_file_path}`")
             with open(yaml_file_path, "r") as file:
                 file_content = yaml.safe_load(file)
-                result = {**result, **trim_charmcraft_dict(file_content)}
+                result = {**result, **trim_bundle_dict(file_content)}
         logger.info(f"Finished parsing yamls in `{release_directory}`.")
         logger.info(f"Resulting charms info: {result}")
         return result
@@ -102,9 +100,7 @@ def parse_yamls(release_directory: str) -> dict | Exception:
 
 
 def get_latest_commit_sha(github_repo_name: str, github_repo_owner: str = DEFAULT_REPO_OWNER) -> str:
-    """
-    Loop through possible main branch names. Returns the first commit sha found.
-    """
+    """Loop through possible main branch names. Returns the first commit sha found."""
     latest_sha = ""
     for main_branch_name in MAIN_BRANCH_NAMES:
         get_ref_api = f"{GITHUB_API_URL}/repos/{github_repo_owner}/{github_repo_name}/git/ref/heads/{main_branch_name}"
@@ -120,8 +116,7 @@ def get_latest_commit_sha(github_repo_name: str, github_repo_owner: str = DEFAUL
 
 
 def create_git_branch(github_repo_name: str, new_branch_name: str, github_repo_owner: str = DEFAULT_REPO_OWNER) -> None:
-    """
-    It creates the git branch using github api.
+    """It creates the git branch using github api.
     This function should NEVER raise an exception.
     Success and error results are communicated through the logger.
     """
@@ -156,8 +151,7 @@ def create_git_branch(github_repo_name: str, new_branch_name: str, github_repo_o
 
 
 def branch_creation_automation(release_path: str) -> None:
-    """
-    Release directory path relative to the root of this repo as input
+    """Release directory path relative to the root of this repo as input
     e.g. "releases/1.4"
     """
     charms_info = parse_yamls(release_path)

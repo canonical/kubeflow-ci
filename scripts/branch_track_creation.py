@@ -49,7 +49,7 @@ def trim_bundle_dict(full_bundle_dict: dict) -> dict:
     be skipped and not included in the return dictionary.
     The function would return an empty dict if it misses key fields
     in the yaml
-    { "<app_name>": {"version": str, "_github_repo_name": str }}
+    { "<app_name>": {"version": str, "github_repo_name": str }}
     """
     result = {}
     try:
@@ -76,7 +76,7 @@ def parse_yamls(release_directory: str) -> dict:
 
     Takes the path of directory as input (path relative to the root of this repo),
     returns a dictionary
-    { "<charm_name>": {"version": str, "_github_repo_name": str }}
+    { "<charm_name>": {"version": str, "github_repo_name": str }}
     Error is logged if the directory does not exists
     """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", release_directory))
@@ -165,7 +165,7 @@ def branch_creation_automation(release_path: str) -> None:
     for charm in charms_info:
         logger.info(f"Start creating branch for charm `{charm}`")
         create_git_branch(
-            charms_info[charm]["_github_repo_name"],
+            charms_info[charm]["github_repo_name"],
             f"track/{charms_info[charm]['version']}",
         )
 

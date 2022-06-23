@@ -26,3 +26,8 @@ jobs:
       - name: Run script (Workflow Dispatch)
         if: ${{ github.event_name == 'workflow_dispatch'}}
         run: tox -e branch_track_creation ${{ inputs.release_directory_path }}
+      - name: Upload track request file.
+        uses: actions/upload-artifact@v2
+        with:
+          name: track-request-artifact
+          path: track_request.txt

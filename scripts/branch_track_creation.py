@@ -169,6 +169,21 @@ def branch_creation_automation(release_path: str) -> None:
             f"track/{charms_info[charm]['version']}",
         )
 
+    create_track_request(charms_info)
+
+
+def create_track_request(charms_info: dict) -> None:
+    """Create a track request for each charm in the charms_info dictionary."""
+    # TODO check if the charm already has a track
+    logger.info(f"Creating track requests for charms")
+    track_request = "Charmhub Tracks Request\n"
+    track_request += "=======================\n"
+    for charm in charms_info:
+        track_request += f"{charm} -> {charms_info[charm]['version']}\n"
+    with open("track_request.txt", "w") as file:
+        file.write(track_request)
+        logger.info(f"Track request is written to {file.name}")
+
 
 if __name__ == "__main__":
     if not os.environ.get(GITHUB_TOKEN_NAME):

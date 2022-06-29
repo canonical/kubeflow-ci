@@ -3,7 +3,7 @@ name: mlflow-overlay
 applications:
   mlflow-server:
     charm: mlflow-server
-    channel: 1.13.1/stable
+    channel: 1.13/stable
     scale: 1
     _github_repo_name: mlflow-operator
   mlflow-db:

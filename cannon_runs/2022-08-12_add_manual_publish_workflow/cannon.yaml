@@ -1,0 +1,46 @@
+repos:
+  # - name: canonical/admission-webhook-operator
+  # - name: canonical/argo-operators
+  # - name: canonical/dex-auth-operator
+  # - name: canonical/envoy-operator
+  # - name: canonical/istio-operators
+  # - name: canonical/notebook-operators
+  # - name: canonical/katib-operators
+  - name: canonical/kfp-operators
+  # - name: canonical/knative-operators
+  # - name: canonical/kubeflow-dashboard-operator
+  - name: canonical/kubeflow-profiles-operator
+  # - name: canonical/kubeflow-roles-operator
+  # - name: canonical/kubeflow-volumes-operator
+  # - name: canonical/metacontroller-operator
+  # - name: canonical/mlflow-operator
+  # - name: canonical/mlmd-operator
+  # - name: canonical/minio-operator
+  # - name: canonical/oidc-gatekeeper-operator
+  # - name: canonical/seldon-core-operator
+  # - name: canonical/kubeflow-tensorboards-operator
+  # - name: canonical/training-operator
+actions:
+    # If we directly use yq to edit, we lose the file's whitespace.  Use 
+    # [this method](https://github.com/mikefarah/yq/issues/515#issuecomment-1020883624)
+    # to preserve the whitespace
+    # Rename .jobs.publish-charm.secrets.charmcraft-credentials to .jobs.publish-charm.secrets.CHARMCRAFT_CREDENTIALS
+  - type: shellCommand
+    run: patch .github/workflows/on_pull_request.yaml <<< $(\diff --color -U0 -w -b --ignore-blank-lines .github/workflows/on_pull_request.yaml <(yq eval ".jobs.publish-charm.secrets.CHARMCRAFT_CREDENTIALS = .jobs.publish-charm.secrets.charmcraft-credentials | del(.jobs.publish-charm.secrets.charmcraft-credentials)" .github/workflows/on_pull_request.yaml))
+  - type: shellCommand
+    run: patch .github/workflows/on_pull_request.yaml <<< $(\diff --color -U0 -w -b --ignore-blank-lines .github/workflows/on_pull_request.yaml <(val='On Pull Request' yq eval ".name = strenv(val)" .github/workflows/on_pull_request.yaml))
+    # Simplify workflow names
+  - type: shellCommand
+    run: patch .github/workflows/on_push.yaml <<< $(\diff --color -U0 -w -b --ignore-blank-lines .github/workflows/on_push.yaml <(yq eval ".jobs.publish-charm.secrets.CHARMCRAFT_CREDENTIALS = .jobs.publish-charm.secrets.charmcraft-credentials | del(.jobs.publish-charm.secrets.charmcraft-credentials)" .github/workflows/on_push.yaml))
+  - type: shellCommand
+    run: patch .github/workflows/on_push.yaml <<< $(\diff --color -U0 -w -b --ignore-blank-lines .github/workflows/on_push.yaml <(val='On Push' yq eval ".name = strenv(val)" .github/workflows/on_push.yaml))
+
+    # Add get-charm-paths.sh
+  - type: createOrReplaceFile
+    srcPath: get-charm-paths.sh
+    dstPath: .github/workflows/get-charm-paths.sh
+
+    # Replace publish.yaml
+  - type: createOrReplaceFile
+    srcPath: publish.yaml
+    dstPath: .github/workflows/publish.yaml

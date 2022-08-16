@@ -131,7 +131,7 @@ applications:
     _github_repo_name: kubeflow-volumes-operator
   metacontroller-operator:
     charm: metacontroller-operator
-    channel: 0.3/edge
+    channel: 2.0/edge
     scale: 1
     trust: true
     _github_repo_name: metacontroller-operator

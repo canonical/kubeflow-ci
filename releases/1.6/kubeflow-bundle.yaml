@@ -189,4 +189,3 @@ relations:
   - [kfp-profile-controller:object-storage, minio:object-storage]
   - [kfp-ui:object-storage, minio:object-storage]
   - [kubeflow-profiles, kubeflow-dashboard]
-  - [mlmd:grpc, envoy:grpc]

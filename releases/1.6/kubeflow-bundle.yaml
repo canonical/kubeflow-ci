@@ -22,11 +22,6 @@ applications:
     scale: 1
     trust: true
     _github_repo_name: dex-auth-operator
-  envoy:
-    charm: envoy
-    channel: 1.20/edge
-    scale: 1
-    _github_repo_name: envoy-operator
   istio-ingressgateway:
     charm: istio-gateway
     channel: 1.11/edge
@@ -140,11 +135,6 @@ applications:
     scale: 1
     trust: true
     _github_repo_name: metacontroller-operator
-  mlmd:
-    charm: mlmd
-    channel: 1.0/edge
-    scale: 1
-    _github_repo_name: mlmd-operator
   minio:
     charm: minio
     channel: latest/edge

@@ -1,3 +1,5 @@
+import lightkube
+import pytest
 from _pytest.config.argparsing import Parser
 
 
@@ -14,3 +16,32 @@ def pytest_addoption(parser: Parser):
         "--channel",
         help="Kubeflow channels, e.g. latest/stable, 1.6/beta",
     )
+
+
+@pytest.fixture(scope="module")
+def lightkube_client(ops_test):
+    yield lightkube.Client(
+        namespace=ops_test.model_name,
+    )
+
+
+@pytest.fixture(scope="module")
+def deploy_cmd(request, ops_test):
+    if ops_test.model_name != "kubeflow":
+        raise ValueError("kfp must be deployed to namespace kubeflow")
+
+    bundle_file = request.config.getoption("file", default=None)
+    channel = request.config.getoption("channel", default=None)
+
+    if (bundle_file is None and channel is None) or (bundle_file and channel):
+        raise ValueError("One of --file or --channel is required")
+
+    model = ops_test.model_full_name
+    if bundle_file:
+        # pytest automatically prune path to relative paths without `./`
+        # juju deploys requires `./`
+        cmd = f"juju deploy ./{bundle_file} -m {model} --trust "
+    if channel:
+        cmd = f"juju deploy kubeflow -m {model} --trust --channel {channel}"
+
+    yield cmd

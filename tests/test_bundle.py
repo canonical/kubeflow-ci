@@ -1,53 +1,23 @@
-import pytest
 import shlex
-from pytest_operator.plugin import OpsTest
-import lightkube
+import time
+
+import pytest
+from helpers import get_ingress_ip_1dot4, get_ingress_url
+from lightkube.models.rbac_v1 import PolicyRule
 from lightkube.resources.core_v1 import Service
+from lightkube.resources.rbac_authorization_v1 import Role
+from pytest_operator.plugin import OpsTest
 
 USERNAME = "admin"
 PASSWORD = "foobar"
 
 
-def get_ingress_ip(lightkube_client, model_name):
-    gateway_svc = lightkube_client.get(
-        Service, "istio-ingressgateway-workload", namespace=model_name
-    )
-
-    endpoint = gateway_svc.status.loadBalancer.ingress[0].ip
-    return endpoint
-
-
-@pytest.fixture(scope="session")
-def lightkube_client():
-    yield lightkube.Client()
-
-
+@pytest.mark.v1dot6
 @pytest.mark.abort_on_fail
 @pytest.mark.skip_if_deployed
-async def test_deploy(ops_test, request, lightkube_client):
-    if ops_test.model_name != "kubeflow":
-        raise ValueError("kfp must be deployed to namespace kubeflow")
-
-    bundle_file = request.config.getoption("file", default=None)
-    channel = request.config.getoption("channel", default=None)
-
-    if (bundle_file is None and channel is None) or (bundle_file and channel):
-        raise ValueError("One of --file or --channel is required")
-
-    model = ops_test.model_full_name
-
-    if bundle_file:
-        # pytest automatically prune path to relative paths without `./`
-        # juju deploys requires `./`
-        cmd = f"juju deploy -m {model} --trust ./{bundle_file}"
-    if channel:
-        cmd = f"juju deploy kubeflow -m {model} --trust --channel {channel}"
-
-    print(f"Deploying bundle to {model} using cmd '{cmd}'")
-    rc, stdout, stderr = await ops_test.run(*shlex.split(cmd))
-    if stderr:
-        print(stderr)
-        raise RuntimeError("failed to deploy")
+async def test_deploy_1dot6(ops_test, lightkube_client, deploy_cmd):
+    print(f"Deploying bundle to {ops_test.model_full_name} using cmd '{deploy_cmd}'")
+    rc, stdout, stderr = await ops_test.run(*shlex.split(deploy_cmd))
 
     print("Waiting for bundle to be ready")
     await ops_test.model.wait_for_idle(
@@ -56,9 +26,59 @@ async def test_deploy(ops_test, request, lightkube_client):
         raise_on_error=True,
         timeout=3000,
     )
-    endpoint = get_ingress_ip(lightkube_client, ops_test.model_name)
-    url = f"http://{endpoint}.nip.io"
+    url = get_ingress_url(lightkube_client, ops_test.model_name)
 
+    print("Update Dex and OIDC configs")
+    await ops_test.model.applications["dex-auth"].set_config(
+        {"public-url": url, "static-username": USERNAME, "static-password": PASSWORD}
+    )
+    await ops_test.model.applications["oidc-gatekeeper"].set_config({"public-url": url})
+
+    await ops_test.model.wait_for_idle(
+        status="active",
+        raise_on_blocked=False,
+        raise_on_error=True,
+        timeout=600,
+    )
+
+
+@pytest.mark.v1dot4
+@pytest.mark.abort_on_fail
+@pytest.mark.skip_if_deployed
+async def test_deploy_1dot4(ops_test, lightkube_client, deploy_cmd):
+    print(f"Deploying bundle to {ops_test.model_full_name} using cmd '{deploy_cmd}'")
+    rc, stdout, stderr = await ops_test.run(*shlex.split(deploy_cmd))
+
+    print("Waiting for istio-ingressgateway")
+    await ops_test.model.wait_for_idle(
+        ["istio-ingressgateway"],
+        status="waiting",
+        timeout=1800,
+    )
+
+    await ops_test.model.set_config({"update-status-hook-interval": "15s"})
+    istio_gateway_role_name = "istio-ingressgateway-operator"
+
+    print("Patch role for istio-gateway")
+    new_policy_rule = PolicyRule(verbs=["*"], apiGroups=["*"], resources=["*"])
+    this_role = lightkube_client.get(Role, istio_gateway_role_name)
+    this_role.rules.append(new_policy_rule)
+    lightkube_client.patch(Role, istio_gateway_role_name, this_role)
+
+    time.sleep(50)
+    await ops_test.model.set_config({"update-status-hook-interval": "5m"})
+
+    print("Waiting for bundle to be ready")
+    await ops_test.model.wait_for_idle(
+        status="active",
+        raise_on_blocked=False,
+        raise_on_error=True,
+        timeout=3000,
+    )
+
+    url = await get_ingress_ip_1dot4(ops_test)
+
+    print("Update Dex and OIDC configs")
     await ops_test.model.applications["dex-auth"].set_config(
         {"public-url": url, "static-username": USERNAME, "static-password": PASSWORD}
     )

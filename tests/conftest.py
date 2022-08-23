@@ -33,7 +33,7 @@ def deploy_cmd(request, ops_test):
     bundle_file = request.config.getoption("file", default=None)
     channel = request.config.getoption("channel", default=None)
 
-    if (bundle_file is None and channel is None) or (bundle_file and channel):
+    if (not bundle_file and not channel) or (bundle_file and channel):
         raise ValueError("One of --file or --channel is required")
 
     model = ops_test.model_full_name

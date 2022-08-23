@@ -31,7 +31,7 @@ copyright-regexp = "Copyright\\s\\d{4}([-,]\\d{4})*\\s+%(author)s"
 markers = [
     "v1dot4: bundle 1.4 tests",
     "v1dot6: bundle 1.6 tests",
-    "full_bundle_shared: tests that are shared in all versions of full bundle",
-    "lite_bundle_shared: tests that are shared in all versions of lite bundle"
+    "full: tests that are shared in all versions of full bundle",
+    "lite: tests that are shared in all versions of lite bundle"
 
 ]

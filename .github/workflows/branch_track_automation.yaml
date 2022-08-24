@@ -1,4 +1,4 @@
-name: Branch and Track Creation Automation
+name: Branch Creation Automation
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   branch-track-creation:
-    name: Branch and Track creation
+    name: Branch creation
     runs-on: ubuntu-latest
     env:
       KUBEFLOW_BOT_TOKEN: ${{ secrets.KUBEFLOW_BOT_TOKEN }}
@@ -24,7 +24,7 @@ jobs:
         run: sudo apt install tox
       - name: Run script (on_push)
         if: ${{ github.event_name == 'push'}}
-        run: tox -e branch_track_creation
+        run: tox -e branch_creation
       - name: Run script (Workflow Dispatch)
         if: ${{ github.event_name == 'workflow_dispatch'}}
-        run: tox -e branch_track_creation ${{ inputs.release_directory_path }}
+        run: tox -e branch_creation ${{ inputs.release_directory_path }}

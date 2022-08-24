@@ -3,7 +3,7 @@
 
 from requests_mock.mocker import Mocker
 
-from scripts.branch_track_creation import (
+from scripts.branch_creation import (
     DEFAULT_REPO_OWNER,
     GITHUB_API_URL,
     create_git_branch,
@@ -16,8 +16,8 @@ from scripts.branch_track_creation import (
 
 def test_get_modified_releases_dirs_only_include_files_in_releases_dir():
     file_paths = [
-        "scripts/branch_track_creation.py",
-        "scripts/tests/test_branch_track_creation.py",
+        "scripts/branch_creation.py",
+        "scripts/tests/test_branch_creation.py",
         "scripts/tests/test_bundle.yaml",
         "tox.ini",
     ]
@@ -241,9 +241,7 @@ def test_latest_commit_sha_repo_with_no_main_branches_found(requests_mock: Mocke
 def test_create_git_branch_missing_sha(mocker, caplog):
     github_repo_name = "some-repo"
     new_branch_name = "new-branch-name"
-    mocked_get_latest_commit_sha = mocker.patch(
-        "scripts.branch_track_creation.get_latest_commit_sha"
-    )
+    mocked_get_latest_commit_sha = mocker.patch("scripts.branch_creation.get_latest_commit_sha")
     mocked_get_latest_commit_sha.return_value = ""
     create_git_branch(github_repo_name, new_branch_name)
     assert "Failed to get latest sha from branch main or master for repository" in caplog.text
@@ -252,9 +250,7 @@ def test_create_git_branch_missing_sha(mocker, caplog):
 def test_create_git_branch_branch_created_successfully(mocker, caplog, requests_mock):
     github_repo_name = "some-repo"
     new_branch_name = "new-branch-name"
-    mocked_get_latest_commit_sha = mocker.patch(
-        "scripts.branch_track_creation.get_latest_commit_sha"
-    )
+    mocked_get_latest_commit_sha = mocker.patch("scripts.branch_creation.get_latest_commit_sha")
     mocked_get_latest_commit_sha.return_value = "some-commit-sha"
     requests_mock.post(
         f"{GITHUB_API_URL}/repos/{DEFAULT_REPO_OWNER}/{github_repo_name}/git/refs",
@@ -280,9 +276,7 @@ def test_create_git_branch_branch_created_successfully(mocker, caplog, requests_
 def test_create_git_branch_branch_already_exists(mocker, caplog, requests_mock):
     github_repo_name = "some-repo"
     new_branch_name = "new-branch-name"
-    mocked_get_latest_commit_sha = mocker.patch(
-        "scripts.branch_track_creation.get_latest_commit_sha"
-    )
+    mocked_get_latest_commit_sha = mocker.patch("scripts.branch_creation.get_latest_commit_sha")
     mocked_get_latest_commit_sha.return_value = "some-commit-sha"
     requests_mock.post(
         f"{GITHUB_API_URL}/repos/{DEFAULT_REPO_OWNER}/{github_repo_name}/git/refs",
@@ -302,9 +296,7 @@ def test_create_git_branch_branch_already_exists(mocker, caplog, requests_mock):
 def test_create_git_branch_other_errors(mocker, caplog, requests_mock):
     github_repo_name = "some-repo"
     new_branch_name = "new-branch-name"
-    mocked_get_latest_commit_sha = mocker.patch(
-        "scripts.branch_track_creation.get_latest_commit_sha"
-    )
+    mocked_get_latest_commit_sha = mocker.patch("scripts.branch_creation.get_latest_commit_sha")
     mocked_get_latest_commit_sha.return_value = "some-commit-sha"
     requests_mock.post(
         f"{GITHUB_API_URL}/repos/{DEFAULT_REPO_OWNER}/{github_repo_name}/git/refs",

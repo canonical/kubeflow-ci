@@ -1,9 +1,6 @@
 name: Branch Creation Automation
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       release_directory_path:
@@ -19,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          repository: canonical/bundle-kubeflow
           fetch-depth: 0
       - name: Install tox
         run: sudo apt install tox

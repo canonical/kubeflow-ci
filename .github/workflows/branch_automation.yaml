@@ -27,7 +27,10 @@ jobs:
       - name: Install tox
         run: sudo apt install tox
       - name: change directory to kubeflow-ci
-        run: cd kubeflow-ci
+        run: |
+          pwd
+          cd kubeflow-ci
+          pwd
       - name: Run script (on_push)
         if: ${{ github.event_name == 'repository_dispatch'}}
         run: tox -e branch_creation

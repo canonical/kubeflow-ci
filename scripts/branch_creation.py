@@ -2,6 +2,7 @@
 # See LICENSE file for licensing details.
 """This is a script for creating branches across our charm repos."""
 
+import argparse
 import json
 import logging
 import os
@@ -14,9 +15,11 @@ from git import Repo
 
 GITHUB_API_URL = "https://api.github.com"
 DEFAULT_REPO_OWNER = "canonical"
+REPOSITORY_NAME = "bundle-kubeflow"
 RELEASE_DIR_NAME = "releases"
 MAIN_BRANCH_NAMES = ["main", "master"]
 GITHUB_TOKEN_NAME = "KUBEFLOW_BOT_TOKEN"
+EXPECTED_BUNDLE_FILE_NAME = "bundle.yaml"
 
 HEADERS = {"content-type": "application/vnd.github.v3+json"}
 logger = logging.getLogger(__name__)
@@ -25,19 +28,25 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 def get_git_diff() -> List[str]:
     """Return a list of file paths of files changed in the last commit"""
-    cur_repo = Repo.init(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    diff = cur_repo.git.diff("HEAD~1..HEAD", name_only=True).split("\n")
+    cur_repo = Repo.init(
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", REPOSITORY_NAME))
+    )
+    diff = cur_repo.git.diff("HEAD~3..HEAD", name_only=True).split("\n")
+    logger.info(f"get_git_diff ~ List of files changed in the last commit: {diff}")
     return diff
 
 
-def get_modified_releases_dirs(git_diff_file_paths: List[str]) -> Set[str]:
-    """Takes list of file paths as input, returns a list of releases directory path."""
-    result = []
-    for file_path in git_diff_file_paths:
-        split_path = file_path.split("/")
-        if split_path[0] == RELEASE_DIR_NAME and split_path[-1].endswith(".yaml"):
-            result.append(f"{RELEASE_DIR_NAME}/{split_path[1]}")
-    return set(result)
+def get_modified_releases_files(git_diff_file_paths: List[str]) -> Set[str]:
+    """Takes list of file paths as input, returns a list of changed bundle.yaml files in releases directory."""
+    result = [
+        file_path
+        for file_path in git_diff_file_paths
+        if (RELEASE_DIR_NAME in file_path and file_path.endswith(EXPECTED_BUNDLE_FILE_NAME))
+    ]
+    logger.info(
+        f"get_modified_releases_files() ~ List of directories with file named `{EXPECTED_BUNDLE_FILE_NAME}` changed in the last commit: {result}"
+    )
+    return result
 
 
 def trim_bundle_dict(full_bundle_dict: dict) -> dict:
@@ -71,33 +80,32 @@ def trim_bundle_dict(full_bundle_dict: dict) -> dict:
     return result
 
 
-def parse_yamls(release_directory: str) -> dict:
-    """Parse bundle yaml and returns a dictionary.
+def parse_yaml_file(yaml_file_path: str) -> dict:
+    """Parse a bundle yaml file and returns a dictionary.
 
-    Takes the path of directory as input (path relative to the root of this repo),
+    Takes the yaml file path as input (path relative to the root of bundle-kubeflow repo),
     returns a dictionary
     { "<charm_name>": {"version": str, "github_repo_name": str }}
-    Error is logged if the directory does not exists
+    Error is logged if the file does not exists.
+    Error is logged if it's not a yaml file. This is for filtering inputs in manually triggered runs.
     """
-    path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", release_directory))
+    path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", REPOSITORY_NAME, yaml_file_path)
+    )
 
-    if os.path.isdir(path):
-        yaml_files = [file_name for file_name in os.listdir(path) if file_name.endswith(".yaml")]
-        # use yaml to parse each file
-        if not yaml_files:
-            logger.warning(f"func parse_yamls: No yamls files are present in directory `{path}`")
+    if os.path.exists(path) and yaml_file_path.endswith(".yaml"):
+        logger.info(f"Parsing charms in yaml `{path}`")
         result = {}
-        for yaml_file_name in yaml_files:
-            yaml_file_path = os.path.join(path, yaml_file_name)
-            logger.info(f"Parsing charms in yaml `{yaml_file_path}`")
-            with open(yaml_file_path, "r") as file:
-                file_content = yaml.safe_load(file)
-                result = {**result, **trim_bundle_dict(file_content)}
-        logger.info(f"Finished parsing yamls in `{release_directory}`.")
+        with open(path, "r") as file:
+            file_content = yaml.safe_load(file)
+            result = {**result, **trim_bundle_dict(file_content)}
+        logger.info(f"Finished parsing yamls in `{path}`.")
         logger.info(f"Resulting charms info: {result}")
         return result
+    elif not yaml_file_path.endswith("yaml"):
+        logger.error(f"Cannot proceed with script. File provided is not a yaml {path}")
     else:
-        logger.error(f"Cannot proceed with script. Failed to find directory {path}")
+        logger.error(f"Cannot proceed with script. Failed to find file {path}")
 
 
 def get_latest_commit_sha(
@@ -156,33 +164,52 @@ def create_git_branch(
         )
 
 
-def branch_creation_automation(release_path: str) -> None:
-    """Release directory path relative to the root of this repo as input
+def branch_creation_automation(yaml_file_path: str, is_dry_run=False) -> None:
+    """Take yaml file path relative to the root of this repo as input
 
-    e.g. "releases/1.4"
+    e.g. "releases/1.6/beta/kubeflow/bundle.yaml"
     """
-    charms_info = parse_yamls(release_path)
-    for charm in charms_info:
-        logger.info(f"Start creating branch for charm `{charm}`")
-        create_git_branch(
-            charms_info[charm]["github_repo_name"],
-            f"track/{charms_info[charm]['version']}",
+    bundle = parse_yaml_file(yaml_file_path)
+    for charm_name, charm_info in bundle.items():
+        repo_name = charm_info["github_repo_name"]
+        branch_name = f"track/{charm_info['version']}"
+        logger.info(
+            f"Start creating branch named `{branch_name}` for charm `{charm_name}` in repo `{repo_name}`"
         )
+
+        if not is_dry_run:
+            create_git_branch(
+                repo_name,
+                branch_name,
+            )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-f",
+        "--file",
+        help="yaml file as input. The path should be relative to the root of this repo",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action=argparse.BooleanOptionalAction,
+        help="Run the script without making API calls to github",
+        default=False,
+    )
+
+    args = parser.parse_args()
+
+    if args.file:
+        # manually trigged runs
+        branch_creation_automation(args.file, args.dry_run)
+    else:
+        # on push
+        git_diff = get_git_diff()
+        release_changes = get_modified_releases_files(git_diff)
+        for yaml_file_path in release_changes:
+            branch_creation_automation(yaml_file_path, args.dry_run)
 
 
 if __name__ == "__main__":
-    if not os.environ.get(GITHUB_TOKEN_NAME):
-        logger.error(
-            f"Failed to find env var `{GITHUB_TOKEN_NAME}`. Unable to create branches without it."
-        )
-        sys.exit()
-    if len(sys.argv) == 1:
-        git_diff = get_git_diff()
-        release_changes = get_modified_releases_dirs(git_diff)
-        for release_path in release_changes:
-            branch_creation_automation(release_path)
-    # for manually triggered runs
-    elif len(sys.argv) == 2:
-        branch_creation_automation(sys.argv[1])
-    else:
-        logger.error("Specified too many arguments. Script exited.")
+    main()

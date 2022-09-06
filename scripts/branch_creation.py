@@ -7,7 +7,7 @@ import json
 import logging
 import os
 import sys
-from typing import List, Set
+from typing import List
 
 import requests
 import yaml
@@ -36,8 +36,12 @@ def get_git_diff() -> List[str]:
     return diff
 
 
-def get_modified_releases_files(git_diff_file_paths: List[str]) -> Set[str]:
-    """Takes list of file paths as input, returns a list of changed bundle.yaml files in releases directory."""
+def get_modified_releases_files(git_diff_file_paths: List[str]) -> List[str]:
+    """Get list of changed bundle.yaml files in releases directory.
+
+    Takes list of file paths as input.
+    Returns a list of changed bundle.yaml files in releases directory.
+    """
     result = [
         file_path
         for file_path in git_diff_file_paths
@@ -87,7 +91,7 @@ def parse_yaml_file(yaml_file_path: str) -> dict:
     returns a dictionary
     { "<charm_name>": {"version": str, "github_repo_name": str }}
     Error is logged if the file does not exists.
-    Error is logged if it's not a yaml file. This is for filtering inputs in manually triggered runs.
+    Error is logged if it's not a yaml file, for filtering inputs from manually triggered runs.
     """
     path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "..", "..", REPOSITORY_NAME, yaml_file_path)
@@ -185,6 +189,10 @@ def branch_creation_automation(yaml_file_path: str, is_dry_run=False) -> None:
 
 
 def main() -> None:
+    """Main function in the script
+
+    Parse arguments and run script.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-f",
@@ -201,7 +209,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.file:
-        # manually trigged runs
+        # manually triggered runs
         branch_creation_automation(args.file, args.dry_run)
     else:
         # on push

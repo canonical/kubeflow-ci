@@ -26,16 +26,11 @@ jobs:
           path: kubeflow-ci
       - name: Install tox
         run: sudo apt install tox
-      - name: change directory to kubeflow-ci
-        run: |
-          sudo apt install tree
-          tree 
-          pwd
-          cd kubeflow-ci
-          pwd
       - name: Run script (on_push)
         if: ${{ github.event_name == 'repository_dispatch'}}
         run: tox -e branch_creation
+        working-directory: ./kubeflow-ci
       - name: Run script (Workflow Dispatch)
         if: ${{ github.event_name == 'workflow_dispatch'}}
         run: tox -e branch_creation -- -f ${{ inputs.yaml_file_path }}
+        working-directory: ./kubeflow-ci

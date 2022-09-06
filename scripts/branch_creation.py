@@ -201,7 +201,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--dry-run",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
         help="Run the script without making API calls to github",
         default=False,
     )

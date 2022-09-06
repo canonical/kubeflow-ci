@@ -31,7 +31,7 @@ def get_git_diff() -> List[str]:
     cur_repo = Repo.init(
         os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", REPOSITORY_NAME))
     )
-    diff = cur_repo.git.diff("HEAD~3..HEAD", name_only=True).split("\n")
+    diff = cur_repo.git.diff("HEAD~1..HEAD", name_only=True).split("\n")
     logger.info(f"get_git_diff ~ List of files changed in the last commit: {diff}")
     return diff
 

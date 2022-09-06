@@ -28,6 +28,8 @@ jobs:
         run: sudo apt install tox
       - name: change directory to kubeflow-ci
         run: |
+          sudo apt install tree
+          tree 
           pwd
           cd kubeflow-ci
           pwd

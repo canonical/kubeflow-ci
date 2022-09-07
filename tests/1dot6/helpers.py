@@ -1,9 +1,16 @@
-import inspect
+from lightkube.resources.core_v1 import Service
+from tests.helpers import validate_response_status_code
 import logging
-from urllib.parse import parse_qs
-import os
-
 import requests
+
+
+def get_ingress_url(lightkube_client, model_name):
+    gateway_svc = lightkube_client.get(
+        Service, "istio-ingressgateway-workload", namespace=model_name
+    )
+
+    public_url = f"http://{gateway_svc.status.loadBalancer.ingress[0].ip}.nip.io"
+    return public_url
 
 
 def kubeflow_login(host, username=None, password=None):
@@ -72,18 +79,3 @@ def kubeflow_login(host, username=None, password=None):
     )
 
     return response.cookies["authservice_session"]
-
-
-def validate_response_status_code(response, expected_codes: list, error_message: str = ""):
-    """Validates the status code of a response, raising a ValueError with message"""
-    if error_message:
-        error_message += "  "
-    if response.status_code not in expected_codes:
-        raise ValueError(
-            f"{error_message}"
-            f"Got response {response.status_code}, expected one of {expected_codes}"
-        )
-
-
-def get_pipeline_params(func):
-    return {name: value.default for name, value in inspect.signature(func).parameters.items()}

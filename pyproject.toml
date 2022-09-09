@@ -29,9 +29,5 @@ copyright-regexp = "Copyright\\s\\d{4}([-,]\\d{4})*\\s+%(author)s"
 
 [tool.pytest.ini_options]
 markers = [
-    "v1dot4: bundle 1.4 tests",
-    "v1dot6: bundle 1.6 tests",
-    "full: tests that are shared in all versions of full bundle",
     "lite: tests that are shared in all versions of lite bundle"
-
 ]

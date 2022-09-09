@@ -2,21 +2,21 @@ import shlex
 import time
 
 import pytest
+from helpers import get_ingress_ip, kubeflow_login
 from kfp import Client
-from pipelines.mnist import mnist_pipeline
 from lightkube.models.rbac_v1 import PolicyRule
 from lightkube.resources.rbac_authorization_v1 import Role
+from pipelines.mnist import mnist_pipeline
 from pytest_operator.plugin import OpsTest
 
-from tests.helpers import get_pipeline_params, kubeflow_login
-from helpers import get_ingress_ip_1dot4
+from tests.helpers import get_pipeline_params
 
 USERNAME = "admin"
 PASSWORD = "secret"
 
 
 @pytest.mark.abort_on_fail
-@pytest.mark.skip_if_deployed
+@pytest.mark.deploy
 async def test_deploy_1dot4(ops_test: OpsTest, lightkube_client, deploy_cmd):
     print(f"Deploying bundle to {ops_test.model_full_name} using cmd '{deploy_cmd}'")
     rc, stdout, stderr = await ops_test.run(*shlex.split(deploy_cmd))
@@ -46,7 +46,7 @@ async def test_deploy_1dot4(ops_test: OpsTest, lightkube_client, deploy_cmd):
         timeout=3000,
     )
 
-    url = await get_ingress_ip_1dot4(ops_test)
+    url = await get_ingress_ip(ops_test)
 
     print("Update Dex and OIDC configs")
     await ops_test.model.applications["dex-auth"].set_config(
@@ -64,7 +64,7 @@ async def test_deploy_1dot4(ops_test: OpsTest, lightkube_client, deploy_cmd):
 
 async def test_mnist_pipeline(ops_test: OpsTest):
     name = "mnist"
-    url = await get_ingress_ip_1dot4(ops_test)
+    url = await get_ingress_ip(ops_test)
     cookies = (
         f"authservice_session={kubeflow_login(host=url, username=USERNAME, password=PASSWORD)}"
     )

@@ -29,5 +29,6 @@ copyright-regexp = "Copyright\\s\\d{4}([-,]\\d{4})*\\s+%(author)s"
 
 [tool.pytest.ini_options]
 markers = [
-    "lite: tests that are shared in all versions of lite bundle"
+    "deploy: mark the deploy function for each version of test suite",
+    "lite: tests that are shared in all versions of lite bundle",
 ]

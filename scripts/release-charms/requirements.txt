@@ -1,0 +1,8 @@
+# TODO: Point this to somewhere shared
+# charmed-kubeflow-chisme
+# git+https://github.com/canonical/charmed-kubeflow-chisme.git@add-bundle-tools  # Hack while it is not merged
+-e /home/scribs/code/canonical/charmed-kubeflow-chisme/add-bundle-tools  # Hack while developing locally
+PyGithub
+pytest
+pytest-mock
+typer

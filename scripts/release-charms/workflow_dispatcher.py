@@ -222,7 +222,7 @@ def get_github_token(dry_run: bool, github_pat_environment_variable: str = "GITH
 
 def main(
         dispatch_manifest: str = typer.Argument(
-            None,  # TODO: How to make this a real required argument?  This is a hack...
+            ...,
             help="Path to the dispatch manifest YAML file.  This file is is a list of workflow "
                  "dispatch executions, each of which is a dictionary with the keys ['repository', 'workflow_name', and "
                  "'inputs'].  The 'inputs' key contains a dictionary of the inputs needed for the workflow dispatch"

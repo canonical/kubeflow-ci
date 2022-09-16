@@ -6,8 +6,8 @@ import copy
 from pathlib import Path
 from typing import Optional
 
-from ruamel.yaml import YAML
 from deepdiff import DeepDiff
+from ruamel.yaml import YAML
 
 
 class Bundle:
@@ -17,6 +17,7 @@ class Bundle:
     the order of the yaml, etc.  This way we can load/dump a yaml with comments without losing them
     or reordering the items.
     """
+
     def __init__(self, filename: Optional[str] = None):
         self._filename = filename
         self._data = None
@@ -34,25 +35,24 @@ class Bundle:
 
     def dump(self, filename: str):
         """Dumps as yaml to a file"""
-        with open(filename, 'w') as fout:
-            yaml = YAML(typ='rt')
+        with open(filename, "w") as fout:
+            yaml = YAML(typ="rt")
             yaml.dump(self.to_dict(), fout)
 
     def load_bundle(self):
         """Loads a YAML file as a bundle"""
-        yaml = YAML(typ='rt')
+        yaml = YAML(typ="rt")
         self._data = yaml.load(Path(self._filename).read_text())
 
     def to_dict(self):
+        """Returns bundle as a dictionary"""
         return self._data
 
     def __eq__(self, other):
-        return (
-                self._filename == other._filename
-                and self.diff(other) == {}
-        )
+        """Compares self to another bundle"""
+        return self._filename == other._filename and self.diff(other) == {}
 
     @property
     def applications(self):
-        return self._data['applications']
-
+        """Returns the applications in the bundle"""
+        return self._data["applications"]

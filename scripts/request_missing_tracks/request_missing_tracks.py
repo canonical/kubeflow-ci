@@ -1,8 +1,14 @@
+#!/usr/bin/env python3
+# Copyright 2022 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+"""Script for requesting missing tracks in a bundle"""
+
 import logging
 
+import typer
 from bundle import Bundle
 from juju import Juju, JujuFailedError
-import typer
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -122,9 +128,7 @@ def main(
     bundle_file: str = typer.Argument(..., help="Path to Charm Bundle file"),
     verbose: bool = typer.Option(False, "--verbose"),
 ):
-    """
-    Parse a bundle file, summarizing the charm:track pairs in the bundle that do not exist.
-    """
+    """Parse a bundle file, printing the charm:track pairs in the bundle that do not exist."""
     if verbose:
         logger.info("Setting verbose logging")
         logger.setLevel(logging.DEBUG)

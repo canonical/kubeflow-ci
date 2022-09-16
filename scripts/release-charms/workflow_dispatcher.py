@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# Copyright 2022 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+"""Executes and waits on one or more workflows defined by a YAML workflow_manifest file"""
+
 import logging
 import os
 from datetime import datetime, timedelta
@@ -6,7 +12,7 @@ from typing import Union
 import yaml
 
 import github
-from github import Github, Repository, Workflow, WorkflowRun
+from github import Github, Repository, Workflow, WorkflowRun  # noqa: F401  # Workflow is used
 import typer
 
 
@@ -44,8 +50,7 @@ def execute_workflow_and_wait(
     workflow_name="release.yaml",
     inputs: dict = None,
 ):
-    """
-    Executes a workflow and waits for it to complete.
+    """Executes a workflow and waits for it to complete.
 
     Args:
         github_token: The github token to use for authentication.  Must have permission to trigger
@@ -68,7 +73,7 @@ def execute_workflow_and_wait(
     # TODO: multi-charm is using the single-charm repo workflow.  Update it!
 
     if not result:
-        raise RunFailedException(
+        raise RunFailedError(
             "Workflow dispatch failed.  This could be due to an incorrect input or workflow name, "
             "or some other error.  By default, PyGithub package used to create the dispatch does "
             "not provide any information about the failure, but you can enable their debug logging"
@@ -78,7 +83,7 @@ def execute_workflow_and_wait(
     run = wait_for_recent_workflow_run_completion(workflow=workflow, execution_time=execution_time)
 
     if run.conclusion != "success":
-        raise RunFailedException(
+        raise RunFailedError(
             f"Workflow {workflow_name} failed with conclusion {run.conclusion}", run=run
         )
     else:
@@ -86,24 +91,35 @@ def execute_workflow_and_wait(
 
 
 class NoRunsFoundError(Exception):
+    """Raised if no runs are found for a workflow."""
     pass
 
 
 class TooManyRunsFoundError(Exception):
+    """Raised if too many runs are found for a workflow.
+
+    This exception can optionally include a list of github.WorkflowRun objects.
+    """
     def __init__(self, *args, runs=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.runs = runs
 
 
-class RunFailedException(Exception):
+class RunFailedError(Exception):
+    """Raised if the tracked run has failed.
+
+    This exception can optionally include a github.WorkflowRun object.
+    """
     def __init__(self, *args, run: WorkflowRun.WorkflowRun, **kwargs):
         super().__init__(*args, **kwargs)
         self.run = run
 
 
-class RunTimeoutException(Exception):
-    """An exception that can optionally include a github.WorkflowRun object."""
+class RunTimeoutError(Exception):
+    """Raised if the tracked run times out.
 
+    This exception can optionally include a github.WorkflowRun object.
+    """
     def __init__(self, *args, run: github.WorkflowRun = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.run = run
@@ -170,7 +186,7 @@ def wait_for_recent_workflow_run_completion(
             try:
                 run = get_recent_run(workflow=workflow, execution_time=execution_time)
                 logger.info(f"Found workflow run with url: {run.html_url}")
-            except NoRunsFoundError as err:
+            except NoRunsFoundError:
                 logger.info(
                     f"No runs found yet.  Sleeping {wait_between_checks} seconds and retrying."
                 )
@@ -181,34 +197,28 @@ def wait_for_recent_workflow_run_completion(
                     f"Found more than one run since execution_time {execution_time}: got runs {err.runs}"
                 )
         else:
-            logger.info(f"Updating workflow run's data")
+            logger.info("Updating workflow run's data")
             run.update()
 
         # Return run if complete
         logger.info(f"Checking run status for completion.  Current status is {run.status}")
         if run.status == "completed":
             return run
-            # if run.conclusion == "success":
-            #     print("Workflow completed successfully")
-            #     return run
-            # else:
-            #     # No obvious way to get the inputs from the run, so cannot say "executed on repo X with
-            #     # inputs Y" here
-            #     raise RunFailedException(f"Workflow failed with conclusion {run.conclusion} (html_url={run.html_url})")
 
         sleep(wait_between_checks)
 
     if run is None:
-        msg = f"Timed out without finding a recent run for workflow"
+        msg = "Timed out without finding a recent run for workflow"
         logger.error(msg)
-        raise RunTimeoutException(msg)
+        raise RunTimeoutError(msg)
     else:
-        msg = f"Timed out waiting for workflow to complete"
+        msg = "Timed out waiting for workflow to complete"
         logger.error(msg)
-        raise RunTimeoutException(msg, run=run)
+        raise RunTimeoutError(msg, run=run)
 
 
 def get_github_token(dry_run: bool, github_pat_environment_variable: str = "GITHUB_PAT"):
+    """Returns the Github token to use for authentication."""
     if dry_run:
         github_token = None
     else:
@@ -244,8 +254,7 @@ def main(
                  "dry runs."
         )
 ):
-    """
-    Triggers one or more Github workflow dispatch runs
+    r"""Triggers one or more Github workflow dispatch runs
 
     This script triggers one or more Github repository workflow dispatches, as defined in a YAML
     dispatch_manifest file.  The execution uses the Github token found in the environment variable
@@ -287,7 +296,7 @@ def main(
                     workflow_name=workflow["workflow_name"],
                     inputs=workflow["inputs"],
                 )
-            except RunTimeoutException as e:
+            except RunTimeoutError as e:
                 logger.info(f"Workflow run for {workflow['workflow_name']} in repository {workflow['repository']} timed out with message: {e.message}")
 
 

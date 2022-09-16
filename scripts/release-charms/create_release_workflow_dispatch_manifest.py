@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# Copyright 2022 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+"""Creates a workflow dispatch manifest to release charms from one bundle to another."""
+
 import logging
 from pathlib import Path
 import yaml
@@ -32,9 +38,7 @@ def main(
         help="Name of the output YAML file to write the dispatch manifest to",
     ),
 ):
-    """
-    Create a workflow dispatch manifest from Charm Bundle files.
-    """
+    """Create a workflow dispatch manifest from Charm Bundle files."""
     source_bundle = Bundle(source_bundle)
     destination_bundle = Bundle(destination_bundle)
 
@@ -102,7 +106,6 @@ def get_matching_application(source_application_name, source_application, destin
 
 def get_repository(source_application, destination_application) -> str:
     """Returns the repository string for this charm, including owner"""
-
     try:
         # Check for the inputs we add to the charms we manage in our bundle files, adding
         # a default for owner if it is omitted
@@ -111,7 +114,7 @@ def get_repository(source_application, destination_application) -> str:
         destination_repository = f'{destination_application.get("_github_repo_owner", "canonical")}/' \
                                  f'{destination_application["_github_repo_name"]}'
 
-    except KeyError as e:
+    except KeyError:
         raise ApplicationMatchError(
             f"Application would have been released from {source_application['channel']}->"
             f"{destination_application['channel']}, but one or both are missing the required "
@@ -129,7 +132,6 @@ def get_repository(source_application, destination_application) -> str:
 
 def get_path_in_repo(source_application, destination_application) -> str:
     """Returns the charm path within the repo, if they match, else raises ValueError"""
-
     source_path_in_repo = Path(source_application.get("_path_in_github_repo", "./"))
     destination_path_in_repo = Path(destination_application.get("_path_in_github_repo", "./"))
     if source_path_in_repo != destination_path_in_repo:

@@ -1,28 +1,30 @@
-name: Branch and Track Creation Automation
+name: Branch Creation Automation
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       release_directory_path:
         description: 'Release directory path relative to the root of this repository'
         required: true
+  repository_dispatch:
+    types: [branch_creation]
 
 jobs:
   branch-track-creation:
-    name: Branch and Track creation
+    name: Branch creation
     runs-on: ubuntu-latest
     env:
       KUBEFLOW_BOT_TOKEN: ${{ secrets.KUBEFLOW_BOT_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          repository: canonical/bundle-kubeflow
+          fetch-depth: 0
       - name: Install tox
         run: sudo apt install tox
       - name: Run script (on_push)
-        if: ${{ github.event_name == 'push'}}
-        run: tox -e branch_track_creation
+        if: ${{ github.event_name == 'repository_dispatch'}}
+        run: tox -e branch_creation
       - name: Run script (Workflow Dispatch)
         if: ${{ github.event_name == 'workflow_dispatch'}}
-        run: tox -e branch_track_creation ${{ inputs.release_directory_path }}
+        run: tox -e branch_creation ${{ inputs.release_directory_path }}

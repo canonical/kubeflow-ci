@@ -1,6 +1,6 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
-"""This is a script for creating branches and tracks"""
+"""This is a script for creating branches across our charm repos."""
 
 import json
 import logging

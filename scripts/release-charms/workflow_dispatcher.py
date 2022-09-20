@@ -9,19 +9,20 @@ import os
 from datetime import datetime, timedelta
 from time import sleep
 from typing import Union
-import yaml
 
 import github
-from github import Github, Repository, Workflow, WorkflowRun  # noqa: F401  # Workflow is used
 import typer
-
+import yaml
+from github import Github, Repository, Workflow, WorkflowRun  # noqa: F401  # Workflow is used
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 def get_workflow_from_repository(
-    github_token: str, repository: Union[str, github.Repository.Repository], workflow_name="release.yaml"
+    github_token: str,
+    repository: Union[str, github.Repository.Repository],
+    workflow_name="release.yaml",
 ) -> github.Workflow.Workflow:
     """Returns a workflow object from a repository.
 
@@ -92,6 +93,7 @@ def execute_workflow_and_wait(
 
 class NoRunsFoundError(Exception):
     """Raised if no runs are found for a workflow."""
+
     pass
 
 
@@ -100,6 +102,7 @@ class TooManyRunsFoundError(Exception):
 
     This exception can optionally include a list of github.WorkflowRun objects.
     """
+
     def __init__(self, *args, runs=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.runs = runs
@@ -110,6 +113,7 @@ class RunFailedError(Exception):
 
     This exception can optionally include a github.WorkflowRun object.
     """
+
     def __init__(self, *args, run: WorkflowRun.WorkflowRun, **kwargs):
         super().__init__(*args, **kwargs)
         self.run = run
@@ -120,6 +124,7 @@ class RunTimeoutError(Exception):
 
     This exception can optionally include a github.WorkflowRun object.
     """
+
     def __init__(self, *args, run: github.WorkflowRun = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.run = run
@@ -224,35 +229,37 @@ def get_github_token(dry_run: bool, github_pat_environment_variable: str = "GITH
     else:
         github_token = os.environ.get(github_pat_environment_variable, None)
         if not github_token:
-            raise ValueError(f"Environment variable {github_pat_environment_variable} is not set.  "
-                             f"This must be set to a Github Personal Access Token that can trigger"
-                             f"workflow dispatches.")
+            raise ValueError(
+                f"Environment variable {github_pat_environment_variable} is not set.  "
+                f"This must be set to a Github Personal Access Token that can trigger"
+                f"workflow dispatches."
+            )
     return github_token
 
 
 def main(
-        dispatch_manifest: str = typer.Argument(
-            ...,
-            help="Path to the dispatch manifest YAML file.  This file is is a list of workflow "
-                 "dispatch executions, each of which is a dictionary with the keys ['repository', 'workflow_name', and "
-                 "'inputs'].  The 'inputs' key contains a dictionary of the inputs needed for the workflow dispatch"
-        ),
-        dry_run: bool = typer.Option(
-            default=True,
-            help="If true, do not actually execute the workflow.  This is useful for seeing what "
-                 "will happen before actually doing something irreversible",
-        ),
-        github_debug_logging: bool = typer.Option(
-            default=False,
-            help="If true, enable debug logging for the PyGithub package.  This is useful for "
-                 "debugging failures, but is very verbose and not recommended for normal use."
-        ),
-        github_pat_environment_variable: str = typer.Option(
-            default="GITHUB_PAT",
-            help="The name of the environment variable that contains the Github Personal Access"
-                 "Token to use for authentication.  This token required for all execution except"
-                 "dry runs."
-        )
+    dispatch_manifest: str = typer.Argument(
+        ...,
+        help="Path to the dispatch manifest YAML file.  This file is is a list of workflow "
+        "dispatch executions, each of which is a dictionary with the keys ['repository', 'workflow_name', and "
+        "'inputs'].  The 'inputs' key contains a dictionary of the inputs needed for the workflow dispatch",
+    ),
+    dry_run: bool = typer.Option(
+        default=True,
+        help="If true, do not actually execute the workflow.  This is useful for seeing what "
+        "will happen before actually doing something irreversible",
+    ),
+    github_debug_logging: bool = typer.Option(
+        default=False,
+        help="If true, enable debug logging for the PyGithub package.  This is useful for "
+        "debugging failures, but is very verbose and not recommended for normal use.",
+    ),
+    github_pat_environment_variable: str = typer.Option(
+        default="GITHUB_PAT",
+        help="The name of the environment variable that contains the Github Personal Access"
+        "Token to use for authentication.  This token required for all execution except"
+        "dry runs.",
+    ),
 ):
     r"""Triggers one or more Github workflow dispatch runs
 
@@ -278,7 +285,9 @@ def main(
     if github_debug_logging:
         github.enable_console_debug_logging()
 
-    github_token = get_github_token(dry_run=dry_run, github_pat_environment_variable=github_pat_environment_variable)
+    github_token = get_github_token(
+        dry_run=dry_run, github_pat_environment_variable=github_pat_environment_variable
+    )
 
     with open(dispatch_manifest) as f:
         workflows_to_execute = yaml.safe_load(f)
@@ -297,7 +306,9 @@ def main(
                     inputs=workflow["inputs"],
                 )
             except RunTimeoutError as e:
-                logger.info(f"Workflow run for {workflow['workflow_name']} in repository {workflow['repository']} timed out with message: {e.message}")
+                logger.info(
+                    f"Workflow run for {workflow['workflow_name']} in repository {workflow['repository']} timed out with message: {e.message}"
+                )
 
 
 if __name__ == "__main__":

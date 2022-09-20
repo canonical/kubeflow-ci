@@ -9,15 +9,28 @@ from datetime import datetime, timedelta
 from unittest import mock
 
 import pytest
-
 import workflow_dispatcher
-from workflow_dispatcher import TooManyRunsFoundError, NoRunsFoundError, RunTimeoutError, RunFailedError
-from workflow_dispatcher import get_recent_run, wait_for_recent_workflow_run_completion, execute_workflow_and_wait
+from workflow_dispatcher import (
+    NoRunsFoundError,
+    RunFailedError,
+    RunTimeoutError,
+    TooManyRunsFoundError,
+    execute_workflow_and_wait,
+    get_recent_run,
+    wait_for_recent_workflow_run_completion,
+)
 
 
 class FakeRun:
     """A mock workflow Run object."""
-    def __init__(self, created_at, status="completed", conclusion="success", html_url="http://something.com/"):
+
+    def __init__(
+        self,
+        created_at,
+        status="completed",
+        conclusion="success",
+        html_url="http://something.com/",
+    ):
         self.created_at = created_at
         self.status = status
         self.conclusion = conclusion
@@ -90,11 +103,11 @@ def test_wait_for_recent_workflow_run_completion_successful():
     timeout = 2
     wait_between_checks = 0.1
     expected_run = RUN_SUCCESSFUL
-    release_charms_side_effects = [NoRunsFoundError(''), expected_run]
+    release_charms_side_effects = [NoRunsFoundError(""), expected_run]
 
     # mock get_recent_run to return a specific run after initially raising a NoRunsFoundError
     with mock.patch.object(
-            workflow_dispatcher, "get_recent_run", side_effect=release_charms_side_effects
+        workflow_dispatcher, "get_recent_run", side_effect=release_charms_side_effects
     ) as mock_get_recent_run:
         run = wait_for_recent_workflow_run_completion(
             workflow=workflow,
@@ -114,12 +127,12 @@ def test_wait_for_recent_workflow_run_completion_failed_no_run_found():
     execution_time = datetime.now()
     timeout = 0.5
     wait_between_checks = 0.2
-    release_charms_side_effects = [RunTimeoutError('')]
+    release_charms_side_effects = [RunTimeoutError("")]
 
     # mock get_recent_run to return a specific run after initially raising a NoRunsFoundError
     with pytest.raises(RunTimeoutError) as raised_context:
         with mock.patch.object(
-                workflow_dispatcher, "get_recent_run", side_effect=release_charms_side_effects
+            workflow_dispatcher, "get_recent_run", side_effect=release_charms_side_effects
         ) as mock_get_recent_run:
             wait_for_recent_workflow_run_completion(
                 workflow=workflow,
@@ -128,7 +141,9 @@ def test_wait_for_recent_workflow_run_completion_failed_no_run_found():
                 wait_between_checks=wait_between_checks,
             )
 
-            mock_get_recent_run.assert_called_with(workflow=workflow, execution_time=execution_time)
+            mock_get_recent_run.assert_called_with(
+                workflow=workflow, execution_time=execution_time
+            )
 
     # Assert that we did not return a run with the exception
     assert raised_context.value.run is None
@@ -145,7 +160,7 @@ def test_wait_for_recent_workflow_run_completion_failed_run_not_complete():
     # mock get_recent_run to return a specific run after initially raising a NoRunsFoundError
     with pytest.raises(RunTimeoutError) as raised_context:
         with mock.patch.object(
-                workflow_dispatcher, "get_recent_run", side_effect=release_charms_side_effects
+            workflow_dispatcher, "get_recent_run", side_effect=release_charms_side_effects
         ) as mock_get_recent_run:
             wait_for_recent_workflow_run_completion(
                 workflow=workflow,
@@ -154,7 +169,9 @@ def test_wait_for_recent_workflow_run_completion_failed_run_not_complete():
                 wait_between_checks=wait_between_checks,
             )
 
-            mock_get_recent_run.assert_called_with(workflow=workflow, execution_time=execution_time)
+            mock_get_recent_run.assert_called_with(
+                workflow=workflow, execution_time=execution_time
+            )
 
     # Assert that we did not return a run with the exception
     assert raised_context.value.run is RUN_INCOMPLETE
@@ -169,9 +186,14 @@ def test_wait_for_recent_workflow_run_completion_failed_run_not_complete():
         ([RUN_FAILED], None, pytest.raises(RunFailedError)),
         # run not concluded
         ([RunTimeoutError()], None, pytest.raises(RunTimeoutError)),
-    )
+    ),
 )
-def test_execute_workflow_and_wait(wait_for_recent_workflow_run_completion_side_effects, expected_run_returned, context_raised, mocker):
+def test_execute_workflow_and_wait(
+    wait_for_recent_workflow_run_completion_side_effects,
+    expected_run_returned,
+    context_raised,
+    mocker,
+):
     """Tests execute_workflow_and_wait."""
     github_token = ""
     repository = "some/repo"
@@ -181,14 +203,25 @@ def test_execute_workflow_and_wait(wait_for_recent_workflow_run_completion_side_
     # mock get_workflow_from_repository to return a specific workflow
     mock_workflow = mock.Mock()
 
-    mock_get_workflow_from_repository = mocker.patch("workflow_dispatcher.get_workflow_from_repository")
+    mock_get_workflow_from_repository = mocker.patch(
+        "workflow_dispatcher.get_workflow_from_repository"
+    )
     mock_get_workflow_from_repository.return_value = mock_workflow
 
-    mock_wait_for_recent_workflow_run_completion = mocker.patch("workflow_dispatcher.wait_for_recent_workflow_run_completion")
-    mock_wait_for_recent_workflow_run_completion.side_effect = wait_for_recent_workflow_run_completion_side_effects
+    mock_wait_for_recent_workflow_run_completion = mocker.patch(
+        "workflow_dispatcher.wait_for_recent_workflow_run_completion"
+    )
+    mock_wait_for_recent_workflow_run_completion.side_effect = (
+        wait_for_recent_workflow_run_completion_side_effects
+    )
 
     with context_raised:
-        run = execute_workflow_and_wait(github_token=github_token, repository=repository, workflow_name=workflow_name, inputs=inputs)
+        run = execute_workflow_and_wait(
+            github_token=github_token,
+            repository=repository,
+            workflow_name=workflow_name,
+            inputs=inputs,
+        )
         assert run == expected_run_returned
 
     pass

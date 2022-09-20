@@ -6,6 +6,7 @@ line-length = 99
 target-version = ["py38"]
 
 [tool.isort]
+line_length = 99
 profile = "black"
 
 # Linting tools configuration
@@ -13,7 +14,7 @@ profile = "black"
 max-line-length = 99
 max-doc-length = 99
 max-complexity = 10
-exclude = [".git", "__pycache__", ".tox", "build", "dist", "*.egg_info", "venv"]
+exclude = [".git", "__pycache__", ".tox", "build", "dist", "*.egg_info", "scripts"]
 select = ["E", "W", "F", "C", "N", "R", "D", "H"]
 # Ignore W503, E501 because using black creates errors with this
 # Ignore D107 Missing docstring in __init__

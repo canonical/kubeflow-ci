@@ -10,6 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: sudo apt update && sudo apt install tox
+      # temporarily allow to ssh to debug this action
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 20
+
       - run: tox -e lint
 
   branch_creation_tests:

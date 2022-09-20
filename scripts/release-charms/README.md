@@ -121,3 +121,10 @@ GITHUB_PAT=SOME_GITHUB_PAT python workflow_dispatcher.py dispatch_manifest.yaml 
 ```
 
 where `SOME_GITHUB_PAT` is a Github Personal Access Token that is allowed to create workflow dispatches on the repositories in the manifest.  This will result in the tool executing each one and waiting for them to complete.  
+
+## Testing
+
+To run the tests, from the root of this repo do:
+```bash
+tox -e test_batch_release_charms
+```

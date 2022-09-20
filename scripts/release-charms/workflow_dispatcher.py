@@ -75,13 +75,13 @@ def execute_workflow_and_wait(
 
     if not result:
         raise RunFailedError(
-            "Workflow dispatch failed.  This could be due to an incorrect input or workflow name, "
-            "or some other error.  By default, PyGithub package used to create the dispatch does "
-            "not provide any information about the failure, but you can enable their debug logging"
-            " by running with the flag --github_debug_logging."
+            "Workflow dispatch failed.  This could be due to an incorrect input or workflow name,"
+            " or some other error.  By default, PyGithub package used to create the dispatch does"
+            " not provide any information about the failure, but you can enable their debug "
+            "logging by running with the flag --github_debug_logging."
         )
     logging.info(result)
-    run = wait_for_recent_workflow_run_completion(workflow=workflow, execution_time=execution_time)
+    run = wait_for_recent_workflow_run_completion(workflow, execution_time)
 
     if run.conclusion != "success":
         raise RunFailedError(
@@ -163,15 +163,16 @@ def wait_for_recent_workflow_run_completion(
 
     Args:
         workflow: The workflow from which we want to wait the most recent run
-        execution_time: Timestamp immediately before the workflow run was started, in UTC.  This is
+        execution_time: Timestamp immediately before the workflow run was started, in UTC. This is
                         used to filter out past runs.
         timeout: The maximum amount of time to wait for the workflow to complete, in seconds
-        wait_between_checks: The amount of time to wait between checks for the workflow to complete
+        wait_between_checks: The amount of time to wait between checks for the workflow to
+                             complete
 
     Exceptions:
-        RunTimeoutException: Raised if the workflow run is not found during the allowed timeout, or
-                             if it is found but not completed.  If the workflow run is found, it
-                             will be included in the `exception.run` attribute.
+        RunTimeoutException: Raised if the workflow run is not found during the allowed timeout,
+                             or if it is found but not completed.  If the workflow run is found,
+                             it will be included in the `exception.run` attribute.
 
     Returns:
         The workflow run that was executed after execution_time.
@@ -199,7 +200,8 @@ def wait_for_recent_workflow_run_completion(
                 continue
             except TooManyRunsFoundError as err:
                 logger.error(
-                    f"Found more than one run since execution_time {execution_time}: got runs {err.runs}"
+                    f"Found more than one run since execution_time {execution_time}: got runs "
+                    f"{err.runs}"
                 )
         else:
             logger.info("Updating workflow run's data")
@@ -241,8 +243,9 @@ def main(
     dispatch_manifest: str = typer.Argument(
         ...,
         help="Path to the dispatch manifest YAML file.  This file is is a list of workflow "
-        "dispatch executions, each of which is a dictionary with the keys ['repository', 'workflow_name', and "
-        "'inputs'].  The 'inputs' key contains a dictionary of the inputs needed for the workflow dispatch",
+        "dispatch executions, each of which is a dictionary with the keys ['repository', "
+        "'workflow_name', and 'inputs'].  The 'inputs' key contains a dictionary of the "
+        "inputs needed for the workflow dispatch",
     ),
     dry_run: bool = typer.Option(
         default=True,
@@ -295,7 +298,8 @@ def main(
     for workflow in workflows_to_execute:
         if dry_run:
             logger.info(
-                f"Dry run: would execute workflow {workflow['workflow_name']} in repository {workflow['repository']} with inputs {workflow['inputs']}"
+                f"Dry run: would execute workflow {workflow['workflow_name']} in repository "
+                f"{workflow['repository']} with inputs {workflow['inputs']}"
             )
         else:
             try:
@@ -307,7 +311,8 @@ def main(
                 )
             except RunTimeoutError as e:
                 logger.info(
-                    f"Workflow run for {workflow['workflow_name']} in repository {workflow['repository']} timed out with message: {e.message}"
+                    f"Workflow run for {workflow['workflow_name']} in repository "
+                    f"{workflow['repository']} timed out with message: {e.message}"
                 )
 
 

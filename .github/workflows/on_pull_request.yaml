@@ -19,3 +19,11 @@ jobs:
       - uses: actions/checkout@v2
       - run: sudo apt update && sudo apt install tox
       - run: tox -e test_branch_creation
+
+  batch_release_charms_tests:
+    name: Batch Release Charms Script Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo apt update && sudo apt install tox
+      - run: tox -e test_batch_release_charms

@@ -4,6 +4,7 @@ set -x
 # This script:
 # * finds and bumps image versions in metadata.yamls if they fit a pattern
 # * bumps image versions in the jupyter-ui spawner config
+# * bumps image versions in the katib suggestions config
 
 # Get the absolute path to where this script lives, so we can copy files
 # from here without knowing that path ahead of runtime.

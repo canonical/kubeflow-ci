@@ -1,10 +1,11 @@
-import typer
 import json
+
+import typer
 
 
 def main(issue_file: str, n_groups: int):
     """
-    Splits a list of {repo_name, n_open_issues} into n_groups, where each group has roughly the same number of issues.
+    Splits a list of repos into n_groups, where each group has roughly the same number of issues.
 
     Args:
         issue_file: filename to a file of JSON format with structure:

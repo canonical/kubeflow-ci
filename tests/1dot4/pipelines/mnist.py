@@ -113,13 +113,7 @@ def train_task(
     from tensorflow.python import keras
     from tensorflow.python.keras import Sequential
     from tensorflow.python.keras import backend as K
-    from tensorflow.python.keras.layers import (
-        Conv2D,
-        Dense,
-        Dropout,
-        Flatten,
-        MaxPooling2D,
-    )
+    from tensorflow.python.keras.layers import Conv2D, Dense, Dropout, Flatten, MaxPooling2D
 
     mnistdata = np.load(data)
 

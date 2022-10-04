@@ -27,15 +27,15 @@ def main(issue_file: str, n_groups: int):
         repos = json.load(f)
 
     # Sort repos by number of issues
-    repos.sort(key=lambda x: x['issues']['totalCount'], reverse=True)
+    repos.sort(key=lambda x: x["issues"]["totalCount"], reverse=True)
 
     # Split into n_groups, adding the next repo to the group with the fewest issues
     groups = [{"n_issues": 0, "repos": []} for _ in range(n_groups)]
 
     for repo in repos:
-        groups[0]['repos'].append(repo['name'])
-        groups[0]['n_issues'] += repo['issues']['totalCount']
-        groups.sort(key=lambda x: x['n_issues'])
+        groups[0]["repos"].append(repo["name"])
+        groups[0]["n_issues"] += repo["issues"]["totalCount"]
+        groups.sort(key=lambda x: x["n_issues"])
 
     # Print to screen
     print(json.dumps(groups, indent=2))

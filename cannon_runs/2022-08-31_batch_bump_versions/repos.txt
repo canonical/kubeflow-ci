@@ -1,4 +1,8 @@
 # Generated using `gh search repos --topic charmed-kubeflow | awk '{print $1}' > repos.txt`
+# Note that this list was all charms as of this run, but if running this in future you should build
+# your own list as new repositories may have been added.  
+# This execution used the entire list, but if you know you only need to search a subset of the
+# repos you could filter this list first. 
 canonical/bundle-kubeflow
 canonical/mlflow-operator
 canonical/istio-operators

@@ -23,8 +23,13 @@ def main(issue_file: str, n_groups: int):
     Return:
         Prints to screen a list of groups of repos, in JSON format
     """
-    with open(issue_file) as f:
-        repos = json.load(f)
+    try:
+        with open(issue_file) as f:
+            repos = json.load(f)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(
+            f"Could not find input issue file '{issue_file}' - does this file exist?"
+        ) from e
 
     # Sort repos by number of issues
     repos.sort(key=lambda x: x["issues"]["totalCount"], reverse=True)

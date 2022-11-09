@@ -1,4 +1,4 @@
 lightkube
 pytest
 pytest-operator
-kfp>=2.0.0
+kfp<2.0.0

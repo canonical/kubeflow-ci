@@ -195,7 +195,6 @@ def test_task(
 ):
     """Connects to served model and tests example MNIST images."""
 
-    import json
     import time
 
     import numpy as np

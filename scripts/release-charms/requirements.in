@@ -1,0 +1,5 @@
+charmed-kubeflow-chisme
+PyGithub
+pytest
+pytest-mock
+typer

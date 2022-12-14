@@ -8,12 +8,12 @@
     },
     "pip-compile": {
         "fileMatch": [
-            "requirements-fmt.in",
-            "requirements-lint.in",
-            "requirements-branch_creation.in",
-            "requirements-test_batch_release_charms.in",
-            "requirements-test_branch_creation.in",
-            "(^|/)requirements.in"
+            "(^|/)requirements\\.in$",
+            "(^|/)requirements-fmt\\.in$",
+            "(^|/)requirements-lint\\.in$",
+            "(^|/)requirements-unit\\.in$",
+            "(^|/)requirements-integration\\.in$",
+            "(^|/)requirements.*\\.in$"
         ],
         "lockFileMaintenance": {
             "enabled": true,

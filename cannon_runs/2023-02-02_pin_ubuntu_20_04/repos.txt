@@ -1,0 +1,10 @@
+# Repos that still have ubuntu-latest
+canonical/bundle-kubeflow
+canonical/knative-operators
+canonical/kserve-operators
+canonical/charmed-kubeflow-chisme
+canonical/kubeflow-ci
+canonical/kubeflow-dashboard-operator
+canonical/kubeflow-roles-operator
+canonical/seldon-core-operator
+

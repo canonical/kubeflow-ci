@@ -1,0 +1,1645 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "golang:1.19",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "OS": {
+      "Family": "debian",
+      "Name": "11.6"
+    },
+    "ImageID": "sha256:8295ad49803f411a0d583e2be9f8ff9a15729d85fc510b45217336bf4d190f9e",
+    "DiffIDs": [
+      "sha256:a9099c3159f52e46aeed72420924377873529e3f36a80eddbfeb63860d036a04",
+      "sha256:a463dbda46648cc9a3af3f009b2c73035cb068639edb24f1fb5a792b057c6aa8",
+      "sha256:49b333f7bad4d30043c926b2e1270833f419ee03da204f91e09bd7939c68032e",
+      "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7",
+      "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f",
+      "sha256:64ebc62151f70b178e003a1eb2687f6f36d735f3ae319deebe9b07c421c6be36",
+      "sha256:3ee85ddb47b56b5ea8dee776bb2ba4f3ee4bca0fb497557399fb460dc4219602"
+    ],
+    "RepoTags": [
+      "golang:1.19"
+    ],
+    "RepoDigests": [
+      "golang@sha256:bb9811fad43a7d6fd2173248d8331b2dcf5ac9af20976b1937ecd214c5b8c383"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "container": "eb249df5650c5cebf63cffd00d79db1d86185953801022824931a65d9ac7d605",
+      "created": "2023-01-11T21:51:44.61261005Z",
+      "docker_version": "20.10.12",
+      "history": [
+        {
+          "created": "2023-01-11T02:34:29Z",
+          "created_by": "/bin/sh -c #(nop) ADD file:917750a82b29f8f7f88a121017bd9dfeb0fbcc8f0697a009f08b6b58246eff4b in / "
+        },
+        {
+          "created": "2023-01-11T02:34:30Z",
+          "created_by": "/bin/sh -c #(nop)  CMD [\"bash\"]",
+          "empty_layer": true
+        },
+        {
+          "created": "2023-01-11T03:04:10Z",
+          "created_by": "/bin/sh -c set -eux; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tca-certificates \t\tcurl \t\tnetbase \t\twget \t; \trm -rf /var/lib/apt/lists/*"
+        },
+        {
+          "created": "2023-01-11T03:04:16Z",
+          "created_by": "/bin/sh -c set -ex; \tif ! command -v gpg \u003e /dev/null; then \t\tapt-get update; \t\tapt-get install -y --no-install-recommends \t\t\tgnupg \t\t\tdirmngr \t\t; \t\trm -rf /var/lib/apt/lists/*; \tfi"
+        },
+        {
+          "created": "2023-01-11T03:04:36Z",
+          "created_by": "/bin/sh -c apt-get update \u0026\u0026 apt-get install -y --no-install-recommends \t\tgit \t\tmercurial \t\topenssh-client \t\tsubversion \t\t\t\tprocps \t\u0026\u0026 rm -rf /var/lib/apt/lists/*"
+        },
+        {
+          "created": "2023-01-11T21:50:38Z",
+          "created_by": "/bin/sh -c set -eux; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tg++ \t\tgcc \t\tlibc6-dev \t\tmake \t\tpkg-config \t; \trm -rf /var/lib/apt/lists/*"
+        },
+        {
+          "created": "2023-01-11T21:50:39Z",
+          "created_by": "/bin/sh -c #(nop)  ENV PATH=/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "empty_layer": true
+        },
+        {
+          "created": "2023-01-11T21:51:28Z",
+          "created_by": "/bin/sh -c #(nop)  ENV GOLANG_VERSION=1.19.5",
+          "empty_layer": true
+        },
+        {
+          "created": "2023-01-11T21:51:42Z",
+          "created_by": "/bin/sh -c set -eux; \tarch=\"$(dpkg --print-architecture)\"; arch=\"${arch##*-}\"; \turl=; \tcase \"$arch\" in \t\t'amd64') \t\t\turl='https://dl.google.com/go/go1.19.5.linux-amd64.tar.gz'; \t\t\tsha256='36519702ae2fd573c9869461990ae550c8c0d955cd28d2827a6b159fda81ff95'; \t\t\t;; \t\t'armel') \t\t\texport GOARCH='arm' GOARM='5' GOOS='linux'; \t\t\t;; \t\t'armhf') \t\t\turl='https://dl.google.com/go/go1.19.5.linux-armv6l.tar.gz'; \t\t\tsha256='ec14f04bdaf4a62bdcf8b55b9b6434cc27c2df7d214d0bb7076a7597283b026a'; \t\t\t;; \t\t'arm64') \t\t\turl='https://dl.google.com/go/go1.19.5.linux-arm64.tar.gz'; \t\t\tsha256='fc0aa29c933cec8d76f5435d859aaf42249aa08c74eb2d154689ae44c08d23b3'; \t\t\t;; \t\t'i386') \t\t\turl='https://dl.google.com/go/go1.19.5.linux-386.tar.gz'; \t\t\tsha256='f68331aa7458a3598060595f5601d5731fd452bb2c62ff23095ddad68854e510'; \t\t\t;; \t\t'mips64el') \t\t\texport GOARCH='mips64le' GOOS='linux'; \t\t\t;; \t\t'ppc64el') \t\t\turl='https://dl.google.com/go/go1.19.5.linux-ppc64le.tar.gz'; \t\t\tsha256='e4032e7c52ebc48bad5c58ba8de0759b6091d9b1e59581a8a521c8c9d88dbe93'; \t\t\t;; \t\t's390x') \t\t\turl='https://dl.google.com/go/go1.19.5.linux-s390x.tar.gz'; \t\t\tsha256='764871cbca841a99a24e239b63c68a4aaff4104658e3165e9ca450cac1fcbea3'; \t\t\t;; \t\t*) echo \u003e\u00262 \"error: unsupported architecture '$arch' (likely packaging update needed)\"; exit 1 ;; \tesac; \tbuild=; \tif [ -z \"$url\" ]; then \t\tbuild=1; \t\turl='https://dl.google.com/go/go1.19.5.src.tar.gz'; \t\tsha256='8e486e8e85a281fc5ce3f0bedc5b9d2dbf6276d7db0b25d3ec034f313da0375f'; \t\techo \u003e\u00262; \t\techo \u003e\u00262 \"warning: current architecture ($arch) does not have a compatible Go binary release; will be building from source\"; \t\techo \u003e\u00262; \tfi; \t\twget -O go.tgz.asc \"$url.asc\"; \twget -O go.tgz \"$url\" --progress=dot:giga; \techo \"$sha256 *go.tgz\" | sha256sum -c -; \t\tGNUPGHOME=\"$(mktemp -d)\"; export GNUPGHOME; \tgpg --batch --keyserver keyserver.ubuntu.com --recv-keys 'EB4C 1BFD 4F04 2F6D DDCC  EC91 7721 F63B D38B 4796'; \tgpg --batch --keyserver keyserver.ubuntu.com --recv-keys '2F52 8D36 D67B 69ED F998  D857 78BD 6547 3CB3 BD13'; \tgpg --batch --verify go.tgz.asc go.tgz; \tgpgconf --kill all; \trm -rf \"$GNUPGHOME\" go.tgz.asc; \t\ttar -C /usr/local -xzf go.tgz; \trm go.tgz; \t\tif [ -n \"$build\" ]; then \t\tsavedAptMark=\"$(apt-mark showmanual)\"; \t\tapt-get update; \t\tapt-get install -y --no-install-recommends golang-go; \t\t\t\texport GOCACHE='/tmp/gocache'; \t\t\t\t( \t\t\tcd /usr/local/go/src; \t\t\texport GOROOT_BOOTSTRAP=\"$(go env GOROOT)\" GOHOSTOS=\"$GOOS\" GOHOSTARCH=\"$GOARCH\"; \t\t\t./make.bash; \t\t); \t\t\t\tapt-mark auto '.*' \u003e /dev/null; \t\tapt-mark manual $savedAptMark \u003e /dev/null; \t\tapt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \t\trm -rf /var/lib/apt/lists/*; \t\t\t\trm -rf \t\t\t/usr/local/go/pkg/*/cmd \t\t\t/usr/local/go/pkg/bootstrap \t\t\t/usr/local/go/pkg/obj \t\t\t/usr/local/go/pkg/tool/*/api \t\t\t/usr/local/go/pkg/tool/*/go_bootstrap \t\t\t/usr/local/go/src/cmd/dist/dist \t\t\t\"$GOCACHE\" \t\t; \tfi; \t\tgo version"
+        },
+        {
+          "created": "2023-01-11T21:51:43Z",
+          "created_by": "/bin/sh -c #(nop)  ENV GOPATH=/go",
+          "empty_layer": true
+        },
+        {
+          "created": "2023-01-11T21:51:43Z",
+          "created_by": "/bin/sh -c #(nop)  ENV PATH=/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "empty_layer": true
+        },
+        {
+          "created": "2023-01-11T21:51:44Z",
+          "created_by": "/bin/sh -c mkdir -p \"$GOPATH/src\" \"$GOPATH/bin\" \u0026\u0026 chmod -R 777 \"$GOPATH\""
+        },
+        {
+          "created": "2023-01-11T21:51:44Z",
+          "created_by": "/bin/sh -c #(nop) WORKDIR /go",
+          "empty_layer": true
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:a9099c3159f52e46aeed72420924377873529e3f36a80eddbfeb63860d036a04",
+          "sha256:a463dbda46648cc9a3af3f009b2c73035cb068639edb24f1fb5a792b057c6aa8",
+          "sha256:49b333f7bad4d30043c926b2e1270833f419ee03da204f91e09bd7939c68032e",
+          "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7",
+          "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f",
+          "sha256:64ebc62151f70b178e003a1eb2687f6f36d735f3ae319deebe9b07c421c6be36",
+          "sha256:3ee85ddb47b56b5ea8dee776bb2ba4f3ee4bca0fb497557399fb460dc4219602"
+        ]
+      },
+      "config": {
+        "Cmd": [
+          "bash"
+        ],
+        "Env": [
+          "PATH=/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "GOLANG_VERSION=1.19.5",
+          "GOPATH=/go"
+        ],
+        "Image": "sha256:1e791b5d341e8d6ebf5a4c659ee87d9ff81e0d11aa397a93cfe7945882b14b14",
+        "WorkingDir": "/go"
+      }
+    }
+  },
+  "Results": [
+    {
+      "Target": "golang:1.19 (debian 11.6)",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2022-32221",
+          "VendorIDs": [
+            "DSA-5330-1"
+          ],
+          "PkgID": "curl@7.74.0-1.3+deb11u3",
+          "PkgName": "curl",
+          "InstalledVersion": "7.74.0-1.3+deb11u3",
+          "FixedVersion": "7.74.0-1.3+deb11u5",
+          "Layer": {
+            "DiffID": "sha256:a463dbda46648cc9a3af3f009b2c73035cb068639edb24f1fb5a792b057c6aa8"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-32221",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "curl: POST following PUT confusion",
+          "Description": "When doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously was used to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request. The problem exists in the logic for a reused handle when it is changed from a PUT to a POST.",
+          "Severity": "CRITICAL",
+          "CweIDs": [
+            "CWE-668"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 9.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N",
+              "V3Score": 4.8
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2023/Jan/19",
+            "http://seclists.org/fulldisclosure/2023/Jan/20",
+            "https://access.redhat.com/errata/RHSA-2023:0333",
+            "https://access.redhat.com/security/cve/CVE-2022-32221",
+            "https://bugzilla.redhat.com/2135411",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2135411",
+            "https://curl.se/docs/CVE-2022-32221.html",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
+            "https://errata.almalinux.org/9/ALSA-2023-0333.html",
+            "https://errata.rockylinux.org/RLSA-2023:0333",
+            "https://hackerone.com/reports/1704017",
+            "https://linux.oracle.com/cve/CVE-2022-32221.html",
+            "https://linux.oracle.com/errata/ELSA-2023-0333.html",
+            "https://lists.debian.org/debian-lts-announce/2023/01/msg00028.html",
+            "https://security.gentoo.org/glsa/202212-01",
+            "https://security.netapp.com/advisory/ntap-20230110-0006/",
+            "https://support.apple.com/kb/HT213604",
+            "https://support.apple.com/kb/HT213605",
+            "https://ubuntu.com/security/notices/USN-5702-1",
+            "https://ubuntu.com/security/notices/USN-5702-2",
+            "https://ubuntu.com/security/notices/USN-5823-1",
+            "https://www.debian.org/security/2023/dsa-5330"
+          ],
+          "PublishedDate": "2022-12-05T22:15:00Z",
+          "LastModifiedDate": "2023-01-29T00:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-43552",
+          "VendorIDs": [
+            "DSA-5330-1"
+          ],
+          "PkgID": "curl@7.74.0-1.3+deb11u3",
+          "PkgName": "curl",
+          "InstalledVersion": "7.74.0-1.3+deb11u3",
+          "FixedVersion": "7.74.0-1.3+deb11u5",
+          "Layer": {
+            "DiffID": "sha256:a463dbda46648cc9a3af3f009b2c73035cb068639edb24f1fb5a792b057c6aa8"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43552",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "curl: Use-after-free triggered by an HTTP proxy deny response",
+          "Description": "A vulnerability was found in curl. In this issue, curl can be asked to tunnel all protocols virtually it supports through an HTTP proxy. HTTP proxies can deny these tunnel operations using an appropriate HTTP error response code. When getting denied to tunnel the specific SMB or TELNET protocols, curl can use a heap-allocated struct after it has been freed and shut down the code path in its transfer.",
+          "Severity": "MEDIUM",
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.9
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2022-43552",
+            "https://curl.se/docs/CVE-2022-43552.html",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552",
+            "https://ubuntu.com/security/notices/USN-5788-1"
+          ]
+        },
+        {
+          "VulnerabilityID": "CVE-2022-23521",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git@1:2.30.2-1",
+          "PkgName": "git",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-23521",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "Git is distributed revision control system. gitattributes are a mechan ...",
+          "Description": "Git is distributed revision control system. gitattributes are a mechanism to allow defining attributes for paths. These attributes can be defined by adding a `.gitattributes` file to the repository, which contains a set of file patterns and the attributes that should be set for paths matching this pattern. When parsing gitattributes, multiple integer overflows can occur when there is a huge number of path patterns, a huge number of attributes for a single pattern, or when the declared attribute names are huge. These overflows can be triggered via a crafted `.gitattributes` file that may be part of the commit history. Git silently splits lines longer than 2KB when parsing gitattributes from a file, but not when parsing them from the index. Consequentially, the failure mode depends on whether the file exists in the working tree, the index or both. This integer overflow can result in arbitrary heap reads and writes, which may result in remote code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. There are no known workarounds for this issue.",
+          "Severity": "CRITICAL",
+          "CweIDs": [
+            "CWE-190"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 9.8
+            }
+          },
+          "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-23521",
+            "https://github.com/git/git/commit/508386c6c5857b4faa2c3e491f422c98cc69ae76",
+            "https://github.com/git/git/security/advisories/GHSA-c738-c5qq-xg89",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-23521",
+            "https://ubuntu.com/security/notices/USN-5810-1",
+            "https://ubuntu.com/security/notices/USN-5810-2"
+          ],
+          "PublishedDate": "2023-01-17T23:15:00Z",
+          "LastModifiedDate": "2023-01-26T13:51:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-41903",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git@1:2.30.2-1",
+          "PkgName": "git",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-41903",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "Git is distributed revision control system. `git log` can display comm ...",
+          "Description": "Git is distributed revision control system. `git log` can display commits in an arbitrary format using its `--format` specifiers. This functionality is also exposed to `git archive` via the `export-subst` gitattribute. When processing the padding operators, there is a integer overflow in `pretty.c::format_and_pad_commit()` where a `size_t` is stored improperly as an `int`, and then added as an offset to a `memcpy()`. This overflow can be triggered directly by a user running a command which invokes the commit formatting machinery (e.g., `git log --format=...`). It may also be triggered indirectly through git archive via the export-subst mechanism, which expands format specifiers inside of files within the repository during a git archive. This integer overflow can result in arbitrary heap writes, which may result in arbitrary code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. Users who are unable to upgrade should disable `git archive` in untrusted repositories. If you expose git archive via `git daemon`, disable it by running `git config --global daemon.uploadArch false`.",
+          "Severity": "CRITICAL",
+          "CweIDs": [
+            "CWE-190"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 9.8
+            }
+          },
+          "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-41903",
+            "https://git-scm.com/book/en/v2/Customizing-Git-Git-Attributes#_export_subst",
+            "https://git-scm.com/docs/pretty-formats#Documentation/pretty-formats.txt-emltltNgttruncltruncmtruncem",
+            "https://github.com/git/git/commit/508386c6c5857b4faa2c3e491f422c98cc69ae76",
+            "https://github.com/git/git/security/advisories/GHSA-475x-2q3q-hvwq",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-41903",
+            "https://ubuntu.com/security/notices/USN-5810-1",
+            "https://ubuntu.com/security/notices/USN-5810-2"
+          ],
+          "PublishedDate": "2023-01-17T23:15:00Z",
+          "LastModifiedDate": "2023-01-25T14:32:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-24765",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git@1:2.30.2-1",
+          "PkgName": "git",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-24765",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "git: On multi-user machines Git users might find themselves unexpectedly in a Git worktree",
+          "Description": "Git for Windows is a fork of Git containing Windows-specific patches. This vulnerability affects users working on multi-user machines, where untrusted parties have write access to the same hard disk. Those untrusted parties could create the folder `C:\\.git`, which would be picked up by Git operations run supposedly outside a repository while searching for a Git directory. Git would then respect any config in said Git directory. Git Bash users who set `GIT_PS1_SHOWDIRTYSTATE` are vulnerable as well. Users who installed posh-gitare vulnerable simply by starting a PowerShell. Users of IDEs such as Visual Studio are vulnerable: simply creating a new project would already read and respect the config specified in `C:\\.git\\config`. Users of the Microsoft fork of Git are vulnerable simply by starting a Git Bash. The problem has been patched in Git for Windows v2.35.2. Users unable to upgrade may create the folder `.git` on all drives where Git commands are run, and remove read/write access from those folders as a workaround. Alternatively, define or extend `GIT_CEILING_DIRECTORIES` to cover the _parent_ directory of the user profile, e.g. `C:\\Users` if the user profile is located in `C:\\Users\\my-user-name`.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-427"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V2Vector": "AV:L/AC:M/Au:N/C:C/I:C/A:C",
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V2Score": 6.9,
+              "V3Score": 7.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.8
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2022/May/31",
+            "http://www.openwall.com/lists/oss-security/2022/04/12/7",
+            "https://access.redhat.com/security/cve/CVE-2022-24765",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-24765",
+            "https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Bash",
+            "https://git-scm.com/docs/git#Documentation/git.txt-codeGITCEILINGDIRECTORIEScode",
+            "https://github.com/git-for-windows/git/security/advisories/GHSA-vw2c-22j4-2fh2",
+            "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/5PTN5NYEHYN2OQSHSAMCNICZNK2U4QH6/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/BENQYTDGUL6TF3UALY6GSIEXIHUIYNWM/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DDI325LOO2XBDDKLINOAQJEG6MHAURZE/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DIKWISWUDFT2FAITYIA6372BVLH3OOOC/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVOLER2PIGMHPQMDGG4RDE2KZB74QLA2/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SLP42KIZ6HACTVZMZLJLFJQ4W2XYT27M/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TRZG5CDUQ27OWTPC5MQOR4UASNXHWEZS/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UDZRZAL7QULOB6V7MKT66MOMWJLBJPX4/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YROCMBWYFKRSS64PO6FUNM6L7LKBUKVW/",
+            "https://support.apple.com/kb/HT213261",
+            "https://ubuntu.com/security/notices/USN-5376-1",
+            "https://ubuntu.com/security/notices/USN-5376-2",
+            "https://ubuntu.com/security/notices/USN-5376-3"
+          ],
+          "PublishedDate": "2022-04-12T18:15:00Z",
+          "LastModifiedDate": "2023-01-31T03:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-29187",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git@1:2.30.2-1",
+          "PkgName": "git",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-29187",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "git: Bypass of safe.directory protections",
+          "Description": "Git is a distributed revision control system. Git prior to versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5, is vulnerable to privilege escalation in all platforms. An unsuspecting user could still be affected by the issue reported in CVE-2022-24765, for example when navigating as root into a shared tmp directory that is owned by them, but where an attacker could create a git repository. Versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5 contain a patch for this issue. The simplest way to avoid being affected by the exploit described in the example is to avoid running git as root (or an Administrator in Windows), and if needed to reduce its use to a minimum. While a generic workaround is not possible, a system could be hardened from the exploit described in the example by removing any such repository if it exists already and creating one as root to block any future attacks.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-427",
+            "CWE-282"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V2Vector": "AV:L/AC:M/Au:N/C:C/I:C/A:C",
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V2Score": 6.9,
+              "V3Score": 7.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.8
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2022/Nov/1",
+            "http://www.openwall.com/lists/oss-security/2022/07/14/1",
+            "https://access.redhat.com/security/cve/CVE-2022-29187",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29187",
+            "https://github.blog/2022-04-12-git-security-vulnerability-announced",
+            "https://github.com/git/git/security/advisories/GHSA-j342-m5hw-rr3v",
+            "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DDI325LOO2XBDDKLINOAQJEG6MHAURZE/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DIKWISWUDFT2FAITYIA6372BVLH3OOOC/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVOLER2PIGMHPQMDGG4RDE2KZB74QLA2/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TRZG5CDUQ27OWTPC5MQOR4UASNXHWEZS/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UDZRZAL7QULOB6V7MKT66MOMWJLBJPX4/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YROCMBWYFKRSS64PO6FUNM6L7LKBUKVW/",
+            "https://lore.kernel.org/git/xmqqv8s2fefi.fsf@gitster.g/T/#u",
+            "https://support.apple.com/kb/HT213496",
+            "https://ubuntu.com/security/notices/USN-5511-1"
+          ],
+          "PublishedDate": "2022-07-12T21:15:00Z",
+          "LastModifiedDate": "2023-01-31T03:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-39260",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git@1:2.30.2-1",
+          "PkgName": "git",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39260",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "git: git shell function that splits command arguments can lead to arbitrary heap writes.",
+          "Description": "Git is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-787",
+            "CWE-122"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+              "V3Score": 8.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+              "V3Score": 8.8
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2022/Nov/1",
+            "https://access.redhat.com/security/cve/CVE-2022-39260",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
+            "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+            "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/C7B6JPKX5CGGLAHXJVQMIZNNEEB72FHD/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
+            "https://support.apple.com/kb/HT213496",
+            "https://ubuntu.com/security/notices/USN-5686-1",
+            "https://ubuntu.com/security/notices/USN-5686-2",
+            "https://ubuntu.com/security/notices/USN-5686-3"
+          ],
+          "PublishedDate": "2022-10-19T12:15:00Z",
+          "LastModifiedDate": "2022-12-14T01:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-39253",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git@1:2.30.2-1",
+          "PkgName": "git",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "git: exposure of sensitive information to a malicious actor",
+          "Description": "Git is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-59"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
+              "V3Score": 5.5
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
+              "V3Score": 5.5
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2022/Nov/1",
+            "https://access.redhat.com/security/cve/CVE-2022-39253",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
+            "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+            "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/C7B6JPKX5CGGLAHXJVQMIZNNEEB72FHD/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/JMQWGMDLX6KTVWW5JZLVPI7ICAK72TN7/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VFYXCTLOSESYIP72BUYD6ECDIMUM4WMB/",
+            "https://support.apple.com/kb/HT213496",
+            "https://ubuntu.com/security/notices/USN-5686-1",
+            "https://ubuntu.com/security/notices/USN-5686-3"
+          ],
+          "PublishedDate": "2022-10-19T11:15:00Z",
+          "LastModifiedDate": "2022-12-14T01:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-23521",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git-man@1:2.30.2-1",
+          "PkgName": "git-man",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-23521",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "Git is distributed revision control system. gitattributes are a mechan ...",
+          "Description": "Git is distributed revision control system. gitattributes are a mechanism to allow defining attributes for paths. These attributes can be defined by adding a `.gitattributes` file to the repository, which contains a set of file patterns and the attributes that should be set for paths matching this pattern. When parsing gitattributes, multiple integer overflows can occur when there is a huge number of path patterns, a huge number of attributes for a single pattern, or when the declared attribute names are huge. These overflows can be triggered via a crafted `.gitattributes` file that may be part of the commit history. Git silently splits lines longer than 2KB when parsing gitattributes from a file, but not when parsing them from the index. Consequentially, the failure mode depends on whether the file exists in the working tree, the index or both. This integer overflow can result in arbitrary heap reads and writes, which may result in remote code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. There are no known workarounds for this issue.",
+          "Severity": "CRITICAL",
+          "CweIDs": [
+            "CWE-190"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 9.8
+            }
+          },
+          "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-23521",
+            "https://github.com/git/git/commit/508386c6c5857b4faa2c3e491f422c98cc69ae76",
+            "https://github.com/git/git/security/advisories/GHSA-c738-c5qq-xg89",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-23521",
+            "https://ubuntu.com/security/notices/USN-5810-1",
+            "https://ubuntu.com/security/notices/USN-5810-2"
+          ],
+          "PublishedDate": "2023-01-17T23:15:00Z",
+          "LastModifiedDate": "2023-01-26T13:51:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-41903",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git-man@1:2.30.2-1",
+          "PkgName": "git-man",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-41903",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "Git is distributed revision control system. `git log` can display comm ...",
+          "Description": "Git is distributed revision control system. `git log` can display commits in an arbitrary format using its `--format` specifiers. This functionality is also exposed to `git archive` via the `export-subst` gitattribute. When processing the padding operators, there is a integer overflow in `pretty.c::format_and_pad_commit()` where a `size_t` is stored improperly as an `int`, and then added as an offset to a `memcpy()`. This overflow can be triggered directly by a user running a command which invokes the commit formatting machinery (e.g., `git log --format=...`). It may also be triggered indirectly through git archive via the export-subst mechanism, which expands format specifiers inside of files within the repository during a git archive. This integer overflow can result in arbitrary heap writes, which may result in arbitrary code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. Users who are unable to upgrade should disable `git archive` in untrusted repositories. If you expose git archive via `git daemon`, disable it by running `git config --global daemon.uploadArch false`.",
+          "Severity": "CRITICAL",
+          "CweIDs": [
+            "CWE-190"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 9.8
+            }
+          },
+          "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-41903",
+            "https://git-scm.com/book/en/v2/Customizing-Git-Git-Attributes#_export_subst",
+            "https://git-scm.com/docs/pretty-formats#Documentation/pretty-formats.txt-emltltNgttruncltruncmtruncem",
+            "https://github.com/git/git/commit/508386c6c5857b4faa2c3e491f422c98cc69ae76",
+            "https://github.com/git/git/security/advisories/GHSA-475x-2q3q-hvwq",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-41903",
+            "https://ubuntu.com/security/notices/USN-5810-1",
+            "https://ubuntu.com/security/notices/USN-5810-2"
+          ],
+          "PublishedDate": "2023-01-17T23:15:00Z",
+          "LastModifiedDate": "2023-01-25T14:32:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-24765",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git-man@1:2.30.2-1",
+          "PkgName": "git-man",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-24765",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "git: On multi-user machines Git users might find themselves unexpectedly in a Git worktree",
+          "Description": "Git for Windows is a fork of Git containing Windows-specific patches. This vulnerability affects users working on multi-user machines, where untrusted parties have write access to the same hard disk. Those untrusted parties could create the folder `C:\\.git`, which would be picked up by Git operations run supposedly outside a repository while searching for a Git directory. Git would then respect any config in said Git directory. Git Bash users who set `GIT_PS1_SHOWDIRTYSTATE` are vulnerable as well. Users who installed posh-gitare vulnerable simply by starting a PowerShell. Users of IDEs such as Visual Studio are vulnerable: simply creating a new project would already read and respect the config specified in `C:\\.git\\config`. Users of the Microsoft fork of Git are vulnerable simply by starting a Git Bash. The problem has been patched in Git for Windows v2.35.2. Users unable to upgrade may create the folder `.git` on all drives where Git commands are run, and remove read/write access from those folders as a workaround. Alternatively, define or extend `GIT_CEILING_DIRECTORIES` to cover the _parent_ directory of the user profile, e.g. `C:\\Users` if the user profile is located in `C:\\Users\\my-user-name`.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-427"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V2Vector": "AV:L/AC:M/Au:N/C:C/I:C/A:C",
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V2Score": 6.9,
+              "V3Score": 7.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.8
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2022/May/31",
+            "http://www.openwall.com/lists/oss-security/2022/04/12/7",
+            "https://access.redhat.com/security/cve/CVE-2022-24765",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-24765",
+            "https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Bash",
+            "https://git-scm.com/docs/git#Documentation/git.txt-codeGITCEILINGDIRECTORIEScode",
+            "https://github.com/git-for-windows/git/security/advisories/GHSA-vw2c-22j4-2fh2",
+            "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/5PTN5NYEHYN2OQSHSAMCNICZNK2U4QH6/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/BENQYTDGUL6TF3UALY6GSIEXIHUIYNWM/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DDI325LOO2XBDDKLINOAQJEG6MHAURZE/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DIKWISWUDFT2FAITYIA6372BVLH3OOOC/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVOLER2PIGMHPQMDGG4RDE2KZB74QLA2/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SLP42KIZ6HACTVZMZLJLFJQ4W2XYT27M/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TRZG5CDUQ27OWTPC5MQOR4UASNXHWEZS/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UDZRZAL7QULOB6V7MKT66MOMWJLBJPX4/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YROCMBWYFKRSS64PO6FUNM6L7LKBUKVW/",
+            "https://support.apple.com/kb/HT213261",
+            "https://ubuntu.com/security/notices/USN-5376-1",
+            "https://ubuntu.com/security/notices/USN-5376-2",
+            "https://ubuntu.com/security/notices/USN-5376-3"
+          ],
+          "PublishedDate": "2022-04-12T18:15:00Z",
+          "LastModifiedDate": "2023-01-31T03:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-29187",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git-man@1:2.30.2-1",
+          "PkgName": "git-man",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-29187",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "git: Bypass of safe.directory protections",
+          "Description": "Git is a distributed revision control system. Git prior to versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5, is vulnerable to privilege escalation in all platforms. An unsuspecting user could still be affected by the issue reported in CVE-2022-24765, for example when navigating as root into a shared tmp directory that is owned by them, but where an attacker could create a git repository. Versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5 contain a patch for this issue. The simplest way to avoid being affected by the exploit described in the example is to avoid running git as root (or an Administrator in Windows), and if needed to reduce its use to a minimum. While a generic workaround is not possible, a system could be hardened from the exploit described in the example by removing any such repository if it exists already and creating one as root to block any future attacks.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-427",
+            "CWE-282"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V2Vector": "AV:L/AC:M/Au:N/C:C/I:C/A:C",
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V2Score": 6.9,
+              "V3Score": 7.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.8
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2022/Nov/1",
+            "http://www.openwall.com/lists/oss-security/2022/07/14/1",
+            "https://access.redhat.com/security/cve/CVE-2022-29187",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29187",
+            "https://github.blog/2022-04-12-git-security-vulnerability-announced",
+            "https://github.com/git/git/security/advisories/GHSA-j342-m5hw-rr3v",
+            "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DDI325LOO2XBDDKLINOAQJEG6MHAURZE/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DIKWISWUDFT2FAITYIA6372BVLH3OOOC/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVOLER2PIGMHPQMDGG4RDE2KZB74QLA2/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TRZG5CDUQ27OWTPC5MQOR4UASNXHWEZS/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UDZRZAL7QULOB6V7MKT66MOMWJLBJPX4/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YROCMBWYFKRSS64PO6FUNM6L7LKBUKVW/",
+            "https://lore.kernel.org/git/xmqqv8s2fefi.fsf@gitster.g/T/#u",
+            "https://support.apple.com/kb/HT213496",
+            "https://ubuntu.com/security/notices/USN-5511-1"
+          ],
+          "PublishedDate": "2022-07-12T21:15:00Z",
+          "LastModifiedDate": "2023-01-31T03:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-39260",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git-man@1:2.30.2-1",
+          "PkgName": "git-man",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39260",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "git: git shell function that splits command arguments can lead to arbitrary heap writes.",
+          "Description": "Git is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-787",
+            "CWE-122"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+              "V3Score": 8.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+              "V3Score": 8.8
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2022/Nov/1",
+            "https://access.redhat.com/security/cve/CVE-2022-39260",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
+            "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+            "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/C7B6JPKX5CGGLAHXJVQMIZNNEEB72FHD/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
+            "https://support.apple.com/kb/HT213496",
+            "https://ubuntu.com/security/notices/USN-5686-1",
+            "https://ubuntu.com/security/notices/USN-5686-2",
+            "https://ubuntu.com/security/notices/USN-5686-3"
+          ],
+          "PublishedDate": "2022-10-19T12:15:00Z",
+          "LastModifiedDate": "2022-12-14T01:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-39253",
+          "VendorIDs": [
+            "DSA-5332-1"
+          ],
+          "PkgID": "git-man@1:2.30.2-1",
+          "PkgName": "git-man",
+          "InstalledVersion": "1:2.30.2-1",
+          "FixedVersion": "1:2.30.2-1+deb11u1",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "git: exposure of sensitive information to a malicious actor",
+          "Description": "Git is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-59"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
+              "V3Score": 5.5
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
+              "V3Score": 5.5
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2022/Nov/1",
+            "https://access.redhat.com/security/cve/CVE-2022-39253",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
+            "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+            "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/C7B6JPKX5CGGLAHXJVQMIZNNEEB72FHD/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/JMQWGMDLX6KTVWW5JZLVPI7ICAK72TN7/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VFYXCTLOSESYIP72BUYD6ECDIMUM4WMB/",
+            "https://support.apple.com/kb/HT213496",
+            "https://ubuntu.com/security/notices/USN-5686-1",
+            "https://ubuntu.com/security/notices/USN-5686-3"
+          ],
+          "PublishedDate": "2022-10-19T11:15:00Z",
+          "LastModifiedDate": "2022-12-14T01:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-32221",
+          "VendorIDs": [
+            "DSA-5330-1"
+          ],
+          "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+          "PkgName": "libcurl3-gnutls",
+          "InstalledVersion": "7.74.0-1.3+deb11u3",
+          "FixedVersion": "7.74.0-1.3+deb11u5",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-32221",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "curl: POST following PUT confusion",
+          "Description": "When doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously was used to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request. The problem exists in the logic for a reused handle when it is changed from a PUT to a POST.",
+          "Severity": "CRITICAL",
+          "CweIDs": [
+            "CWE-668"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 9.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N",
+              "V3Score": 4.8
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2023/Jan/19",
+            "http://seclists.org/fulldisclosure/2023/Jan/20",
+            "https://access.redhat.com/errata/RHSA-2023:0333",
+            "https://access.redhat.com/security/cve/CVE-2022-32221",
+            "https://bugzilla.redhat.com/2135411",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2135411",
+            "https://curl.se/docs/CVE-2022-32221.html",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
+            "https://errata.almalinux.org/9/ALSA-2023-0333.html",
+            "https://errata.rockylinux.org/RLSA-2023:0333",
+            "https://hackerone.com/reports/1704017",
+            "https://linux.oracle.com/cve/CVE-2022-32221.html",
+            "https://linux.oracle.com/errata/ELSA-2023-0333.html",
+            "https://lists.debian.org/debian-lts-announce/2023/01/msg00028.html",
+            "https://security.gentoo.org/glsa/202212-01",
+            "https://security.netapp.com/advisory/ntap-20230110-0006/",
+            "https://support.apple.com/kb/HT213604",
+            "https://support.apple.com/kb/HT213605",
+            "https://ubuntu.com/security/notices/USN-5702-1",
+            "https://ubuntu.com/security/notices/USN-5702-2",
+            "https://ubuntu.com/security/notices/USN-5823-1",
+            "https://www.debian.org/security/2023/dsa-5330"
+          ],
+          "PublishedDate": "2022-12-05T22:15:00Z",
+          "LastModifiedDate": "2023-01-29T00:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-43552",
+          "VendorIDs": [
+            "DSA-5330-1"
+          ],
+          "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+          "PkgName": "libcurl3-gnutls",
+          "InstalledVersion": "7.74.0-1.3+deb11u3",
+          "FixedVersion": "7.74.0-1.3+deb11u5",
+          "Layer": {
+            "DiffID": "sha256:9f4f964da72795eddb83aa809dd2b336cb37b93238a18a2e230b0adec951d1a7"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43552",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "curl: Use-after-free triggered by an HTTP proxy deny response",
+          "Description": "A vulnerability was found in curl. In this issue, curl can be asked to tunnel all protocols virtually it supports through an HTTP proxy. HTTP proxies can deny these tunnel operations using an appropriate HTTP error response code. When getting denied to tunnel the specific SMB or TELNET protocols, curl can use a heap-allocated struct after it has been freed and shut down the code path in its transfer.",
+          "Severity": "MEDIUM",
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.9
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2022-43552",
+            "https://curl.se/docs/CVE-2022-43552.html",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552",
+            "https://ubuntu.com/security/notices/USN-5788-1"
+          ]
+        },
+        {
+          "VulnerabilityID": "CVE-2022-32221",
+          "VendorIDs": [
+            "DSA-5330-1"
+          ],
+          "PkgID": "libcurl4@7.74.0-1.3+deb11u3",
+          "PkgName": "libcurl4",
+          "InstalledVersion": "7.74.0-1.3+deb11u3",
+          "FixedVersion": "7.74.0-1.3+deb11u5",
+          "Layer": {
+            "DiffID": "sha256:a463dbda46648cc9a3af3f009b2c73035cb068639edb24f1fb5a792b057c6aa8"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-32221",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "curl: POST following PUT confusion",
+          "Description": "When doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously was used to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request. The problem exists in the logic for a reused handle when it is changed from a PUT to a POST.",
+          "Severity": "CRITICAL",
+          "CweIDs": [
+            "CWE-668"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 9.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N",
+              "V3Score": 4.8
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2023/Jan/19",
+            "http://seclists.org/fulldisclosure/2023/Jan/20",
+            "https://access.redhat.com/errata/RHSA-2023:0333",
+            "https://access.redhat.com/security/cve/CVE-2022-32221",
+            "https://bugzilla.redhat.com/2135411",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2135411",
+            "https://curl.se/docs/CVE-2022-32221.html",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
+            "https://errata.almalinux.org/9/ALSA-2023-0333.html",
+            "https://errata.rockylinux.org/RLSA-2023:0333",
+            "https://hackerone.com/reports/1704017",
+            "https://linux.oracle.com/cve/CVE-2022-32221.html",
+            "https://linux.oracle.com/errata/ELSA-2023-0333.html",
+            "https://lists.debian.org/debian-lts-announce/2023/01/msg00028.html",
+            "https://security.gentoo.org/glsa/202212-01",
+            "https://security.netapp.com/advisory/ntap-20230110-0006/",
+            "https://support.apple.com/kb/HT213604",
+            "https://support.apple.com/kb/HT213605",
+            "https://ubuntu.com/security/notices/USN-5702-1",
+            "https://ubuntu.com/security/notices/USN-5702-2",
+            "https://ubuntu.com/security/notices/USN-5823-1",
+            "https://www.debian.org/security/2023/dsa-5330"
+          ],
+          "PublishedDate": "2022-12-05T22:15:00Z",
+          "LastModifiedDate": "2023-01-29T00:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-43552",
+          "VendorIDs": [
+            "DSA-5330-1"
+          ],
+          "PkgID": "libcurl4@7.74.0-1.3+deb11u3",
+          "PkgName": "libcurl4",
+          "InstalledVersion": "7.74.0-1.3+deb11u3",
+          "FixedVersion": "7.74.0-1.3+deb11u5",
+          "Layer": {
+            "DiffID": "sha256:a463dbda46648cc9a3af3f009b2c73035cb068639edb24f1fb5a792b057c6aa8"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43552",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "curl: Use-after-free triggered by an HTTP proxy deny response",
+          "Description": "A vulnerability was found in curl. In this issue, curl can be asked to tunnel all protocols virtually it supports through an HTTP proxy. HTTP proxies can deny these tunnel operations using an appropriate HTTP error response code. When getting denied to tunnel the specific SMB or TELNET protocols, curl can use a heap-allocated struct after it has been freed and shut down the code path in its transfer.",
+          "Severity": "MEDIUM",
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.9
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2022-43552",
+            "https://curl.se/docs/CVE-2022-43552.html",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552",
+            "https://ubuntu.com/security/notices/USN-5788-1"
+          ]
+        },
+        {
+          "VulnerabilityID": "CVE-2022-3545",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3545",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "kernel: A flaw leading to a use-after-free in area_cache_get()",
+          "Description": "A vulnerability has been found in Linux Kernel and classified as critical. Affected by this vulnerability is the function area_cache_get of the file drivers/net/ethernet/netronome/nfp/nfpcore/nfp_cppcore.c of the component IPsec. The manipulation leads to use after free. It is recommended to apply a patch to fix this issue. The identifier VDB-211045 was assigned to this vulnerability.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-119",
+            "CWE-416"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:A/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:L",
+              "V3Score": 5.5
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2022-3545",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3545",
+            "https://git.kernel.org/linus/02e1a114fdb71e59ee6770294166c30d437bf86a (6.0-rc1)",
+            "https://git.kernel.org/pub/scm/linux/kernel/git/klassert/ipsec-next.git/commit/?id=02e1a114fdb71e59ee6770294166c30d437bf86a",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-3545",
+            "https://security.netapp.com/advisory/ntap-20221223-0003/",
+            "https://vuldb.com/?id.211045",
+            "https://www.debian.org/security/2023/dsa-5324"
+          ],
+          "PublishedDate": "2022-10-17T12:15:00Z",
+          "LastModifiedDate": "2023-01-26T21:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-3623",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3623",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "Kernel: denial-of-service in follow_page_pte in mm/gup.c  due to poisoned pte entry",
+          "Description": "A vulnerability was found in Linux Kernel. It has been declared as problematic. Affected by this vulnerability is the function follow_page_pte of the file mm/gup.c of the component BPF. The manipulation leads to race condition. The attack can be launched remotely. It is recommended to apply a patch to fix this issue. The identifier VDB-211921 was assigned to this vulnerability.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-362"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.5
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:H",
+              "V3Score": 5.8
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2022-3623",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3623",
+            "https://git.kernel.org/linus/fac35ba763ed07ba93154c95ffc0c4a55023707f (6.1-rc1)",
+            "https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git/commit/?id=fac35ba763ed07ba93154c95ffc0c4a55023707f",
+            "https://ubuntu.com/security/notices/USN-5793-1",
+            "https://ubuntu.com/security/notices/USN-5793-2",
+            "https://ubuntu.com/security/notices/USN-5793-3",
+            "https://ubuntu.com/security/notices/USN-5793-4",
+            "https://vuldb.com/?id.211921",
+            "https://www.debian.org/security/2023/dsa-5324"
+          ],
+          "PublishedDate": "2022-10-20T20:15:00Z",
+          "LastModifiedDate": "2023-01-26T21:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-45934",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-45934",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "kernel: integer overflow in l2cap_config_req() in net/bluetooth/l2cap_core.c",
+          "Description": "An issue was discovered in the Linux kernel through 6.0.10. l2cap_config_req in net/bluetooth/l2cap_core.c has an integer wraparound via L2CAP_CONF_REQ packets.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-190"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 6.5
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2022-45934",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-45934",
+            "https://git.kernel.org/pub/scm/linux/kernel/git/bluetooth/bluetooth-next.git/commit/?id=ae4569813a6e931258db627cdfe50dfb4f917d5d",
+            "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/NDAKCGDW6CQ6G3RZWYZJO454R3L5CTQB/",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-45934",
+            "https://security.netapp.com/advisory/ntap-20230113-0008/",
+            "https://ubuntu.com/security/notices/USN-5794-1",
+            "https://ubuntu.com/security/notices/USN-5802-1",
+            "https://ubuntu.com/security/notices/USN-5803-1",
+            "https://ubuntu.com/security/notices/USN-5804-1",
+            "https://ubuntu.com/security/notices/USN-5804-2",
+            "https://ubuntu.com/security/notices/USN-5808-1",
+            "https://ubuntu.com/security/notices/USN-5809-1",
+            "https://ubuntu.com/security/notices/USN-5813-1",
+            "https://ubuntu.com/security/notices/USN-5814-1",
+            "https://ubuntu.com/security/notices/USN-5829-1",
+            "https://ubuntu.com/security/notices/USN-5830-1",
+            "https://ubuntu.com/security/notices/USN-5831-1",
+            "https://ubuntu.com/security/notices/USN-5832-1",
+            "https://www.debian.org/security/2023/dsa-5324"
+          ],
+          "PublishedDate": "2022-11-27T04:15:00Z",
+          "LastModifiedDate": "2023-02-01T15:07:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-4696",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4696",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "kernel: user-after-free during IORING_OP_SPLICE operation",
+          "Description": "There exists a use-after-free vulnerability in the Linux kernel through io_uring and the IORING_OP_SPLICE operation. If IORING_OP_SPLICE is missing the IO_WQ_WORK_FILES flag, which signals that the operation won't use current-\u003ensproxy, so its reference counter is not increased. This assumption is not always true as calling io_splice on specific files will call the get_uts function which will use current-\u003ensproxy leading to invalidly decreasing its reference counter later causing the use-after-free vulnerability. We recommend upgrading to version 5.10.160 or above",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-416"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.8
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2022-4696",
+            "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?h=linux-5.10.y\u0026id=75454b4bbfc7e6a4dd8338556f36ea9107ddf61a",
+            "https://kernel.dance/#75454b4bbfc7e6a4dd8338556f36ea9107ddf61a"
+          ],
+          "PublishedDate": "2023-01-11T13:15:00Z",
+          "LastModifiedDate": "2023-01-19T13:24:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-0179",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0179",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "[netfilter: nft_payload: incorrect arithmetics when fetching VLAN header bits]",
+          "Description": "[netfilter: nft_payload: incorrect arithmetics when fetching VLAN header bits]",
+          "Severity": "HIGH",
+          "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-0179",
+            "https://patchwork.ozlabs.org/project/netfilter-devel/patch/20230111212251.193032-4-pablo@netfilter.org/",
+            "https://www.openwall.com/lists/oss-security/2023/01/13/2"
+          ]
+        },
+        {
+          "VulnerabilityID": "CVE-2023-0240",
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0240",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "kernel: io_uring: reference counting issue in io_prep_async_work leads to use-after-free",
+          "Description": "There is a logic error in io_uring's implementation which can be used to trigger a use-after-free vulnerability leading to privilege escalation. In the io_prep_async_work function the assumption that the last io_grab_identity call cannot return false is not true, and in this case the function will use the init_cred or the previous linked requests identity to do operations instead of using the current identity. This can lead to reference counting issues causing use-after-free. We recommend upgrading past version 5.10.161.",
+          "Severity": "HIGH",
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.8
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2023-0240",
+            "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/io_uring?h=linux-5.10.y\u0026id=788d0824269bef539fe31a785b1517882eafed93",
+            "https://github.com/gregkh/linux/commit/1e6fa5216a0e59ef02e8b6b40d553238a3b81d49",
+            "https://kernel.dance/#788d0824269bef539fe31a785b1517882eafed93"
+          ],
+          "PublishedDate": "2023-01-30T14:15:00Z",
+          "LastModifiedDate": "2023-01-30T14:18:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-0266",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0266",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "A use after free vulnerability exists in the ALSA PCM package in the L ...",
+          "Description": "A use after free vulnerability exists in the ALSA PCM package in the Linux Kernel. SNDRV_CTL_IOCTL_ELEM_{READ|WRITE}32 is missing locks that can be used in a use-after-free that can result in a priviledge escalation to gain ring0 access from the system user. We recommend upgrading past commit 56b88b50565cd8b946a2d00b0c83927b7ebb055e",
+          "Severity": "HIGH",
+          "References": [
+            "https://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git/tree/queue-5.10/alsa-pcm-move-rwsem-lock-inside-snd_ctl_elem_read-to-prevent-uaf.patch?id=72783cf35e6c55bca84c4bb7b776c58152856fd4",
+            "https://github.com/torvalds/linux/commit/56b88b50565cd8b946a2d00b0c83927b7ebb055e",
+            "https://github.com/torvalds/linux/commit/becf9e5d553c2389d857a3c178ce80fdb34a02e1",
+            "https://nvd.nist.gov/vuln/detail/CVE-2023-0266"
+          ],
+          "PublishedDate": "2023-01-30T14:15:00Z",
+          "LastModifiedDate": "2023-01-30T14:18:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-2873",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-2873",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "kernel: an out-of-bounds vulnerability in i2c-ismt driver",
+          "Description": "An out-of-bounds memory access flaw was found in the Linux kernel Intel’s iSMT SMBus host controller driver in the way a user triggers the I2C_SMBUS_BLOCK_DATA (with the ioctl I2C_SMBUS) with malicious input data. This flaw allows a local user to crash the system.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-131"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.5
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 6.2
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2022-2873",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2873",
+            "https://lore.kernel.org/lkml/20220729093451.551672-1-zheyuma97@gmail.com/T/",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-2873",
+            "https://security.netapp.com/advisory/ntap-20230120-0001/",
+            "https://ubuntu.com/security/notices/USN-5594-1",
+            "https://ubuntu.com/security/notices/USN-5599-1",
+            "https://ubuntu.com/security/notices/USN-5602-1",
+            "https://ubuntu.com/security/notices/USN-5616-1",
+            "https://ubuntu.com/security/notices/USN-5623-1",
+            "https://www.debian.org/security/2023/dsa-5324"
+          ],
+          "PublishedDate": "2022-08-22T15:15:00Z",
+          "LastModifiedDate": "2023-01-26T21:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-36280",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-36280",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "kernel: vmwgfx: out-of-bounds write in vmw_kms_cursor_snoop",
+          "Description": "An out-of-bounds(OOB) memory access vulnerability was found in vmwgfx driver in drivers/gpu/vmxgfx/vmxgfx_kms.c in GPU component in the Linux kernel with device file '/dev/dri/renderD128 (or Dxxx)'. This flaw allows a local attacker with a user account on the system to gain privilege, causing a denial of service(DoS).",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-787"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.5
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.5
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2022-36280",
+            "https://bugzilla.openanolis.cn/show_bug.cgi?id=2071",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-36280",
+            "https://www.debian.org/security/2023/dsa-5324"
+          ],
+          "PublishedDate": "2022-09-09T15:15:00Z",
+          "LastModifiedDate": "2023-01-26T21:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-41218",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-41218",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "kernel: Report vmalloc UAF in dvb-core/dmxdev",
+          "Description": "In drivers/media/dvb-core/dmxdev.c in the Linux kernel through 5.19.10, there is a use-after-free caused by refcount races, affecting dvb_demux_open and dvb_dmxdev_release.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-416"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.5
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.5
+            }
+          },
+          "References": [
+            "http://www.openwall.com/lists/oss-security/2022/09/23/4",
+            "http://www.openwall.com/lists/oss-security/2022/09/24/1",
+            "http://www.openwall.com/lists/oss-security/2022/09/24/2",
+            "https://access.redhat.com/security/cve/CVE-2022-41218",
+            "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/drivers/media/dvb-core/dmxdev.c",
+            "https://lore.kernel.org/all/20220908132754.30532-1-tiwai@suse.de/",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-41218",
+            "https://www.debian.org/security/2023/dsa-5324"
+          ],
+          "PublishedDate": "2022-09-21T07:15:00Z",
+          "LastModifiedDate": "2023-01-26T21:16:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2022-47929",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-47929",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "In the Linux kernel before 6.1.6, a NULL pointer dereference bug in th ...",
+          "Description": "In the Linux kernel before 6.1.6, a NULL pointer dereference bug in the traffic control subsystem allows an unprivileged user to trigger a denial of service (system crash) via a crafted traffic control configuration that is set up with \"tc qdisc\" and \"tc class\" commands. This affects qdisc_graft in net/sched/sch_api.c.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-476"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.5
+            }
+          },
+          "References": [
+            "https://cdn.kernel.org/pub/linux/kernel/v6.x/ChangeLog-6.1.6",
+            "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=96398560f26aa07e8f2969d73c8197e6a6d10407",
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-47929",
+            "https://tldp.org/HOWTO/Traffic-Control-HOWTO/components.html",
+            "https://www.debian.org/security/2023/dsa-5324",
+            "https://www.spinics.net/lists/netdev/msg555705.html"
+          ],
+          "PublishedDate": "2023-01-17T21:15:00Z",
+          "LastModifiedDate": "2023-01-30T15:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-0394",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0394",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "A NULL pointer dereference flaw was found in rawv6_push_pending_frames ...",
+          "Description": "A NULL pointer dereference flaw was found in rawv6_push_pending_frames in net/ipv6/raw.c in the network subcomponent in the Linux kernel. This flaw causes the system to crash.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-476"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.5
+            }
+          },
+          "References": [
+            "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=cb3e9864cdbe35ff6378966660edbcbac955fe17",
+            "https://nvd.nist.gov/vuln/detail/CVE-2023-0394"
+          ],
+          "PublishedDate": "2023-01-26T21:18:00Z",
+          "LastModifiedDate": "2023-02-01T17:31:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-23454",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23454",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "cbq_classify in net/sched/sch_cbq.c in the Linux kernel through 6.1.4  ...",
+          "Description": "cbq_classify in net/sched/sch_cbq.c in the Linux kernel through 6.1.4 allows attackers to cause a denial of service (slab-out-of-bounds read) because of type confusion (non-negative numbers can sometimes indicate a TC_ACT_SHOT condition rather than valid classification results).",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-843"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.5
+            }
+          },
+          "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-23454",
+            "https://git.kernel.org/linus/caa4b35b4317d5147b3ab0fbdc9c075c7d2e9c12",
+            "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=caa4b35b4317d5147b3ab0fbdc9c075c7d2e9c12",
+            "https://nvd.nist.gov/vuln/detail/CVE-2023-23454",
+            "https://www.debian.org/security/2023/dsa-5324",
+            "https://www.openwall.com/lists/oss-security/2023/01/10/1",
+            "https://www.openwall.com/lists/oss-security/2023/01/10/4"
+          ],
+          "PublishedDate": "2023-01-12T07:15:00Z",
+          "LastModifiedDate": "2023-01-30T15:17:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-23455",
+          "VendorIDs": [
+            "DSA-5324-1"
+          ],
+          "PkgID": "linux-libc-dev@5.10.158-2",
+          "PkgName": "linux-libc-dev",
+          "InstalledVersion": "5.10.158-2",
+          "FixedVersion": "5.10.162-1",
+          "Layer": {
+            "DiffID": "sha256:b5d7b24ebfb40d5b05efc18b2ae70de8d147df72b217d30a5bbeeee8f0ff6b9f"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23455",
+          "DataSource": {
+            "ID": "debian",
+            "Name": "Debian Security Tracker",
+            "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+          },
+          "Title": "atm_tc_enqueue in net/sched/sch_atm.c in the Linux kernel through 6.1. ...",
+          "Description": "atm_tc_enqueue in net/sched/sch_atm.c in the Linux kernel through 6.1.4 allows attackers to cause a denial of service because of type confusion (non-negative numbers can sometimes indicate a TC_ACT_SHOT condition rather than valid classification results).",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-843"
+          ],
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 5.5
+            }
+          },
+          "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-23455",
+            "https://git.kernel.org/linus/a2965c7be0522eaa18808684b7b82b248515511b",
+            "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a2965c7be0522eaa18808684b7b82b248515511b",
+            "https://nvd.nist.gov/vuln/detail/CVE-2023-23455",
+            "https://www.debian.org/security/2023/dsa-5324",
+            "https://www.openwall.com/lists/oss-security/2023/01/10/1",
+            "https://www.openwall.com/lists/oss-security/2023/01/10/4"
+          ],
+          "PublishedDate": "2023-01-12T07:15:00Z",
+          "LastModifiedDate": "2023-01-30T15:17:00Z"
+        }
+      ]
+    }
+  ]
+}
+

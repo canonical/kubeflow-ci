@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-from pathlib import Path
+import json
 import os
 import sys
-import json
+from pathlib import Path
 
 input = sys.argv[1]
 input_path = Path(input)
@@ -39,4 +39,3 @@ for file in FILE_LIST:
             record_data = vuln
             print(f"Send record with name: {record_name}")
             # send record
-

@@ -22,20 +22,20 @@ for file in FILE_LIST:
     filename = input_dir + file
     with open(filename, "r") as json_file:
         data = json.load(json_file)
-    artifact = data['ArtifactName']
+    artifact = data["ArtifactName"]
 
     if "Results" not in data:
         # no scan results found, skip this report
         continue
 
-    for result in data['Results']:
-        if "Vulnerabilities" not in result or len(result['Vulnerabilities']) == 0:
+    for result in data["Results"]:
+        if "Vulnerabilities" not in result or len(result["Vulnerabilities"]) == 0:
             # no vulnerabilities found, skip this report
             continue
 
-        vuln_list = result['Vulnerabilities']
+        vuln_list = result["Vulnerabilities"]
         for vuln in vuln_list:
-            record_name = str(artifact + " " + vuln['PkgName'] + " " + vuln['VulnerabilityID'])
+            record_name = str(artifact + " " + vuln["PkgName"] + " " + vuln["VulnerabilityID"])
             record_data = vuln
             print(f"Send record with name: {record_name}")
             # send record

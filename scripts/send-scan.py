@@ -32,6 +32,7 @@ def parse_json(filename):
 
     return record_list
 
+
 def parse_sarif(filename):
     """Parse SARIF file"""
     record_list = []
@@ -46,27 +47,27 @@ def parse_sarif(filename):
     results = data["runs"][0]["results"]
 
     for result in results:
-        vuln_id = result["ruleId"]
         record_name = str(os.path.basename(filename).replace(".sarif", "-") + result["ruleId"])
         record_data = rules[result["ruleIndex"]]
         record_list.append({"name": record_name, "data": record_data})
 
     return record_list
 
+
 def main():
     input = sys.argv[1]
     input_path = Path(input)
 
     input_dir = ""
-    FILE_LIST = []
+    file_list = []
     if input_path.is_dir():
         # directory is supplied, retrieve list of files
-        FILE_LIST = os.listdir(input_path)
+        file_list = os.listdir(input_path)
         input_dir = input + "/"
     elif input_path.is_file():
-        FILE_LIST.append(input)
+        file_list.append(input)
 
-    for file in FILE_LIST:
+    for file in file_list:
         print(f"Processing report in: {file}")
         filename = input_dir + file
         if filename.endswith(".json"):
@@ -79,8 +80,8 @@ def main():
 
         # send records
         for record in records:
-            #print(f"Rec: {record['name']}, {record['data']}")
             print(f"Rec: {record['name']}")
+
 
 #
 # Start main

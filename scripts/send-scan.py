@@ -1,4 +1,9 @@
 #!/usr/bin/python3
+# Copyright 2022 Canonical Ltd.
+# See LICENSE file for licensing details.
+#
+
+"""Script to process Trivy vulnerability scans reports and send those to Jira automation"""
 
 import json
 import os
@@ -26,9 +31,18 @@ def parse_json(filename):
 
         vuln_list = result["Vulnerabilities"]
         for vuln in vuln_list:
-            record_name = str(artifact + " " + vuln["PkgName"] + " " + vuln["VulnerabilityID"])
-            record_data = vuln
-            record_list.append({"name": record_name, "data": record_data})
+            artifact = artifact.replace(":", "-")
+            artifact = artifact.replace("/", "-")
+            record_name = str(vuln["VulnerabilityID"] + "-" + artifact + "-" + vuln["PkgName"])
+            record_result = vuln
+            record_severity = vuln["Severity"]
+            record_list.append(
+                {
+                    "name": record_name,
+                    "severity": record_severity,
+                    "result": record_result,
+                }
+            )
 
     return record_list
 
@@ -47,9 +61,22 @@ def parse_sarif(filename):
     results = data["runs"][0]["results"]
 
     for result in results:
-        record_name = str(os.path.basename(filename).replace(".sarif", "-") + result["ruleId"])
-        record_data = rules[result["ruleIndex"]]
-        record_list.append({"name": record_name, "data": record_data})
+        record_name = str(
+            result["ruleId"] + "-" + os.path.basename(filename).replace(".sarif", "")
+        )
+        record_result = result
+        record_rule = rules[result["ruleIndex"]]
+        for tag in record_rule["properties"]["tags"]:
+            if tag in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
+                record_severity = tag
+        record_list.append(
+            {
+                "name": record_name,
+                "severity": record_severity,
+                "rule": record_rule,
+                "result": record_result,
+            }
+        )
 
     return record_list
 
@@ -80,7 +107,8 @@ def main():
 
         # send records
         for record in records:
-            print(f"Rec: {record['name']}")
+            # send record
+            print(json.dumps(record, indent=4))
 
 
 #

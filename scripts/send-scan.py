@@ -69,20 +69,26 @@ def parse_sarif(filename):
     results = data["runs"][0]["results"]
 
     for result in results:
-        record_name = str(
-            result["ruleId"] + "-" + os.path.basename(filename).replace(".sarif", "")
-        )
         record_result = result
         record_rule = rules[result["ruleIndex"]]
-        for tag in record_rule["properties"]["tags"]:
-            if tag in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
-                record_severity = tag
+
+        record_message = record_result["message"]["text"].split("\n")
+        pkg_name = record_message[0].replace("Package: ", "")
+        artifact = os.path.basename(filename).replace(".sarif", "")
+        record_name = str(result["ruleId"] + "-" + artifact + "-" + pkg_name)
         record_list.append(
             {
                 "name": record_name,
-                "severity": record_severity,
-                "rule": record_rule,
-                "result": record_result,
+                "artifact": artifact,
+                "severity": record_message[3].replace("Severity: ", ""),
+                "cve_id": result["ruleId"],
+                "package_name": pkg_name,
+                "installed_version": record_message[1].replace("Installed Version: ", ""),
+                "fixed_version": record_message[4].replace("Fixed Version: ", ""),
+                "title": record_rule["shortDescription"]["text"],
+                "description": record_rule["help"]["text"],
+                "references": "N/A",
+                "primary_url": record_rule["helpUri"],
             }
         )
 

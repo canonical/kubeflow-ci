@@ -112,9 +112,6 @@ def main(report_path, jira_url):
         # send records
         for record in records:
             requests.post(jira_url, json=record)
-            # send record
-            print(json.dumps(record, indent=4))
-            break
 
 
 if __name__ == "__main__":

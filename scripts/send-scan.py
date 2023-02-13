@@ -1,14 +1,16 @@
 #!/usr/bin/python3
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 #
 
 """Script to process Trivy vulnerability scans reports and send those to Jira automation"""
 
+import argparse
 import json
 import os
-import sys
 from pathlib import Path
+
+import requests
 
 
 def parse_json(filename):
@@ -33,14 +35,20 @@ def parse_json(filename):
         for vuln in vuln_list:
             artifact = artifact.replace(":", "-")
             artifact = artifact.replace("/", "-")
-            record_name = str(vuln["VulnerabilityID"] + "-" + artifact + "-" + vuln["PkgName"])
-            record_result = vuln
-            record_severity = vuln["Severity"]
+            record_name = f"{vuln['VulnerabilityID']}-{artifact}-{vuln['PkgName']}"
             record_list.append(
                 {
                     "name": record_name,
-                    "severity": record_severity,
-                    "result": record_result,
+                    "artifact": artifact,
+                    "severity": vuln["Severity"],
+                    "cve_id": vuln["VulnerabilityID"],
+                    "package_name": vuln["PkgName"],
+                    "installed_version": vuln["InstalledVersion"],
+                    "fixed_version": vuln["FixedVersion"],
+                    "title": vuln["Title"],
+                    "description": vuln["Description"],
+                    "references": "\n".join(vuln["References"]),
+                    "primary_url": vuln["PrimaryURL"],
                 }
             )
 
@@ -81,38 +89,37 @@ def parse_sarif(filename):
     return record_list
 
 
-def main():
-    input = sys.argv[1]
-    input_path = Path(input)
+def main(report_path, jira_url):
+    input_path = Path(report_path)
 
-    input_dir = ""
     file_list = []
     if input_path.is_dir():
         # directory is supplied, retrieve list of files
-        file_list = os.listdir(input_path)
-        input_dir = input + "/"
+        file_list = list(input_path.iterdir())
     elif input_path.is_file():
-        file_list.append(input)
+        file_list.append(input_path)
 
     for file in file_list:
         print(f"Processing report in: {file}")
-        filename = input_dir + file
-        if filename.endswith(".json"):
-            records = parse_json(filename)
-        elif filename.endswith(".sarif"):
-            records = parse_sarif(filename)
+        if file.suffix == ".json":
+            records = parse_json(file)
+        elif file.suffix == ".sarif":
+            records = parse_sarif(file)
         else:
             print(f"Unsupported file type: {file}. Skip it.")
             continue
 
         # send records
         for record in records:
+            requests.post(jira_url, json=record)
             # send record
             print(json.dumps(record, indent=4))
+            break
 
 
-#
-# Start main
-#
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--report-path")
+    parser.add_argument("--jira-url")
+    args = parser.parse_args()
+    main(args.report_path, args.jira_url)

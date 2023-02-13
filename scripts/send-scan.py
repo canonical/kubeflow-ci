@@ -75,7 +75,13 @@ def parse_sarif(filename):
         record_message = record_result["message"]["text"].split("\n")
         pkg_name = record_message[0].replace("Package: ", "")
         artifact = os.path.basename(filename).replace(".sarif", "")
+<<<<<<< HEAD
         record_name = str(result["ruleId"] + "-" + artifact + "-" + pkg_name)
+=======
+        record_name = str(
+            result["ruleId"] + "-" + artifact + "-" + pkg_name
+        )
+>>>>>>> fba520afbead71fbc7653d973b629efaed9a651d
         record_list.append(
             {
                 "name": record_name,

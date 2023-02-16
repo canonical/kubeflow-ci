@@ -1,0 +1,1484 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "fullName": "Trivy Vulnerability Scanner",
+          "informationUri": "https://github.com/aquasecurity/trivy",
+          "name": "Trivy",
+          "rules": [
+            {
+              "id": "CVE-2022-32221",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "curl: POST following PUT confusion"
+              },
+              "fullDescription": {
+                "text": "When doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously was used to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request. The problem exists in the logic for a reused handle when it is changed from a PUT to a POST."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-32221",
+              "help": {
+                "text": "Vulnerability CVE-2022-32221\nSeverity: CRITICAL\nPackage: libcurl4\nFixed Version: 7.74.0-1.3+deb11u5\nLink: [CVE-2022-32221](https://avd.aquasec.com/nvd/cve-2022-32221)\nWhen doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously was used to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request. The problem exists in the logic for a reused handle when it is changed from a PUT to a POST.",
+                "markdown": "**Vulnerability CVE-2022-32221**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|CRITICAL|libcurl4|7.74.0-1.3+deb11u5|[CVE-2022-32221](https://avd.aquasec.com/nvd/cve-2022-32221)|\n\nWhen doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously was used to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request. The problem exists in the logic for a reused handle when it is changed from a PUT to a POST."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "9.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "CRITICAL"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-43552",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "curl: Use-after-free triggered by an HTTP proxy deny response"
+              },
+              "fullDescription": {
+                "text": "A vulnerability was found in curl. In this issue, curl can be asked to tunnel all protocols virtually it supports through an HTTP proxy. HTTP proxies can deny these tunnel operations using an appropriate HTTP error response code. When getting denied to tunnel the specific SMB or TELNET protocols, curl can use a heap-allocated struct after it has been freed and shut down the code path in its transfer."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-43552",
+              "help": {
+                "text": "Vulnerability CVE-2022-43552\nSeverity: MEDIUM\nPackage: libcurl4\nFixed Version: 7.74.0-1.3+deb11u5\nLink: [CVE-2022-43552](https://avd.aquasec.com/nvd/cve-2022-43552)\nA vulnerability was found in curl. In this issue, curl can be asked to tunnel all protocols virtually it supports through an HTTP proxy. HTTP proxies can deny these tunnel operations using an appropriate HTTP error response code. When getting denied to tunnel the specific SMB or TELNET protocols, curl can use a heap-allocated struct after it has been freed and shut down the code path in its transfer.",
+                "markdown": "**Vulnerability CVE-2022-43552**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|libcurl4|7.74.0-1.3+deb11u5|[CVE-2022-43552](https://avd.aquasec.com/nvd/cve-2022-43552)|\n\nA vulnerability was found in curl. In this issue, curl can be asked to tunnel all protocols virtually it supports through an HTTP proxy. HTTP proxies can deny these tunnel operations using an appropriate HTTP error response code. When getting denied to tunnel the specific SMB or TELNET protocols, curl can use a heap-allocated struct after it has been freed and shut down the code path in its transfer."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-23521",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "Git is distributed revision control system. gitattributes are a mechan ..."
+              },
+              "fullDescription": {
+                "text": "Git is distributed revision control system. gitattributes are a mechanism to allow defining attributes for paths. These attributes can be defined by adding a `.gitattributes` file to the repository, which contains a set of file patterns and the attributes that should be set for paths matching this pattern. When parsing gitattributes, multiple integer overflows can occur when there is a huge number of path patterns, a huge number of attributes for a single pattern, or when the declared attribute names are huge. These overflows can be triggered via a crafted `.gitattributes` file that may be part of the commit history. Git silently splits lines longer than 2KB when parsing gitattributes from a file, but not when parsing them from the index. Consequentially, the failure mode depends on whether the file exists in the working tree, the index or both. This integer overflow can result in arbitrary heap reads and writes, which may result in remote code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. There are no known workarounds for this issue."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-23521",
+              "help": {
+                "text": "Vulnerability CVE-2022-23521\nSeverity: CRITICAL\nPackage: git-man\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-23521](https://avd.aquasec.com/nvd/cve-2022-23521)\nGit is distributed revision control system. gitattributes are a mechanism to allow defining attributes for paths. These attributes can be defined by adding a `.gitattributes` file to the repository, which contains a set of file patterns and the attributes that should be set for paths matching this pattern. When parsing gitattributes, multiple integer overflows can occur when there is a huge number of path patterns, a huge number of attributes for a single pattern, or when the declared attribute names are huge. These overflows can be triggered via a crafted `.gitattributes` file that may be part of the commit history. Git silently splits lines longer than 2KB when parsing gitattributes from a file, but not when parsing them from the index. Consequentially, the failure mode depends on whether the file exists in the working tree, the index or both. This integer overflow can result in arbitrary heap reads and writes, which may result in remote code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. There are no known workarounds for this issue.",
+                "markdown": "**Vulnerability CVE-2022-23521**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|CRITICAL|git-man|1:2.30.2-1+deb11u1|[CVE-2022-23521](https://avd.aquasec.com/nvd/cve-2022-23521)|\n\nGit is distributed revision control system. gitattributes are a mechanism to allow defining attributes for paths. These attributes can be defined by adding a `.gitattributes` file to the repository, which contains a set of file patterns and the attributes that should be set for paths matching this pattern. When parsing gitattributes, multiple integer overflows can occur when there is a huge number of path patterns, a huge number of attributes for a single pattern, or when the declared attribute names are huge. These overflows can be triggered via a crafted `.gitattributes` file that may be part of the commit history. Git silently splits lines longer than 2KB when parsing gitattributes from a file, but not when parsing them from the index. Consequentially, the failure mode depends on whether the file exists in the working tree, the index or both. This integer overflow can result in arbitrary heap reads and writes, which may result in remote code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. There are no known workarounds for this issue."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "9.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "CRITICAL"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-41903",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "Git is distributed revision control system. `git log` can display comm ..."
+              },
+              "fullDescription": {
+                "text": "Git is distributed revision control system. `git log` can display commits in an arbitrary format using its `--format` specifiers. This functionality is also exposed to `git archive` via the `export-subst` gitattribute. When processing the padding operators, there is a integer overflow in `pretty.c::format_and_pad_commit()` where a `size_t` is stored improperly as an `int`, and then added as an offset to a `memcpy()`. This overflow can be triggered directly by a user running a command which invokes the commit formatting machinery (e.g., `git log --format=...`). It may also be triggered indirectly through git archive via the export-subst mechanism, which expands format specifiers inside of files within the repository during a git archive. This integer overflow can result in arbitrary heap writes, which may result in arbitrary code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. Users who are unable to upgrade should disable `git archive` in untrusted repositories. If you expose git archive via `git daemon`, disable it by running `git config --global daemon.uploadArch false`."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-41903",
+              "help": {
+                "text": "Vulnerability CVE-2022-41903\nSeverity: CRITICAL\nPackage: git-man\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-41903](https://avd.aquasec.com/nvd/cve-2022-41903)\nGit is distributed revision control system. `git log` can display commits in an arbitrary format using its `--format` specifiers. This functionality is also exposed to `git archive` via the `export-subst` gitattribute. When processing the padding operators, there is a integer overflow in `pretty.c::format_and_pad_commit()` where a `size_t` is stored improperly as an `int`, and then added as an offset to a `memcpy()`. This overflow can be triggered directly by a user running a command which invokes the commit formatting machinery (e.g., `git log --format=...`). It may also be triggered indirectly through git archive via the export-subst mechanism, which expands format specifiers inside of files within the repository during a git archive. This integer overflow can result in arbitrary heap writes, which may result in arbitrary code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. Users who are unable to upgrade should disable `git archive` in untrusted repositories. If you expose git archive via `git daemon`, disable it by running `git config --global daemon.uploadArch false`.",
+                "markdown": "**Vulnerability CVE-2022-41903**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|CRITICAL|git-man|1:2.30.2-1+deb11u1|[CVE-2022-41903](https://avd.aquasec.com/nvd/cve-2022-41903)|\n\nGit is distributed revision control system. `git log` can display commits in an arbitrary format using its `--format` specifiers. This functionality is also exposed to `git archive` via the `export-subst` gitattribute. When processing the padding operators, there is a integer overflow in `pretty.c::format_and_pad_commit()` where a `size_t` is stored improperly as an `int`, and then added as an offset to a `memcpy()`. This overflow can be triggered directly by a user running a command which invokes the commit formatting machinery (e.g., `git log --format=...`). It may also be triggered indirectly through git archive via the export-subst mechanism, which expands format specifiers inside of files within the repository during a git archive. This integer overflow can result in arbitrary heap writes, which may result in arbitrary code execution. The problem has been patched in the versions published on 2023-01-17, going back to v2.30.7. Users are advised to upgrade. Users who are unable to upgrade should disable `git archive` in untrusted repositories. If you expose git archive via `git daemon`, disable it by running `git config --global daemon.uploadArch false`."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "9.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "CRITICAL"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-24765",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "git: On multi-user machines Git users might find themselves unexpectedly in a Git worktree"
+              },
+              "fullDescription": {
+                "text": "Git for Windows is a fork of Git containing Windows-specific patches. This vulnerability affects users working on multi-user machines, where untrusted parties have write access to the same hard disk. Those untrusted parties could create the folder `C:\\.git`, which would be picked up by Git operations run supposedly outside a repository while searching for a Git directory. Git would then respect any config in said Git directory. Git Bash users who set `GIT_PS1_SHOWDIRTYSTATE` are vulnerable as well. Users who installed posh-gitare vulnerable simply by starting a PowerShell. Users of IDEs such as Visual Studio are vulnerable: simply creating a new project would already read and respect the config specified in `C:\\.git\\config`. Users of the Microsoft fork of Git are vulnerable simply by starting a Git Bash. The problem has been patched in Git for Windows v2.35.2. Users unable to upgrade may create the folder `.git` on all drives where Git commands are run, and remove read/write access from those folders as a workaround. Alternatively, define or extend `GIT_CEILING_DIRECTORIES` to cover the _parent_ directory of the user profile, e.g. `C:\\Users` if the user profile is located in `C:\\Users\\my-user-name`."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-24765",
+              "help": {
+                "text": "Vulnerability CVE-2022-24765\nSeverity: HIGH\nPackage: git-man\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-24765](https://avd.aquasec.com/nvd/cve-2022-24765)\nGit for Windows is a fork of Git containing Windows-specific patches. This vulnerability affects users working on multi-user machines, where untrusted parties have write access to the same hard disk. Those untrusted parties could create the folder `C:\\.git`, which would be picked up by Git operations run supposedly outside a repository while searching for a Git directory. Git would then respect any config in said Git directory. Git Bash users who set `GIT_PS1_SHOWDIRTYSTATE` are vulnerable as well. Users who installed posh-gitare vulnerable simply by starting a PowerShell. Users of IDEs such as Visual Studio are vulnerable: simply creating a new project would already read and respect the config specified in `C:\\.git\\config`. Users of the Microsoft fork of Git are vulnerable simply by starting a Git Bash. The problem has been patched in Git for Windows v2.35.2. Users unable to upgrade may create the folder `.git` on all drives where Git commands are run, and remove read/write access from those folders as a workaround. Alternatively, define or extend `GIT_CEILING_DIRECTORIES` to cover the _parent_ directory of the user profile, e.g. `C:\\Users` if the user profile is located in `C:\\Users\\my-user-name`.",
+                "markdown": "**Vulnerability CVE-2022-24765**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|git-man|1:2.30.2-1+deb11u1|[CVE-2022-24765](https://avd.aquasec.com/nvd/cve-2022-24765)|\n\nGit for Windows is a fork of Git containing Windows-specific patches. This vulnerability affects users working on multi-user machines, where untrusted parties have write access to the same hard disk. Those untrusted parties could create the folder `C:\\.git`, which would be picked up by Git operations run supposedly outside a repository while searching for a Git directory. Git would then respect any config in said Git directory. Git Bash users who set `GIT_PS1_SHOWDIRTYSTATE` are vulnerable as well. Users who installed posh-gitare vulnerable simply by starting a PowerShell. Users of IDEs such as Visual Studio are vulnerable: simply creating a new project would already read and respect the config specified in `C:\\.git\\config`. Users of the Microsoft fork of Git are vulnerable simply by starting a Git Bash. The problem has been patched in Git for Windows v2.35.2. Users unable to upgrade may create the folder `.git` on all drives where Git commands are run, and remove read/write access from those folders as a workaround. Alternatively, define or extend `GIT_CEILING_DIRECTORIES` to cover the _parent_ directory of the user profile, e.g. `C:\\Users` if the user profile is located in `C:\\Users\\my-user-name`."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-29187",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "git: Bypass of safe.directory protections"
+              },
+              "fullDescription": {
+                "text": "Git is a distributed revision control system. Git prior to versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5, is vulnerable to privilege escalation in all platforms. An unsuspecting user could still be affected by the issue reported in CVE-2022-24765, for example when navigating as root into a shared tmp directory that is owned by them, but where an attacker could create a git repository. Versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5 contain a patch for this issue. The simplest way to avoid being affected by the exploit described in the example is to avoid running git as root (or an Administrator in Windows), and if needed to reduce its use to a minimum. While a generic workaround is not possible, a system could be hardened from the exploit described in the example by removing any such repository if it exists already and creating one as root to block any future attacks."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-29187",
+              "help": {
+                "text": "Vulnerability CVE-2022-29187\nSeverity: HIGH\nPackage: git-man\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-29187](https://avd.aquasec.com/nvd/cve-2022-29187)\nGit is a distributed revision control system. Git prior to versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5, is vulnerable to privilege escalation in all platforms. An unsuspecting user could still be affected by the issue reported in CVE-2022-24765, for example when navigating as root into a shared tmp directory that is owned by them, but where an attacker could create a git repository. Versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5 contain a patch for this issue. The simplest way to avoid being affected by the exploit described in the example is to avoid running git as root (or an Administrator in Windows), and if needed to reduce its use to a minimum. While a generic workaround is not possible, a system could be hardened from the exploit described in the example by removing any such repository if it exists already and creating one as root to block any future attacks.",
+                "markdown": "**Vulnerability CVE-2022-29187**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|git-man|1:2.30.2-1+deb11u1|[CVE-2022-29187](https://avd.aquasec.com/nvd/cve-2022-29187)|\n\nGit is a distributed revision control system. Git prior to versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5, is vulnerable to privilege escalation in all platforms. An unsuspecting user could still be affected by the issue reported in CVE-2022-24765, for example when navigating as root into a shared tmp directory that is owned by them, but where an attacker could create a git repository. Versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5 contain a patch for this issue. The simplest way to avoid being affected by the exploit described in the example is to avoid running git as root (or an Administrator in Windows), and if needed to reduce its use to a minimum. While a generic workaround is not possible, a system could be hardened from the exploit described in the example by removing any such repository if it exists already and creating one as root to block any future attacks."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-39260",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "git: git shell function that splits command arguments can lead to arbitrary heap writes."
+              },
+              "fullDescription": {
+                "text": "Git is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git\u0026#39;s push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-39260",
+              "help": {
+                "text": "Vulnerability CVE-2022-39260\nSeverity: HIGH\nPackage: git-man\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-39260](https://avd.aquasec.com/nvd/cve-2022-39260)\nGit is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround.",
+                "markdown": "**Vulnerability CVE-2022-39260**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|git-man|1:2.30.2-1+deb11u1|[CVE-2022-39260](https://avd.aquasec.com/nvd/cve-2022-39260)|\n\nGit is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "8.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-39253",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "git: exposure of sensitive information to a malicious actor"
+              },
+              "fullDescription": {
+                "text": "Git is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source\u0026#39;s `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim\u0026#39;s machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-39253",
+              "help": {
+                "text": "Vulnerability CVE-2022-39253\nSeverity: MEDIUM\nPackage: git-man\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-39253](https://avd.aquasec.com/nvd/cve-2022-39253)\nGit is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`.",
+                "markdown": "**Vulnerability CVE-2022-39253**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|git-man|1:2.30.2-1+deb11u1|[CVE-2022-39253](https://avd.aquasec.com/nvd/cve-2022-39253)|\n\nGit is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-3545",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "kernel: A flaw leading to a use-after-free in area_cache_get()"
+              },
+              "fullDescription": {
+                "text": "A vulnerability has been found in Linux Kernel and classified as critical. Affected by this vulnerability is the function area_cache_get of the file drivers/net/ethernet/netronome/nfp/nfpcore/nfp_cppcore.c of the component IPsec. The manipulation leads to use after free. It is recommended to apply a patch to fix this issue. The identifier VDB-211045 was assigned to this vulnerability."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-3545",
+              "help": {
+                "text": "Vulnerability CVE-2022-3545\nSeverity: HIGH\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2022-3545](https://avd.aquasec.com/nvd/cve-2022-3545)\nA vulnerability has been found in Linux Kernel and classified as critical. Affected by this vulnerability is the function area_cache_get of the file drivers/net/ethernet/netronome/nfp/nfpcore/nfp_cppcore.c of the component IPsec. The manipulation leads to use after free. It is recommended to apply a patch to fix this issue. The identifier VDB-211045 was assigned to this vulnerability.",
+                "markdown": "**Vulnerability CVE-2022-3545**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|linux-libc-dev|5.10.162-1|[CVE-2022-3545](https://avd.aquasec.com/nvd/cve-2022-3545)|\n\nA vulnerability has been found in Linux Kernel and classified as critical. Affected by this vulnerability is the function area_cache_get of the file drivers/net/ethernet/netronome/nfp/nfpcore/nfp_cppcore.c of the component IPsec. The manipulation leads to use after free. It is recommended to apply a patch to fix this issue. The identifier VDB-211045 was assigned to this vulnerability."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-3623",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "Kernel: denial-of-service in follow_page_pte in mm/gup.c  due to poisoned pte entry"
+              },
+              "fullDescription": {
+                "text": "A vulnerability was found in Linux Kernel. It has been declared as problematic. Affected by this vulnerability is the function follow_page_pte of the file mm/gup.c of the component BPF. The manipulation leads to race condition. The attack can be launched remotely. It is recommended to apply a patch to fix this issue. The identifier VDB-211921 was assigned to this vulnerability."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-3623",
+              "help": {
+                "text": "Vulnerability CVE-2022-3623\nSeverity: HIGH\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2022-3623](https://avd.aquasec.com/nvd/cve-2022-3623)\nA vulnerability was found in Linux Kernel. It has been declared as problematic. Affected by this vulnerability is the function follow_page_pte of the file mm/gup.c of the component BPF. The manipulation leads to race condition. The attack can be launched remotely. It is recommended to apply a patch to fix this issue. The identifier VDB-211921 was assigned to this vulnerability.",
+                "markdown": "**Vulnerability CVE-2022-3623**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|linux-libc-dev|5.10.162-1|[CVE-2022-3623](https://avd.aquasec.com/nvd/cve-2022-3623)|\n\nA vulnerability was found in Linux Kernel. It has been declared as problematic. Affected by this vulnerability is the function follow_page_pte of the file mm/gup.c of the component BPF. The manipulation leads to race condition. The attack can be launched remotely. It is recommended to apply a patch to fix this issue. The identifier VDB-211921 was assigned to this vulnerability."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-45934",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "kernel: integer overflow in l2cap_config_req() in net/bluetooth/l2cap_core.c"
+              },
+              "fullDescription": {
+                "text": "An issue was discovered in the Linux kernel through 6.0.10. l2cap_config_req in net/bluetooth/l2cap_core.c has an integer wraparound via L2CAP_CONF_REQ packets."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-45934",
+              "help": {
+                "text": "Vulnerability CVE-2022-45934\nSeverity: HIGH\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2022-45934](https://avd.aquasec.com/nvd/cve-2022-45934)\nAn issue was discovered in the Linux kernel through 6.0.10. l2cap_config_req in net/bluetooth/l2cap_core.c has an integer wraparound via L2CAP_CONF_REQ packets.",
+                "markdown": "**Vulnerability CVE-2022-45934**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|linux-libc-dev|5.10.162-1|[CVE-2022-45934](https://avd.aquasec.com/nvd/cve-2022-45934)|\n\nAn issue was discovered in the Linux kernel through 6.0.10. l2cap_config_req in net/bluetooth/l2cap_core.c has an integer wraparound via L2CAP_CONF_REQ packets."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-4696",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "kernel: user-after-free during IORING_OP_SPLICE operation"
+              },
+              "fullDescription": {
+                "text": "There exists a use-after-free vulnerability in the Linux kernel through io_uring and the IORING_OP_SPLICE operation. If IORING_OP_SPLICE is missing the IO_WQ_WORK_FILES flag, which signals that the operation won\u0026#39;t use current-\u0026gt;nsproxy, so its reference counter is not increased. This assumption is not always true as calling io_splice on specific files will call the get_uts function which will use current-\u0026gt;nsproxy leading to invalidly decreasing its reference counter later causing the use-after-free vulnerability. We recommend upgrading to version 5.10.160 or above"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-4696",
+              "help": {
+                "text": "Vulnerability CVE-2022-4696\nSeverity: HIGH\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2022-4696](https://avd.aquasec.com/nvd/cve-2022-4696)\nThere exists a use-after-free vulnerability in the Linux kernel through io_uring and the IORING_OP_SPLICE operation. If IORING_OP_SPLICE is missing the IO_WQ_WORK_FILES flag, which signals that the operation won't use current-\u003ensproxy, so its reference counter is not increased. This assumption is not always true as calling io_splice on specific files will call the get_uts function which will use current-\u003ensproxy leading to invalidly decreasing its reference counter later causing the use-after-free vulnerability. We recommend upgrading to version 5.10.160 or above",
+                "markdown": "**Vulnerability CVE-2022-4696**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|linux-libc-dev|5.10.162-1|[CVE-2022-4696](https://avd.aquasec.com/nvd/cve-2022-4696)|\n\nThere exists a use-after-free vulnerability in the Linux kernel through io_uring and the IORING_OP_SPLICE operation. If IORING_OP_SPLICE is missing the IO_WQ_WORK_FILES flag, which signals that the operation won't use current-\u003ensproxy, so its reference counter is not increased. This assumption is not always true as calling io_splice on specific files will call the get_uts function which will use current-\u003ensproxy leading to invalidly decreasing its reference counter later causing the use-after-free vulnerability. We recommend upgrading to version 5.10.160 or above"
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2023-0179",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "[netfilter: nft_payload: incorrect arithmetics when fetching VLAN header bits]"
+              },
+              "fullDescription": {
+                "text": "[netfilter: nft_payload: incorrect arithmetics when fetching VLAN header bits]"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2023-0179",
+              "help": {
+                "text": "Vulnerability CVE-2023-0179\nSeverity: HIGH\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2023-0179](https://avd.aquasec.com/nvd/cve-2023-0179)\n[netfilter: nft_payload: incorrect arithmetics when fetching VLAN header bits]",
+                "markdown": "**Vulnerability CVE-2023-0179**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|linux-libc-dev|5.10.162-1|[CVE-2023-0179](https://avd.aquasec.com/nvd/cve-2023-0179)|\n\n[netfilter: nft_payload: incorrect arithmetics when fetching VLAN header bits]"
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "8.0",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2023-0240",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "kernel: io_uring: reference counting issue in io_prep_async_work leads to use-after-free"
+              },
+              "fullDescription": {
+                "text": "There is a logic error in io_uring\u0026#39;s implementation which can be used to trigger a use-after-free vulnerability leading to privilege escalation. In the io_prep_async_work function the assumption that the last io_grab_identity call cannot return false is not true, and in this case the function will use the init_cred or the previous linked requests identity to do operations instead of using the current identity. This can lead to reference counting issues causing use-after-free. We recommend upgrading past version 5.10.161."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2023-0240",
+              "help": {
+                "text": "Vulnerability CVE-2023-0240\nSeverity: HIGH\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2023-0240](https://avd.aquasec.com/nvd/cve-2023-0240)\nThere is a logic error in io_uring's implementation which can be used to trigger a use-after-free vulnerability leading to privilege escalation. In the io_prep_async_work function the assumption that the last io_grab_identity call cannot return false is not true, and in this case the function will use the init_cred or the previous linked requests identity to do operations instead of using the current identity. This can lead to reference counting issues causing use-after-free. We recommend upgrading past version 5.10.161.",
+                "markdown": "**Vulnerability CVE-2023-0240**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|linux-libc-dev|5.10.162-1|[CVE-2023-0240](https://avd.aquasec.com/nvd/cve-2023-0240)|\n\nThere is a logic error in io_uring's implementation which can be used to trigger a use-after-free vulnerability leading to privilege escalation. In the io_prep_async_work function the assumption that the last io_grab_identity call cannot return false is not true, and in this case the function will use the init_cred or the previous linked requests identity to do operations instead of using the current identity. This can lead to reference counting issues causing use-after-free. We recommend upgrading past version 5.10.161."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2023-0266",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "A use after free vulnerability exists in the ALSA PCM package in the L ..."
+              },
+              "fullDescription": {
+                "text": "A use after free vulnerability exists in the ALSA PCM package in the Linux Kernel. SNDRV_CTL_IOCTL_ELEM_{READ|WRITE}32 is missing locks that can be used in a use-after-free that can result in a priviledge escalation to gain ring0 access from the system user. We recommend upgrading past commit 56b88b50565cd8b946a2d00b0c83927b7ebb055e"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2023-0266",
+              "help": {
+                "text": "Vulnerability CVE-2023-0266\nSeverity: HIGH\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2023-0266](https://avd.aquasec.com/nvd/cve-2023-0266)\nA use after free vulnerability exists in the ALSA PCM package in the Linux Kernel. SNDRV_CTL_IOCTL_ELEM_{READ|WRITE}32 is missing locks that can be used in a use-after-free that can result in a priviledge escalation to gain ring0 access from the system user. We recommend upgrading past commit 56b88b50565cd8b946a2d00b0c83927b7ebb055e",
+                "markdown": "**Vulnerability CVE-2023-0266**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|linux-libc-dev|5.10.162-1|[CVE-2023-0266](https://avd.aquasec.com/nvd/cve-2023-0266)|\n\nA use after free vulnerability exists in the ALSA PCM package in the Linux Kernel. SNDRV_CTL_IOCTL_ELEM_{READ|WRITE}32 is missing locks that can be used in a use-after-free that can result in a priviledge escalation to gain ring0 access from the system user. We recommend upgrading past commit 56b88b50565cd8b946a2d00b0c83927b7ebb055e"
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.8",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-2873",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "kernel: an out-of-bounds vulnerability in i2c-ismt driver"
+              },
+              "fullDescription": {
+                "text": "An out-of-bounds memory access flaw was found in the Linux kernel Intel’s iSMT SMBus host controller driver in the way a user triggers the I2C_SMBUS_BLOCK_DATA (with the ioctl I2C_SMBUS) with malicious input data. This flaw allows a local user to crash the system."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-2873",
+              "help": {
+                "text": "Vulnerability CVE-2022-2873\nSeverity: MEDIUM\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2022-2873](https://avd.aquasec.com/nvd/cve-2022-2873)\nAn out-of-bounds memory access flaw was found in the Linux kernel Intel’s iSMT SMBus host controller driver in the way a user triggers the I2C_SMBUS_BLOCK_DATA (with the ioctl I2C_SMBUS) with malicious input data. This flaw allows a local user to crash the system.",
+                "markdown": "**Vulnerability CVE-2022-2873**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|linux-libc-dev|5.10.162-1|[CVE-2022-2873](https://avd.aquasec.com/nvd/cve-2022-2873)|\n\nAn out-of-bounds memory access flaw was found in the Linux kernel Intel’s iSMT SMBus host controller driver in the way a user triggers the I2C_SMBUS_BLOCK_DATA (with the ioctl I2C_SMBUS) with malicious input data. This flaw allows a local user to crash the system."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-36280",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "kernel: vmwgfx: out-of-bounds write in vmw_kms_cursor_snoop"
+              },
+              "fullDescription": {
+                "text": "An out-of-bounds(OOB) memory access vulnerability was found in vmwgfx driver in drivers/gpu/vmxgfx/vmxgfx_kms.c in GPU component in the Linux kernel with device file \u0026#39;/dev/dri/renderD128 (or Dxxx)\u0026#39;. This flaw allows a local attacker with a user account on the system to gain privilege, causing a denial of service(DoS)."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-36280",
+              "help": {
+                "text": "Vulnerability CVE-2022-36280\nSeverity: MEDIUM\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2022-36280](https://avd.aquasec.com/nvd/cve-2022-36280)\nAn out-of-bounds(OOB) memory access vulnerability was found in vmwgfx driver in drivers/gpu/vmxgfx/vmxgfx_kms.c in GPU component in the Linux kernel with device file '/dev/dri/renderD128 (or Dxxx)'. This flaw allows a local attacker with a user account on the system to gain privilege, causing a denial of service(DoS).",
+                "markdown": "**Vulnerability CVE-2022-36280**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|linux-libc-dev|5.10.162-1|[CVE-2022-36280](https://avd.aquasec.com/nvd/cve-2022-36280)|\n\nAn out-of-bounds(OOB) memory access vulnerability was found in vmwgfx driver in drivers/gpu/vmxgfx/vmxgfx_kms.c in GPU component in the Linux kernel with device file '/dev/dri/renderD128 (or Dxxx)'. This flaw allows a local attacker with a user account on the system to gain privilege, causing a denial of service(DoS)."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-41218",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "kernel: Report vmalloc UAF in dvb-core/dmxdev"
+              },
+              "fullDescription": {
+                "text": "In drivers/media/dvb-core/dmxdev.c in the Linux kernel through 5.19.10, there is a use-after-free caused by refcount races, affecting dvb_demux_open and dvb_dmxdev_release."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-41218",
+              "help": {
+                "text": "Vulnerability CVE-2022-41218\nSeverity: MEDIUM\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2022-41218](https://avd.aquasec.com/nvd/cve-2022-41218)\nIn drivers/media/dvb-core/dmxdev.c in the Linux kernel through 5.19.10, there is a use-after-free caused by refcount races, affecting dvb_demux_open and dvb_dmxdev_release.",
+                "markdown": "**Vulnerability CVE-2022-41218**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|linux-libc-dev|5.10.162-1|[CVE-2022-41218](https://avd.aquasec.com/nvd/cve-2022-41218)|\n\nIn drivers/media/dvb-core/dmxdev.c in the Linux kernel through 5.19.10, there is a use-after-free caused by refcount races, affecting dvb_demux_open and dvb_dmxdev_release."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-47929",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "In the Linux kernel before 6.1.6, a NULL pointer dereference bug in th ..."
+              },
+              "fullDescription": {
+                "text": "In the Linux kernel before 6.1.6, a NULL pointer dereference bug in the traffic control subsystem allows an unprivileged user to trigger a denial of service (system crash) via a crafted traffic control configuration that is set up with \u0026#34;tc qdisc\u0026#34; and \u0026#34;tc class\u0026#34; commands. This affects qdisc_graft in net/sched/sch_api.c."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-47929",
+              "help": {
+                "text": "Vulnerability CVE-2022-47929\nSeverity: MEDIUM\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2022-47929](https://avd.aquasec.com/nvd/cve-2022-47929)\nIn the Linux kernel before 6.1.6, a NULL pointer dereference bug in the traffic control subsystem allows an unprivileged user to trigger a denial of service (system crash) via a crafted traffic control configuration that is set up with \"tc qdisc\" and \"tc class\" commands. This affects qdisc_graft in net/sched/sch_api.c.",
+                "markdown": "**Vulnerability CVE-2022-47929**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|linux-libc-dev|5.10.162-1|[CVE-2022-47929](https://avd.aquasec.com/nvd/cve-2022-47929)|\n\nIn the Linux kernel before 6.1.6, a NULL pointer dereference bug in the traffic control subsystem allows an unprivileged user to trigger a denial of service (system crash) via a crafted traffic control configuration that is set up with \"tc qdisc\" and \"tc class\" commands. This affects qdisc_graft in net/sched/sch_api.c."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2023-0394",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "A NULL pointer dereference flaw was found in rawv6_push_pending_frames ..."
+              },
+              "fullDescription": {
+                "text": "A NULL pointer dereference flaw was found in rawv6_push_pending_frames in net/ipv6/raw.c in the network subcomponent in the Linux kernel. This flaw causes the system to crash."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2023-0394",
+              "help": {
+                "text": "Vulnerability CVE-2023-0394\nSeverity: MEDIUM\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2023-0394](https://avd.aquasec.com/nvd/cve-2023-0394)\nA NULL pointer dereference flaw was found in rawv6_push_pending_frames in net/ipv6/raw.c in the network subcomponent in the Linux kernel. This flaw causes the system to crash.",
+                "markdown": "**Vulnerability CVE-2023-0394**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|linux-libc-dev|5.10.162-1|[CVE-2023-0394](https://avd.aquasec.com/nvd/cve-2023-0394)|\n\nA NULL pointer dereference flaw was found in rawv6_push_pending_frames in net/ipv6/raw.c in the network subcomponent in the Linux kernel. This flaw causes the system to crash."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2023-23454",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "cbq_classify in net/sched/sch_cbq.c in the Linux kernel through 6.1.4  ..."
+              },
+              "fullDescription": {
+                "text": "cbq_classify in net/sched/sch_cbq.c in the Linux kernel through 6.1.4 allows attackers to cause a denial of service (slab-out-of-bounds read) because of type confusion (non-negative numbers can sometimes indicate a TC_ACT_SHOT condition rather than valid classification results)."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2023-23454",
+              "help": {
+                "text": "Vulnerability CVE-2023-23454\nSeverity: MEDIUM\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2023-23454](https://avd.aquasec.com/nvd/cve-2023-23454)\ncbq_classify in net/sched/sch_cbq.c in the Linux kernel through 6.1.4 allows attackers to cause a denial of service (slab-out-of-bounds read) because of type confusion (non-negative numbers can sometimes indicate a TC_ACT_SHOT condition rather than valid classification results).",
+                "markdown": "**Vulnerability CVE-2023-23454**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|linux-libc-dev|5.10.162-1|[CVE-2023-23454](https://avd.aquasec.com/nvd/cve-2023-23454)|\n\ncbq_classify in net/sched/sch_cbq.c in the Linux kernel through 6.1.4 allows attackers to cause a denial of service (slab-out-of-bounds read) because of type confusion (non-negative numbers can sometimes indicate a TC_ACT_SHOT condition rather than valid classification results)."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2023-23455",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "atm_tc_enqueue in net/sched/sch_atm.c in the Linux kernel through 6.1. ..."
+              },
+              "fullDescription": {
+                "text": "atm_tc_enqueue in net/sched/sch_atm.c in the Linux kernel through 6.1.4 allows attackers to cause a denial of service because of type confusion (non-negative numbers can sometimes indicate a TC_ACT_SHOT condition rather than valid classification results)."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2023-23455",
+              "help": {
+                "text": "Vulnerability CVE-2023-23455\nSeverity: MEDIUM\nPackage: linux-libc-dev\nFixed Version: 5.10.162-1\nLink: [CVE-2023-23455](https://avd.aquasec.com/nvd/cve-2023-23455)\natm_tc_enqueue in net/sched/sch_atm.c in the Linux kernel through 6.1.4 allows attackers to cause a denial of service because of type confusion (non-negative numbers can sometimes indicate a TC_ACT_SHOT condition rather than valid classification results).",
+                "markdown": "**Vulnerability CVE-2023-23455**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|linux-libc-dev|5.10.162-1|[CVE-2023-23455](https://avd.aquasec.com/nvd/cve-2023-23455)|\n\natm_tc_enqueue in net/sched/sch_atm.c in the Linux kernel through 6.1.4 allows attackers to cause a denial of service because of type confusion (non-negative numbers can sometimes indicate a TC_ACT_SHOT condition rather than valid classification results)."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            }
+          ],
+          "version": "0.37.1"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CVE-2022-32221",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Package: curl\nInstalled Version: 7.74.0-1.3+deb11u3\nVulnerability CVE-2022-32221\nSeverity: CRITICAL\nFixed Version: 7.74.0-1.3+deb11u5\nLink: [CVE-2022-32221](https://avd.aquasec.com/nvd/cve-2022-32221)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: curl@7.74.0-1.3+deb11u3"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-43552",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Package: curl\nInstalled Version: 7.74.0-1.3+deb11u3\nVulnerability CVE-2022-43552\nSeverity: MEDIUM\nFixed Version: 7.74.0-1.3+deb11u5\nLink: [CVE-2022-43552](https://avd.aquasec.com/nvd/cve-2022-43552)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: curl@7.74.0-1.3+deb11u3"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-23521",
+          "ruleIndex": 2,
+          "level": "error",
+          "message": {
+            "text": "Package: git\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-23521\nSeverity: CRITICAL\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-23521](https://avd.aquasec.com/nvd/cve-2022-23521)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-41903",
+          "ruleIndex": 3,
+          "level": "error",
+          "message": {
+            "text": "Package: git\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-41903\nSeverity: CRITICAL\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-41903](https://avd.aquasec.com/nvd/cve-2022-41903)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-24765",
+          "ruleIndex": 4,
+          "level": "error",
+          "message": {
+            "text": "Package: git\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-24765\nSeverity: HIGH\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-24765](https://avd.aquasec.com/nvd/cve-2022-24765)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-29187",
+          "ruleIndex": 5,
+          "level": "error",
+          "message": {
+            "text": "Package: git\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-29187\nSeverity: HIGH\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-29187](https://avd.aquasec.com/nvd/cve-2022-29187)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-39260",
+          "ruleIndex": 6,
+          "level": "error",
+          "message": {
+            "text": "Package: git\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-39260\nSeverity: HIGH\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-39260](https://avd.aquasec.com/nvd/cve-2022-39260)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-39253",
+          "ruleIndex": 7,
+          "level": "warning",
+          "message": {
+            "text": "Package: git\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-39253\nSeverity: MEDIUM\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-39253](https://avd.aquasec.com/nvd/cve-2022-39253)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-23521",
+          "ruleIndex": 2,
+          "level": "error",
+          "message": {
+            "text": "Package: git-man\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-23521\nSeverity: CRITICAL\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-23521](https://avd.aquasec.com/nvd/cve-2022-23521)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git-man@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-41903",
+          "ruleIndex": 3,
+          "level": "error",
+          "message": {
+            "text": "Package: git-man\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-41903\nSeverity: CRITICAL\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-41903](https://avd.aquasec.com/nvd/cve-2022-41903)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git-man@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-24765",
+          "ruleIndex": 4,
+          "level": "error",
+          "message": {
+            "text": "Package: git-man\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-24765\nSeverity: HIGH\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-24765](https://avd.aquasec.com/nvd/cve-2022-24765)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git-man@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-29187",
+          "ruleIndex": 5,
+          "level": "error",
+          "message": {
+            "text": "Package: git-man\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-29187\nSeverity: HIGH\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-29187](https://avd.aquasec.com/nvd/cve-2022-29187)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git-man@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-39260",
+          "ruleIndex": 6,
+          "level": "error",
+          "message": {
+            "text": "Package: git-man\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-39260\nSeverity: HIGH\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-39260](https://avd.aquasec.com/nvd/cve-2022-39260)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git-man@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-39253",
+          "ruleIndex": 7,
+          "level": "warning",
+          "message": {
+            "text": "Package: git-man\nInstalled Version: 1:2.30.2-1\nVulnerability CVE-2022-39253\nSeverity: MEDIUM\nFixed Version: 1:2.30.2-1+deb11u1\nLink: [CVE-2022-39253](https://avd.aquasec.com/nvd/cve-2022-39253)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: git-man@1:2.30.2-1"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-32221",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Package: libcurl3-gnutls\nInstalled Version: 7.74.0-1.3+deb11u3\nVulnerability CVE-2022-32221\nSeverity: CRITICAL\nFixed Version: 7.74.0-1.3+deb11u5\nLink: [CVE-2022-32221](https://avd.aquasec.com/nvd/cve-2022-32221)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: libcurl3-gnutls@7.74.0-1.3+deb11u3"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-43552",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Package: libcurl3-gnutls\nInstalled Version: 7.74.0-1.3+deb11u3\nVulnerability CVE-2022-43552\nSeverity: MEDIUM\nFixed Version: 7.74.0-1.3+deb11u5\nLink: [CVE-2022-43552](https://avd.aquasec.com/nvd/cve-2022-43552)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: libcurl3-gnutls@7.74.0-1.3+deb11u3"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-32221",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Package: libcurl4\nInstalled Version: 7.74.0-1.3+deb11u3\nVulnerability CVE-2022-32221\nSeverity: CRITICAL\nFixed Version: 7.74.0-1.3+deb11u5\nLink: [CVE-2022-32221](https://avd.aquasec.com/nvd/cve-2022-32221)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: libcurl4@7.74.0-1.3+deb11u3"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-43552",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Package: libcurl4\nInstalled Version: 7.74.0-1.3+deb11u3\nVulnerability CVE-2022-43552\nSeverity: MEDIUM\nFixed Version: 7.74.0-1.3+deb11u5\nLink: [CVE-2022-43552](https://avd.aquasec.com/nvd/cve-2022-43552)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: libcurl4@7.74.0-1.3+deb11u3"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-3545",
+          "ruleIndex": 8,
+          "level": "error",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2022-3545\nSeverity: HIGH\nFixed Version: 5.10.162-1\nLink: [CVE-2022-3545](https://avd.aquasec.com/nvd/cve-2022-3545)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-3623",
+          "ruleIndex": 9,
+          "level": "error",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2022-3623\nSeverity: HIGH\nFixed Version: 5.10.162-1\nLink: [CVE-2022-3623](https://avd.aquasec.com/nvd/cve-2022-3623)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-45934",
+          "ruleIndex": 10,
+          "level": "error",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2022-45934\nSeverity: HIGH\nFixed Version: 5.10.162-1\nLink: [CVE-2022-45934](https://avd.aquasec.com/nvd/cve-2022-45934)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-4696",
+          "ruleIndex": 11,
+          "level": "error",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2022-4696\nSeverity: HIGH\nFixed Version: 5.10.162-1\nLink: [CVE-2022-4696](https://avd.aquasec.com/nvd/cve-2022-4696)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2023-0179",
+          "ruleIndex": 12,
+          "level": "error",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2023-0179\nSeverity: HIGH\nFixed Version: 5.10.162-1\nLink: [CVE-2023-0179](https://avd.aquasec.com/nvd/cve-2023-0179)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2023-0240",
+          "ruleIndex": 13,
+          "level": "error",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2023-0240\nSeverity: HIGH\nFixed Version: 5.10.162-1\nLink: [CVE-2023-0240](https://avd.aquasec.com/nvd/cve-2023-0240)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2023-0266",
+          "ruleIndex": 14,
+          "level": "error",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2023-0266\nSeverity: HIGH\nFixed Version: 5.10.162-1\nLink: [CVE-2023-0266](https://avd.aquasec.com/nvd/cve-2023-0266)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-2873",
+          "ruleIndex": 15,
+          "level": "warning",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2022-2873\nSeverity: MEDIUM\nFixed Version: 5.10.162-1\nLink: [CVE-2022-2873](https://avd.aquasec.com/nvd/cve-2022-2873)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-36280",
+          "ruleIndex": 16,
+          "level": "warning",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2022-36280\nSeverity: MEDIUM\nFixed Version: 5.10.162-1\nLink: [CVE-2022-36280](https://avd.aquasec.com/nvd/cve-2022-36280)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-41218",
+          "ruleIndex": 17,
+          "level": "warning",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2022-41218\nSeverity: MEDIUM\nFixed Version: 5.10.162-1\nLink: [CVE-2022-41218](https://avd.aquasec.com/nvd/cve-2022-41218)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-47929",
+          "ruleIndex": 18,
+          "level": "warning",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2022-47929\nSeverity: MEDIUM\nFixed Version: 5.10.162-1\nLink: [CVE-2022-47929](https://avd.aquasec.com/nvd/cve-2022-47929)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2023-0394",
+          "ruleIndex": 19,
+          "level": "warning",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2023-0394\nSeverity: MEDIUM\nFixed Version: 5.10.162-1\nLink: [CVE-2023-0394](https://avd.aquasec.com/nvd/cve-2023-0394)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2023-23454",
+          "ruleIndex": 20,
+          "level": "warning",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2023-23454\nSeverity: MEDIUM\nFixed Version: 5.10.162-1\nLink: [CVE-2023-23454](https://avd.aquasec.com/nvd/cve-2023-23454)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2023-23455",
+          "ruleIndex": 21,
+          "level": "warning",
+          "message": {
+            "text": "Package: linux-libc-dev\nInstalled Version: 5.10.158-2\nVulnerability CVE-2023-23455\nSeverity: MEDIUM\nFixed Version: 5.10.162-1\nLink: [CVE-2023-23455](https://avd.aquasec.com/nvd/cve-2023-23455)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "library/golang",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "library/golang: linux-libc-dev@5.10.158-2"
+              }
+            }
+          ]
+        }
+      ],
+      "columnKind": "utf16CodeUnits",
+      "originalUriBaseIds": {
+        "ROOTPATH": {
+          "uri": "file:///"
+        }
+      }
+    }
+  ]
+}

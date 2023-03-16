@@ -9,7 +9,7 @@ on:
         required: false
         type: string
     secrets:
-       CHARMHUB_TOKEN:
+       CHARMCRAFT_CREDENTIALS:
          required: true
 jobs:
   quality-checks:

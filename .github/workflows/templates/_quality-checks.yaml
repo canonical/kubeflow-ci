@@ -8,7 +8,7 @@ on:
         required: true
         type: string
     secrets:
-      CHARMHUB_TOKEN:
+      CHARMCRAFT_CREDENTIALS:
         required: true
 jobs:
   lib-check:
@@ -22,6 +22,6 @@ jobs:
       - name: Check libs
         uses: canonical/charming-actions/check-libraries@2.2.3
         with:
-          credentials: "${{ secrets.CHARMHUB_TOKEN }}"
+          credentials: "${{ secrets.CHARMCRAFT_CREDENTIALS }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           charm-path: "${{ inputs.charm-path }}"

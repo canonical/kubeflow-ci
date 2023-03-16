@@ -10,7 +10,7 @@ on:
         type: string
     secrets:
        CHARMHUB_TOKEN:
-         required: false
+         required: true
 jobs:
   quality-checks:
     name: Quality Checks

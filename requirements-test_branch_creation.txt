@@ -42,5 +42,5 @@ smmap==5.0.0
     # via gitdb
 tomli==2.0.1
     # via pytest
-urllib3==2.0.2
+urllib3==2.0.3
     # via requests

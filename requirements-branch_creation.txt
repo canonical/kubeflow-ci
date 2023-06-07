@@ -20,5 +20,5 @@ requests==2.31.0
     # via -r requirements-branch_creation.in
 smmap==5.0.0
     # via gitdb
-urllib3==2.0.2
+urllib3==2.0.3
     # via requests

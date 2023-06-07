@@ -19,7 +19,7 @@ cffi==1.15.1
     #   -r ./scripts/release-charms/requirements.txt
     #   cryptography
     #   pynacl
-charmed-kubeflow-chisme==0.0.9
+charmed-kubeflow-chisme==0.0.11
     # via -r ./scripts/release-charms/requirements.txt
 charset-normalizer==3.1.0
     # via
@@ -29,7 +29,7 @@ click==8.1.3
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   typer
-cryptography==40.0.2
+cryptography==41.0.1
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   pyjwt
@@ -80,11 +80,11 @@ lightkube-models==1.27.1.4
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   lightkube
-markupsafe==2.1.2
+markupsafe==2.1.3
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   jinja2
-ops==2.2.0
+ops==2.3.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   charmed-kubeflow-chisme
@@ -132,7 +132,7 @@ requests==2.31.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   pygithub
-ruamel-yaml==0.17.28
+ruamel-yaml==0.17.31
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   charmed-kubeflow-chisme
@@ -156,11 +156,11 @@ tomli==2.0.1
     #   pytest
 typer==0.9.0
     # via -r ./scripts/release-charms/requirements.txt
-typing-extensions==4.6.2
+typing-extensions==4.6.3
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   typer
-urllib3==2.0.2
+urllib3==2.0.3
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   requests

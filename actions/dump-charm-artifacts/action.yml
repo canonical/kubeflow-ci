@@ -1,0 +1,52 @@
+name: 'Dump Charm Log Artifacts'
+description: 'Dumps to Artifacts useful Juju, Kubernetes, and Charmcraft log information.  Requires kubectl to be set up with a context, and charmcraft to be installed.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Check out repo
+      uses: actions/checkout@v3
+
+    # Setup
+
+    - name: Create artifact collection directory
+      id: mkdir
+      shell: bash
+      if: always()
+      run: |
+        LOG_DIR="tmp_logs"
+        echo "log-dir=$(echo $LOG_DIR)" >> $GITHUB_OUTPUT
+        mkdir $LOG_DIR
+
+    - name: 'Install juju-crashdump'
+      shell: bash
+      if: always()
+      run: sudo snap install juju-crashdump --classic
+
+    - name: 'Install ketall'
+      # https://github.com/corneliusweig/ketall
+      shell: bash
+      if: always()
+      run: |
+        wget https://github.com/corneliusweig/ketall/releases/download/v1.3.8/get-all-amd64-linux.tar.gz
+        tar -xf get-all-amd64-linux.tar.gz
+        mkdir -p /home/runner/.local/bin/
+        mv get-all-amd64-linux /home/runner/.local/bin/ketall
+
+    # Dump logs
+
+    - name: Collect all logs
+      shell: bash
+      if: always()
+      run: |
+        export OUTPUT_DIR=${{ steps.mkdir.outputs.log-dir }}
+        bash ${{ github.action_path }}/logdump.bash
+
+    # Save logs
+
+    - name: Upload debug artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: juju-kubernetes-charmcraft-logs
+        path: ${{ steps.mkdir.outputs.log-dir }}
+        if-no-files-found: error

@@ -19,7 +19,7 @@ TODO: Complete the path below once this is placed in a longterm location.
 To use this as a Github action, do:
 
 ```yaml
-- uses: canonical/kubeflow-ci/dump-charm-artifacts@version
+- uses: canonical/kubeflow-ci/dump-charm-debug-artifacts@version
   # always() if you want this to run on every run, regardless of failure. 
   # more details: https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
   if: always()

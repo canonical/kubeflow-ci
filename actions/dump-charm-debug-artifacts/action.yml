@@ -1,4 +1,4 @@
-name: 'Dump Charm Log Artifacts'
+name: 'Dump Charm Debug Artifacts'
 description: 'Dumps to Artifacts useful Juju, Kubernetes, and Charmcraft log information.  Requires kubectl to be set up with a context, and charmcraft to be installed.'
 runs:
   using: 'composite'

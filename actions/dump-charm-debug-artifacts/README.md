@@ -28,5 +28,5 @@ To use this as a Github action, do:
 To use this script directly, do:
 
 ```bash
-CHARMCRAFT_LOG_DIR=path/to/your/charmcraft/log/dir bash logdump.bash
+bash logdump.bash
 ```

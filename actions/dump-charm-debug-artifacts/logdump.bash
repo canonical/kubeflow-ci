@@ -37,8 +37,8 @@ trap 'result=1' ERR
 
 # Inputs
 OUTPUT_DIR=${OUTPUT_DIR:-tmp}
-# Defaults to the location on a gh runner
-CHARMCRAFT_LOG_DIR=${CHARMCRAFT_LOG_DIR:-"/home/runner/snap/charmcraft/common/cache/charmcraft/log"}
+# Defaults to the typical location
+CHARMCRAFT_LOG_DIR=${CHARMCRAFT_LOG_DIR:-"$HOME/snap/charmcraft/common/cache/charmcraft/log"}
 
 echo "Dumping logs to ${OUTPUT_DIR}"
 

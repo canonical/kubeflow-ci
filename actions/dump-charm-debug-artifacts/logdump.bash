@@ -12,6 +12,28 @@
 # Before sending this information to anyone, you should inspect it to ensure no
 # sensitive information is being shared.
 
+# Check prerequisites
+if ! command -v kubectl &> /dev/null
+then
+	echo "error: required dependency kubectl not be found."
+	exit 1
+fi
+
+if ! command -v ketall &> /dev/null
+then
+	echo "error: required dependency ketall not be found."
+	exit 1
+fi
+
+if ! snap list | grep juju-crashdump > /dev/null
+then
+	echo "error: required dependency juju-crashdump not be found."
+	exit 1
+fi
+
+# Catch any failures and return a failure code at the end
+result=0
+trap 'result=1' ERR
 
 # Inputs
 OUTPUT_DIR=${OUTPUT_DIR:-tmp}
@@ -59,3 +81,6 @@ kubectl cluster-info dump | tee "$OUTPUT_DIR/kubectl-cluster-info-dump.txt"
 # Deeper resource details and logs
 ketall | tee "$OUTPUT_DIR/kubernetes-ketall.txt"
 ketall -o yaml | tee "$OUTPUT_DIR/kubernetes-ketall-detailed.yaml"
+
+# exit with an error code if we hit any errors
+exit "$result"

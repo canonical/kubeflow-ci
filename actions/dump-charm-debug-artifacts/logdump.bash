@@ -13,23 +13,30 @@
 # sensitive information is being shared.
 
 # Check prerequisites
+if ! command -v charmcraft &> /dev/null
+then
+	echo "error: required dependency charmcraft not found."
+	exit 1
+fi
+
 if ! command -v kubectl &> /dev/null
 then
-	echo "error: required dependency kubectl not be found."
+	echo "error: required dependency kubectl not found."
 	exit 1
 fi
 
 if ! command -v ketall &> /dev/null
 then
-	echo "error: required dependency ketall not be found."
+	echo "error: required dependency ketall not found."
 	exit 1
 fi
 
 if ! snap list | grep juju-crashdump > /dev/null
 then
-	echo "error: required dependency juju-crashdump not be found."
+	echo "error: required dependency juju-crashdump not found."
 	exit 1
 fi
+
 
 # Catch any failures and return a failure code at the end
 result=0

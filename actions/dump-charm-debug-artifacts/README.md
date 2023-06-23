@@ -1,6 +1,6 @@
 ## Summary
 
-Dumps logs relevant to kubernetes-based Juju charms to a Github Artifact.
+Dumps logs relevant to kubernetes-based Juju charms to a GitHub Artifact.
 
 Logs are both printed to screen and dumped to the artifact "juju-kubernetes-charmcraft-logs".
 

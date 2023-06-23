@@ -60,5 +60,5 @@ jobs:
         echo fakelog1 > /home/runner/snap/charmcraft/common/cache/charmcraft/log/charmcraft-fake1.log
         echo fakelog2 > /home/runner/snap/charmcraft/common/cache/charmcraft/log/charmcraft-fake2.log
 
-    - uses: ./dump-charm-debug-artifacts/
+    - uses: ./actions/dump-charm-debug-artifacts/
       if: always()

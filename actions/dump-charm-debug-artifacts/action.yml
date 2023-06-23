@@ -11,7 +11,6 @@ runs:
     - name: Create artifact collection directory
       id: mkdir
       shell: bash
-      if: always()
       run: |
         LOG_DIR="tmp_logs"
         echo "log-dir=$(echo $LOG_DIR)" >> $GITHUB_OUTPUT
@@ -19,13 +18,11 @@ runs:
 
     - name: 'Install juju-crashdump'
       shell: bash
-      if: always()
       run: sudo snap install juju-crashdump --classic
 
     - name: 'Install ketall'
       # https://github.com/corneliusweig/ketall
       shell: bash
-      if: always()
       run: |
         wget https://github.com/corneliusweig/ketall/releases/download/v1.3.8/get-all-amd64-linux.tar.gz
         tar -xf get-all-amd64-linux.tar.gz
@@ -36,7 +33,6 @@ runs:
 
     - name: Collect all logs
       shell: bash
-      if: always()
       run: |
         export OUTPUT_DIR=${{ steps.mkdir.outputs.log-dir }}
         bash ${{ github.action_path }}/logdump.bash

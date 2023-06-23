@@ -4,6 +4,7 @@
 # Logs are both printed to screen and dumped in the OUTPUT_DIR (default: tmp)
 #
 # Prerequisites:
+# * charmcraft (`snap install charmcraft`)
 # * juju crashdump (`snap install juju-crashdump`)
 # * kubectl (with a kube config for the relevant cluster)
 # * ketall (https://github.com/corneliusweig/ketall)

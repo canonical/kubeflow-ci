@@ -5,6 +5,7 @@ Dumps logs relevant to kubernetes-based Juju charms to a GitHub Artifact.
 Logs are both printed to screen and dumped to the artifact "juju-kubernetes-charmcraft-logs".
 
 Prerequisites for running this action in a workflow:
+* charmcraft
 * kubectl (with a kube config for the relevant cluster)
 * Juju bootstrapped on the runner
 

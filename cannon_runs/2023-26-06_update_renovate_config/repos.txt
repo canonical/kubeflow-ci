@@ -27,3 +27,5 @@ canonical/argo-workflows-rocks
 canonical/oidc-gatekeeper-operator
 canonical/dex-auth-operator
 canonical/oidc-authservice-rock
+canonical/kubeflow-roles-operator
+canonical/kubeflow-tensorboards-operator

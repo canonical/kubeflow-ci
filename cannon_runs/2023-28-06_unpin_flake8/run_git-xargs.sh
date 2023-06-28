@@ -11,6 +11,7 @@ SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 git-xargs \
   --loglevel DEBUG \
   --repos repos.txt \
-  --branch-name KF-3627-unpin-flake8 \
-  --pull-request-title "ci KF-3627: Unpin flake8" \
+  --branch-name KF-3627-unpin-flake8-with-ci \
+  --pull-request-title "ci KF-3627: Unpin flake8 with CI" \
+  --no-skip-ci \
   bash $SCRIPTPATH/main.sh

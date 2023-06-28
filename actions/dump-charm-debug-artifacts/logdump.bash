@@ -58,7 +58,7 @@ for f in `ls "$HOME/snap/charmcraft/common/cache/charmcraft/log/charmcraft-*.log
     cat $f | tee "$OUTPUT_DIR/`basename $f`"
 done
 # A spot sometimes seen on a gh runner
-for f in `ls "/home/runner/.local/state/charmcraft/log/charmcraft-*.log"`; do
+for f in `ls "$HOME/.local/state/charmcraft/log/charmcraft-*.log"`; do
     echo cat $f | tee $OUTPUT_DIR/`basename $f`
     cat $f | tee "$OUTPUT_DIR/`basename $f`"
 done

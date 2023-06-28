@@ -45,19 +45,24 @@ trap 'result=1' ERR
 
 # Inputs
 OUTPUT_DIR=${OUTPUT_DIR:-tmp}
-# Defaults to the typical location
-CHARMCRAFT_LOG_DIR=${CHARMCRAFT_LOG_DIR:-"$HOME/snap/charmcraft/common/cache/charmcraft/log"}
-
 echo "Dumping logs to ${OUTPUT_DIR}"
+
 
 ############
 # Charmcraft
 
-# Collect charmcraft log files, if they exist
-for f in `ls $CHARMCRAFT_LOG_DIR/charmcraft-*.log`; do
+# Collect charmcraft log files from typical locations, if they exist
+# Common for most installs
+for f in `ls "$HOME/snap/charmcraft/common/cache/charmcraft/log/charmcraft-*.log"`; do
     echo cat $f | tee $OUTPUT_DIR/`basename $f`
     cat $f | tee "$OUTPUT_DIR/`basename $f`"
 done
+# A spot sometimes seen on a gh runner
+for f in `ls "$HOME/.local/state/charmcraft/log/charmcraft-*.log"`; do
+    echo cat $f | tee $OUTPUT_DIR/`basename $f`
+    cat $f | tee "$OUTPUT_DIR/`basename $f`"
+done
+
 
 ############
 # Juju
@@ -80,6 +85,7 @@ for model in `juju list-models --format yaml | yq e '.models[].name'`; do
         juju show-status-log --days 1 --type unit $unit | tee "$OUTPUT_DIR/juju-status-logs-unit-${unit//\//-}.txt"
 	done
 done	
+
 
 ############
 # Kubernetes

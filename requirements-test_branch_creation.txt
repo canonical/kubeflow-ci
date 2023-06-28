@@ -20,13 +20,13 @@ iniconfig==2.0.0
     # via pytest
 packaging==23.1
     # via pytest
-pluggy==1.0.0
+pluggy==1.2.0
     # via pytest
-pytest==7.3.1
+pytest==7.4.0
     # via
     #   -r requirements-test_branch_creation.in
     #   pytest-mock
-pytest-mock==3.10.0
+pytest-mock==3.11.1
     # via -r requirements-test_branch_creation.in
 pyyaml==6.0
     # via -r requirements-test_branch_creation.in
@@ -34,7 +34,7 @@ requests==2.31.0
     # via
     #   -r requirements-test_branch_creation.in
     #   requests-mock
-requests-mock==1.10.0
+requests-mock==1.11.0
     # via -r requirements-test_branch_creation.in
 six==1.16.0
     # via requests-mock
@@ -42,5 +42,5 @@ smmap==5.0.0
     # via gitdb
 tomli==2.0.1
     # via pytest
-urllib3==2.0.2
+urllib3==2.0.3
     # via requests

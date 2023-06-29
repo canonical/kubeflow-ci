@@ -1,0 +1,34 @@
+# Generated using `gh search repos --topic charmed-kubeflow | awk '{print $1}' > repos.txt`
+# Note that this list was all charms as of this run, but if running this in future you should build
+# your own list as new repositories may have been added.  
+# This execution used the entire list, but if you know you only need to search a subset of the
+# repos you could filter this list first. 
+canonical/bundle-kubeflow
+canonical/mlflow-operator
+canonical/notebook-operators
+canonical/istio-operators
+canonical/training-operator
+canonical/kubeflow-ci
+canonical/kserve-operators
+canonical/seldon-core-operator
+canonical/resource-dispatcher
+canonical/namespace-node-affinity-operator
+canonical/minio-operator
+canonical/kubeflow-volumes-operator
+canonical/kfp-operators
+canonical/kubeflow-rocks
+canonical/mlflow-prometheus-exporter
+canonical/katib-rocks
+canonical/charmed-kubeflow-chisme
+canonical/admission-webhook-operator
+canonical/knative-operators
+canonical/kubeflow-profiles-operator
+canonical/pipelines-rocks
+canonical/metacontroller-operator
+canonical/mlmd-operator
+canonical/argo-workflows-rocks
+canonical/katib-operators
+canonical/argo-operators
+canonical/resource-dispatcher-image
+canonical/kubeflow-dashboard-operator
+canonical/oidc-authservice-rock

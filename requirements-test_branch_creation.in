@@ -1,0 +1,6 @@
+pyyaml
+requests
+GitPython
+pytest
+requests-mock
+pytest-mock

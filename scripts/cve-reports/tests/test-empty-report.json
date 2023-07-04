@@ -1,0 +1,70 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "gcr.io/distroless/base:debug",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "OS": {
+      "Family": "debian",
+      "Name": "11.6"
+    },
+    "ImageID": "sha256:91d926e8d8b60fb3b599f006127963659b33f96fc04d1b8607b1af20c0a89a3c",
+    "DiffIDs": [
+      "sha256:cb60fb9b862c6a89f92e484bc3b72bbc0352b41166df5c4a68bfb52f52504a7d",
+      "sha256:00c562532b203116c721c11aee6fe1fe50b5e2068cee2c343c1df1050a866b3e",
+      "sha256:6998679213707b9968867d5627bfa0f77da0baad13d2120ce41d0606c8f9d591"
+    ],
+    "RepoTags": [
+      "gcr.io/distroless/base:debug"
+    ],
+    "RepoDigests": [
+      "gcr.io/distroless/base@sha256:8a9dcde44c321d59ef2f656d204c6f9d6c75a7c5d0972e84f04e1da6b8a6c84f"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "author": "Bazel",
+      "created": "2023-01-31T17:54:32Z",
+      "history": [
+        {
+          "created": "2023-01-31T17:54:32Z",
+          "created_by": "bazel build ..."
+        },
+        {
+          "created": "2023-01-31T17:54:32Z",
+          "created_by": "bazel build ..."
+        },
+        {
+          "created": "2023-01-31T17:54:32Z",
+          "created_by": "bazel build ..."
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:cb60fb9b862c6a89f92e484bc3b72bbc0352b41166df5c4a68bfb52f52504a7d",
+          "sha256:00c562532b203116c721c11aee6fe1fe50b5e2068cee2c343c1df1050a866b3e",
+          "sha256:6998679213707b9968867d5627bfa0f77da0baad13d2120ce41d0606c8f9d591"
+        ]
+      },
+      "config": {
+        "Entrypoint": [
+          "/busybox/sh"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/busybox",
+          "SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"
+        ],
+        "User": "0",
+        "WorkingDir": "/"
+      }
+    }
+  },
+  "Results": [
+    {
+      "Target": "gcr.io/distroless/base:debug (debian 11.6)",
+      "Class": "os-pkgs",
+      "Type": "debian"
+    }
+  ]
+}
+

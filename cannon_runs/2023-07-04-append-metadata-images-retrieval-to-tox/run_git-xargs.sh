@@ -11,7 +11,7 @@ SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 git-xargs \
   --loglevel DEBUG \
   --repos repos.txt \
-  --branch-name KF-3627-unpin-flake8-with-ci \
-  --pull-request-title "ci KF-3627: Unpin flake8 with CI" \
+  --branch-name kf-3783-feat-metatdata-images \
+  --pull-request-title "ci KF-33783: update tox.ini with image list generation capabilites" \
   --no-skip-ci \
   bash $SCRIPTPATH/main.sh

@@ -14,7 +14,9 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
-def get_charm_channel_map_for_applications(applications: dict[str, dict]) -> dict[str, dict]:
+from typing import Dict
+...
+def get_charm_channel_map_for_applications(applications: Dict[str, dict]) -> Dict[str, dict]:
     """Return a dict of {charm_name: charm_channel_map} for charms in a map of applications.
 
     The charm_channel_map returned is the channel_map key of the yaml returned for

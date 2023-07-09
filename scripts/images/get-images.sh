@@ -9,6 +9,4 @@ for REPO in "${REPOS[@]}"; do
   # get workload images
   #IMAGES+=($($REPO/tools/get-images.sh))
 done
-for IMAGE in "${IMAGES[@]}"; do
-  echo "$IMAGE"
-done
+printf "%s\n" "${IMAGES[@]}"

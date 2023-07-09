@@ -7,6 +7,6 @@ for REPO in "${REPOS[@]}"; do
   # get charm's images from metadata
   IMAGES+=($(find $REPO -type f -name metadata.yaml -exec yq '.resources | to_entries | .[] | .value | ."upstream-source"' {} \;))
   # get workload images
-  #IMAGES+=($($REPO/tools/get-images.sh))
+  IMAGES+=($($REPO/tools/get-images.sh))
 done
 printf "%s\n" "${IMAGES[@]}"

@@ -6,11 +6,7 @@
 from unittest import mock
 
 from juju import JujuFailedError
-from request_missing_tracks import (
-    Juju,
-    get_charm_channel_map_for_applications,
-    get_missing_tracks,
-)
+from request_missing_tracks import Juju, get_charm_channel_map_for_applications, get_missing_tracks
 
 
 def test_get_charm_channel_map_for_applications():

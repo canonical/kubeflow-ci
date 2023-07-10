@@ -5,6 +5,7 @@
 """Script for requesting missing tracks in a bundle"""
 
 import logging
+from typing import Dict
 
 import typer
 from bundle import Bundle
@@ -14,8 +15,6 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
-from typing import Dict
-...
 def get_charm_channel_map_for_applications(applications: Dict[str, dict]) -> Dict[str, dict]:
     """Return a dict of {charm_name: charm_channel_map} for charms in a map of applications.
 

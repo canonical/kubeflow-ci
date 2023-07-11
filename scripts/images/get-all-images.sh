@@ -8,8 +8,8 @@ for REPO in "${REPOS[@]}"; do
   # get charm's images from metadata
   cd $REPO
   IMAGES+=($(get-metadata-images.sh))
-  cd -
   # get workload images
   IMAGES+=($($REPO/tools/get-images-$RELEASE.sh))
+  cd -
 done
 printf "%s\n" "${IMAGES[@]}"

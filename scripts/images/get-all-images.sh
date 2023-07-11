@@ -10,6 +10,6 @@ for REPO in "${REPOS[@]}"; do
   IMAGES+=($(get-metadata-images.sh))
   cd -
   # get workload images
-  IMAGES+=($($REPO/tools/get-imagesi-$RELEASE.sh))
+  IMAGES+=($($REPO/tools/get-images-$RELEASE.sh))
 done
 printf "%s\n" "${IMAGES[@]}"

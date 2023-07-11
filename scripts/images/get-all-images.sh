@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 BUNDLE_FILE=$1
+RELEASE=$2
 IMAGES=()
 REPOS=($(grep _github_repo_name $BUNDLE_FILE | awk '{print $2}' | sort --unique))
 for REPO in "${REPOS[@]}"; do
@@ -9,6 +10,6 @@ for REPO in "${REPOS[@]}"; do
   IMAGES+=($(get-metadata-images.sh))
   cd -
   # get workload images
-  IMAGES+=($($REPO/tools/get-images.sh))
+  IMAGES+=($($REPO/tools/get-imagesi-$RELEASE.sh))
 done
 printf "%s\n" "${IMAGES[@]}"

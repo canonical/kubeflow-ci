@@ -7,7 +7,7 @@ for REPO in "${REPOS[@]}"; do
   git clone https://github.com/canonical/$REPO
   # get charm's images from metadata
   cd $REPO
-  IMAGES+=($(get-metadata-images.sh))
+  IMAGES+=($(REPO/tools/get-metadata-images.sh))
   # get workload images
   IMAGES+=($($REPO/tools/get-images-$RELEASE.sh))
   cd -

@@ -12,7 +12,7 @@ for REPO_BRANCH in "${REPOS_BRANCHES[@]}"; do
   IFS=: read -r REPO BRANCH <<< "$REPO_BRANCH"
   git clone https://github.com/canonical/$REPO
   cd $REPO
-  git checkout -b tmp $BRANCH
+  git checkout -b tmp origin/$BRANCH
   IMAGES+=($(bash ./tools/get-images.sh))
   cd - > /dev/null
 done
@@ -23,6 +23,7 @@ for REPO_BRANCH in "${REPOS_BRANCHES[@]}"; do
   IFS=: read -r REPO BRANCH <<< "$REPO_BRANCH"
   git clone https://github.com/canonical/$REPO
   cd $REPO
+  # for dependency branch name used as-is
   git checkout -b tmp $BRANCH
   # for dependencies only retrieve workload containers from metadata.yaml
   IMAGES+=($(find -type f -name metadata.yaml -exec yq '.resources | to_entries | .[] | .value | ."upstream-source"' {} \;))

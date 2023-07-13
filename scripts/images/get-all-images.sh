@@ -11,8 +11,8 @@ for REPO_BRANCH in "${REPOS_BRANCHES[@]}"; do
   IFS=: read -r REPO BRANCH <<< "$REPO_BRANCH"
   git clone https://github.com/canonical/$REPO
   cd $REPO
-  git checkout $BRANCH tmp
-  IMAGES+=($(./tools/get-images.sh))
+  git checkout -b tmp $BRANCH
+  IMAGES+=($(bash ./tools/get-images.sh))
   cd - > /dev/null
 done
 printf "%s\n" "${IMAGES[@]}"

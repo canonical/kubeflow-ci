@@ -15,7 +15,7 @@ charm login && cat ~/.go-cookies
 ```
 (charmcraft (requires charmcraft > 1.3.1)
 ```
-charmcraft login --export /tmp/charmcraft.credentials && echo "Copy the key below this line" && cat /tmp/charmcraft.credentials && rm /tmp/charmcraft.credentials
+charmcraft login --export --ttl 15000000 /tmp/charmcraft.credentials && echo "Copy the key below this line" && cat /tmp/charmcraft.credentials && rm /tmp/charmcraft.credentials
 ```
 
 2. Insert above credentials into this repo's CHARMSTORE_CREDENTIAL/CHARMCRAFT_CREDENTIALS secret (Settings->Secrets)

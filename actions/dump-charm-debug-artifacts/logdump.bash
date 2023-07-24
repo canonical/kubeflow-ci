@@ -52,6 +52,7 @@ echo "Dumping logs to ${OUTPUT_DIR}"
 # Charmcraft
 
 # Collect charmcraft log files from typical locations, if they exist
+shopt -s nullglob
 # Common for most installs
 for f in $HOME/snap/charmcraft/common/cache/charmcraft/log/charmcraft-*.log; do
     echo cat $f | tee $OUTPUT_DIR/`basename $f`
@@ -62,6 +63,7 @@ for f in $HOME/.local/state/charmcraft/log/charmcraft-*.log; do
     echo cat $f | tee $OUTPUT_DIR/`basename $f`
     cat $f | tee "$OUTPUT_DIR/`basename $f`"
 done
+shopt -u nullglob
 
 
 ############

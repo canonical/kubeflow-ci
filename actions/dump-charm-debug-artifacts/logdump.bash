@@ -55,12 +55,10 @@ echo "Dumping logs to ${OUTPUT_DIR}"
 shopt -s nullglob
 # Common for most installs
 for f in $HOME/snap/charmcraft/common/cache/charmcraft/log/charmcraft-*.log; do
-    echo cat $f | tee $OUTPUT_DIR/`basename $f`
     cat $f | tee "$OUTPUT_DIR/`basename $f`"
 done
 # A spot sometimes seen on a gh runner
 for f in $HOME/.local/state/charmcraft/log/charmcraft-*.log; do
-    echo cat $f | tee $OUTPUT_DIR/`basename $f`
     cat $f | tee "$OUTPUT_DIR/`basename $f`"
 done
 shopt -u nullglob

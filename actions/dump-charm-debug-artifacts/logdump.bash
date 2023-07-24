@@ -53,12 +53,12 @@ echo "Dumping logs to ${OUTPUT_DIR}"
 
 # Collect charmcraft log files from typical locations, if they exist
 # Common for most installs
-for f in `ls "$HOME/snap/charmcraft/common/cache/charmcraft/log/charmcraft-*.log"`; do
+for f in $HOME/snap/charmcraft/common/cache/charmcraft/log/charmcraft-*.log; do
     echo cat $f | tee $OUTPUT_DIR/`basename $f`
     cat $f | tee "$OUTPUT_DIR/`basename $f`"
 done
 # A spot sometimes seen on a gh runner
-for f in `ls "$HOME/.local/state/charmcraft/log/charmcraft-*.log"`; do
+for f in $HOME/.local/state/charmcraft/log/charmcraft-*.log; do
     echo cat $f | tee $OUTPUT_DIR/`basename $f`
     cat $f | tee "$OUTPUT_DIR/`basename $f`"
 done

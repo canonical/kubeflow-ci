@@ -8,6 +8,9 @@ BUNDLE_FILE=$1
 IMAGES=()
 # retrieve all repositories and branches for CKF
 REPOS_BRANCHES=($(yq -r '.applications[] | to_json' $BUNDLE_FILE | jq -r 'select(._github_repo_name) | "\(._github_repo_name):\(._github_repo_branch)"' | sort --unique))
+print "CKF repos:"
+printf "%s\n" "${REPOS_BRANCHES[@]}"
+
 for REPO_BRANCH in "${REPOS_BRANCHES[@]}"; do
   IFS=: read -r REPO BRANCH <<< "$REPO_BRANCH"
   git clone --branch $BRANCH https://github.com/canonical/$REPO
@@ -18,7 +21,10 @@ done
 
 # retrieve all repositories and branches for dependencies
 DEP_REPOS_BRANCHES=($(yq -r '.applications[] | to_json' $BUNDLE_FILE | jq -r 'select(._github_dependency_repo_name) | "\(._github_dependency_repo_name):\(._github_dependency_repo_branch)"' | sort --unique))
-for REPO_BRANCH in "${REPOS_BRANCHES[@]}"; do
+print "Dependency repos:"
+printf "%s\n" "${DEP_REPOS_BRANCHES[@]}"
+
+for REPO_BRANCH in "${DEP_REPOS_BRANCHES[@]}"; do
   IFS=: read -r REPO BRANCH <<< "$REPO_BRANCH"
   git clone --branch $BRANCH https://github.com/canonical/$REPO
   cd $REPO

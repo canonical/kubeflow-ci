@@ -8,7 +8,6 @@ BUNDLE_FILE=$1
 IMAGES=()
 # retrieve all repositories and branches for CKF
 REPOS_BRANCHES=($(yq -r '.applications[] | to_json' $BUNDLE_FILE | jq -r 'select(._github_repo_name) | "\(._github_repo_name):\(._github_repo_branch)"' | sort --unique))
-printf "%s\n" "${REPOS_BRANCHES[@]}"
 
 for REPO_BRANCH in "${REPOS_BRANCHES[@]}"; do
   IFS=: read -r REPO BRANCH <<< "$REPO_BRANCH"

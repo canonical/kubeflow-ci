@@ -56,9 +56,6 @@ for IMAGE in "${IMAGE_LIST[@]}"; do
       echo "$IMAGE,$BASE,$NUM_CRITICAL,$NUM_HIGH,$NUM_MEDIUM,$NUM_LOW" >> $SCAN_SUMMARY_FILE
     fi
     docker rmi $IMAGE
-    docker images
-    docker ps -a
-    echo "Removed image"
     df . -h
 done
 

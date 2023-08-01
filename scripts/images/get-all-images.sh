@@ -20,7 +20,6 @@ done
 
 # retrieve all repositories and branches for dependencies
 DEP_REPOS_BRANCHES=($(yq -r '.applications[] | to_json' $BUNDLE_FILE | jq -r 'select(._github_dependency_repo_name) | "\(._github_dependency_repo_name):\(._github_dependency_repo_branch)"' | sort --unique))
-printf "%s\n" "${DEP_REPOS_BRANCHES[@]}"
 
 for REPO_BRANCH in "${DEP_REPOS_BRANCHES[@]}"; do
   IFS=: read -r REPO BRANCH <<< "$REPO_BRANCH"

@@ -5,29 +5,33 @@ from pathlib import Path
 
 OUTPUT_VARIABLE_NAME = "charm_paths"
 
-
 def find_charms_in_dir(base_dir: str = "./", charms_subdir="charms"):
-	"""Finds paths to charm directories in base_dir.
+    """
+    Finds paths to charm directories in base_dir.
 
-	Directories are identified as charm directories by the presence of a "metadata.yaml" file.
+    Directories are identified as charm directories by the presence of a "metadata.yaml" or "metadata.yml" file.
 
-	Returns:
-	* If any subdirectories of base_dir/charms_subdir/ are charm directories, then the list of these directories is returned.
-	* If not, then if the base directory itself is a charm directory, that is returned.
-	* Otherwise, returns [] 
-	"""
-	base_dir = Path(base_dir)
-	charms_dir = base_dir / charms_subdir
-	metadata_files = list(charms_dir.glob("*/metadata.yaml"))
-	if not metadata_files:
-		# No nested charm directories found, check if the top level dir is a charm
-		metadata_files = list(base_dir.glob("metadata.yaml"))
+    Returns:
+    * If any subdirectories of base_dir/charms_subdir/ are charm directories, then the list of these directories is returned.
+    * If not, then if the base directory itself is a charm directory, that is returned.
+    * Otherwise, returns []
 
-	# Return the parent directory of the relevant metadata_files
-	charm_dirs = [metadata_file.parent for metadata_file in metadata_files]
+	Directories returned are alphabetically sorted.
+    """
+    base_dir = Path(base_dir)
+    charms_dir = base_dir / charms_subdir
+    
+    # Look for both .yaml and .yml files in subdirectories using a single glob pattern
+    metadata_files = list(charms_dir.glob("*/metadata.y*ml"))
+    
+    if not metadata_files:
+        # No nested charm directories found, check if the top level dir is a charm
+        metadata_files = list(base_dir.glob("metadata.y*ml"))
 
-	return charm_dirs
+    # Return the parent directory of the relevant metadata_files and remove duplicates
+    charm_dirs = sorted(list(set(metadata_file.parent for metadata_file in metadata_files)))
 
+    return charm_dirs
 
 def stringify_paths(paths):
 	"""Converts list of Paths to list of strings, appending a trailing slash just in case"""

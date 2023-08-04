@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
       - name: Get paths for all charms in this repo
         id: get-charm-paths
-        uses: canonical/kubeflow-ci/actions/get-charm-paths@master
+        uses: canonical/kubeflow-ci/actions/get-charm-paths@main
 
   echo-charm-paths:
     name: Echo charm paths emitted

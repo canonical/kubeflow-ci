@@ -7,15 +7,14 @@ OUTPUT_VARIABLE_NAME = "charm_paths"
 
 
 def find_charms_in_dir(base_dir: str = "./", charms_subdir="charms"):
-	"""Returns a list of paths to charm directories in base_dir.
-
-	Searches for:
-	* any subdirectories in base_dir/charms_subdir/ are charm directories
-	* if no charm dirs are found, checks if base_dir is itself a charm directory
-	* if still nothing is found, returns []
+	"""Finds paths to charm directories in base_dir.
 
 	Directories are identified as charm directories by the presence of a "metadata.yaml" file.
-	Returned paths include base_dir and charms_subdir in their path, as applicable.
+
+	Returns:
+	* If any subdirectories of base_dir/charms_subdir/ are charm directories, then the list of these directories is returned.
+	* If not, then if the base directory itself is a charm directory, that is returned.
+	* Otherwise, returns [] 
 	"""
 	base_dir = Path(base_dir)
 	charms_dir = base_dir / charms_subdir

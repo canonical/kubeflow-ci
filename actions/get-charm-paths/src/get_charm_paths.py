@@ -37,13 +37,14 @@ def stringify_paths(paths):
 	"""Converts list of Paths to list of strings, appending a trailing slash just in case"""
 	return [str(path) + "/" for path in paths]
 
+def set_github_output(name, value):
+    os.system(f'echo "{name}={value}" >> $GITHUB_OUTPUT')
 
 def emit_to_github_action(name, data):
 	"""Emits data to STDOUT as an output named name in a format that GitHub Actions consumes"""
 	data = str(data)
 	print(f"Found {name}: {data}")
-	print(f"::set-output name={name}::{data}")
-
+	set_github_output(name, data)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(

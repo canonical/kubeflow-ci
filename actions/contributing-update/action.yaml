@@ -30,7 +30,7 @@ runs:
     - name: 'Download template file'
       shell: bash
       run: |
-        wget -O "${{ inputs.contributing_update_dir }}/contributing.md.template" "https://raw.githubusercontent.com/canonical/charmed-kubeflow-workflows/${{ inputs.branch }}/contributing_update/contributing.md.template"
+        wget -O "${{ inputs.contributing_update_dir }}/contributing.md.template" "https://raw.githubusercontent.com/canonical/kubeflow-ci/${{ inputs.branch }}/actions/contributing-update/contributing.md.template"
     - name: 'Generate and compare'
       id: generate-and-compare
       shell: bash

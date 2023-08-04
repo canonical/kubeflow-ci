@@ -6,7 +6,7 @@ from pathlib import Path
 OUTPUT_VARIABLE_NAME = "charm_paths"
 
 
-def find_charms_in_dir(base_dir: str, charms_subdir="charms"):
+def find_charms_in_dir(base_dir: str = "./", charms_subdir="charms"):
 	"""Returns a list of paths to charm directories in base_dir.
 
 	Searches for:

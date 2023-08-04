@@ -49,7 +49,8 @@ if __name__ == "__main__":
 	)
 
 	parser.add_argument("base_dir", help="Directory to search for charms")
+	parser.add_argument("--charms-subdir", default="charms", help="Subdirectory to search for charms")
 	args = parser.parse_args()
-	charm_dirs = find_charms_in_dir(args.base_dir)
+	charm_dirs = find_charms_in_dir(args.base_dir, args.charms_subdir)
 	charm_dirs = stringify_paths(charm_dirs)
 	emit_to_github_action(name=OUTPUT_VARIABLE_NAME, data=charm_dirs)

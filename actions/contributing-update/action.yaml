@@ -1,0 +1,64 @@
+name: 'Contributing Check and Update'
+description: 'Checks contributing file in calling repo and creates a PR if it''s outdated. If branch / PR alredy exists, will update and force push if necessary.'
+
+inputs:
+  branch:
+    description: 'The branch to get the template file from'
+    required: false
+    default: 'main'
+  contributing_update_dir:
+    description: 'The directory path for contributing update'
+    required: false
+    default: 'contributing_update_temp'
+  charm_path:
+    description: 'The relative path to the charm in the repo'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Install yq'
+      shell: bash
+      run: |
+          wget https://github.com/mikefarah/yq/releases/download/v4.34.2/yq_linux_amd64.tar.gz -O /tmp/yq.tar.gz
+          tar xzf /tmp/yq.tar.gz -C /usr/local/bin/
+    - uses: 'actions/checkout@v3'
+    - name: 'Make temporary dir for this job'
+      shell: bash
+      run: |
+        mkdir -p "${{ inputs.contributing_update_dir }}"
+    - name: 'Download template file'
+      shell: bash
+      run: |
+        wget -O "${{ inputs.contributing_update_dir }}/contributing.md.template" "https://raw.githubusercontent.com/canonical/charmed-kubeflow-workflows/${{ inputs.branch }}/contributing_update/contributing.md.template"
+    - name: 'Generate and compare'
+      id: generate-and-compare
+      shell: bash
+      run: |
+        python ${{ github.action_path }}/generate_and_compare.py "${{ inputs.contributing_update_dir }}" "${{ inputs.charm_path }}"
+    - name: 'Echo comparison_result'
+      run: |
+        echo "Comparison result is: ${{ steps.generate-and-compare.outputs.comparison_result }}"
+      shell: bash
+    - name: Generate branch suffix
+      id: gen-branch-suffix
+      shell: bash
+      run: |
+        transformed_path=$(echo "${{ inputs.charm_path }}" | sed 's/[^a-zA-Z]/-/g' | sed 's/-$//')
+        echo "suffix=${transformed_path}" >> $GITHUB_OUTPUT
+    - name: Move and Cleanup
+      shell: bash
+      run: |
+        mv -f "${{ inputs.contributing_update_dir }}/contributing.md" "${{ inputs.charm_path }}/contributing.md"
+        rm -rf "${{ inputs.contributing_update_dir }}"
+    - name: 'Open PR'
+      id: create-pull-request
+      if: steps.generate-and-compare.outputs.comparison_result == '1'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        title: "(Automated) Update Contributing.md (${{ steps.gen-branch-suffix.outputs.suffix }})"
+        body: "Updated contributing.md file based on auto-generate file from template"
+        commit-message: "Updated contributing.md file based on auto-generate file from template"
+        signoff: false
+        delete-branch: true
+        branch: "automated-update-contributing-${{ steps.gen-branch-suffix.outputs.suffix }}"      

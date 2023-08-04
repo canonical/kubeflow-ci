@@ -1,0 +1,3 @@
+### Contributing Workflow
+
+This workflow checks the contributing file of a repo and updates it if necessary. The contributing file is checked against a template file, defined here, and repo-specific files, defined in the repo. The action runs a script that generates a fresh contributing file from the template and the repo-specific files. This generated file is compared against the contributing file already in the calling repo. If they differ, another step is run to create a PR overwriting the existing file with the freshly generated one.

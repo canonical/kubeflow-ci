@@ -19,7 +19,7 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - uses: 'actions/checkout@v2'
+    - uses: 'actions/checkout@v3'
     - name: 'Get paths for all charms in repo'
       id: get-charm-paths
       shell: bash

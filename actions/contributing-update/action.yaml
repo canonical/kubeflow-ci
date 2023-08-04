@@ -1,5 +1,5 @@
 name: 'Contributing Check and Update'
-description: 'Checks contributing file in calling repo and creates a PR if it''s outdated. If branch / PR alredy exists, will update and force push if necessary.'
+description: 'Checks contributing file in calling repo and creates a PR if it''s outdated. If branch / PR already exists, will update and force push if necessary.'
 
 inputs:
   branch:

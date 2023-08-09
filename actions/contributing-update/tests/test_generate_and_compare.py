@@ -1,6 +1,6 @@
 from pathlib import Path
 import pytest
-from src.generate_and_compare import generate_and_compare_contributing
+from src.generate_and_compare import generate_and_compare_contributing, ResiduePlaceholdersError
 
 EXPECTED_DIFFS = {
     "happy": [],  
@@ -136,4 +136,13 @@ def test_generate_and_compare_contributing_contents(charm_path):
     
     assert generated_contents == expected_contents
 
-# TODO: Add tests for expected failures: missing template, missing placeholders
+@pytest.mark.parametrize(
+    "temp_path, charm_path, expected_error",
+    [
+        ("bad_temp", "happy", FileNotFoundError),
+        ("temp", "missing_placeholders", ResiduePlaceholdersError),    
+    ]
+)
+def test_generate_and_compare_contributing_failure(temp_path, charm_path, expected_error):
+    with pytest.raises(expected_error):
+        generate_and_compare_contributing(temp_path, charm_path)

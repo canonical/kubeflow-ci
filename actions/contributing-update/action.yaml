@@ -35,7 +35,7 @@ runs:
       id: generate-and-compare
       shell: bash
       run: |
-        python ${{ github.action_path }}/generate_and_compare.py "${{ inputs.contributing_update_dir }}" "${{ inputs.charm_path }}"
+        python ${{ github.action_path }}/src/generate_and_compare.py "${{ inputs.contributing_update_dir }}" "${{ inputs.charm_path }}"
     - name: 'Echo comparison_result'
       run: |
         echo "Comparison result is: ${{ steps.generate-and-compare.outputs.comparison_result }}"

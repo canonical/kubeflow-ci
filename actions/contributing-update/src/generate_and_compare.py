@@ -9,6 +9,9 @@ from pathlib import Path
 def set_github_output(name, value):
     os.system(f'echo "{name}={value}" >> $GITHUB_OUTPUT')
 
+class ResiduePlaceholdersError(Exception):    
+    pass
+
 def generate_and_compare_contributing(temp_path: str, charm_path: str):
     """
     Generates a contributing file from a template and computes the difference with an existing one.
@@ -33,9 +36,10 @@ def generate_and_compare_contributing(temp_path: str, charm_path: str):
 
     remaining_expr = re.findall(r'{{[^}]*}}', template)
     if remaining_expr:
-        print("Error: Some {{ }} expressions are still present in the generated template:")
+        err_msg = "Error: Some {{ }} expressions are still present in the generated template:"
+        print(err_msg)
         print("\n".join(remaining_expr))
-        sys.exit(1)
+        raise ResiduePlaceholdersError(err_msg)
 
     existing_file_path = Path(charm_path) / "contributing.md"
     if existing_file_path.exists():

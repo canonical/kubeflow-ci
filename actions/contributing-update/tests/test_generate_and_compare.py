@@ -1,6 +1,6 @@
 from pathlib import Path
 import pytest
-from src.generate_and_compare import compute_diff
+from src.generate_and_compare import generate_and_compare_contributing
 
 EXPECTED_DIFFS = {
     "happy": [],  
@@ -104,9 +104,9 @@ EXPECTED_DIFFS = {
         ("./outdated", EXPECTED_DIFFS["outdated"]),
     ]
 )
-def test_compute_diff(charm_path, expected_diff):
+def test_generate_and_compare_contributing_diff(charm_path, expected_diff):
     temp_path = "temp"
-    diff = compute_diff(temp_path, charm_path)
+    diff, _ = generate_and_compare_contributing(temp_path, charm_path)
     
     # Filter out lines that don't start with '+ ' or '- ' from the diff
     relevant_diff = [line for line in diff if line.startswith('+ ') or line.startswith('- ')]

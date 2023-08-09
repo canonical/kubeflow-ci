@@ -9,14 +9,13 @@ from pathlib import Path
 def set_github_output(name, value):
     os.system(f'echo "{name}={value}" >> $GITHUB_OUTPUT')
 
-def compute_diff(temp_path: str, charm_path: str):
+def generate_and_compare_contributing(temp_path: str, charm_path: str):
     """
     Generates a contributing file from a template and computes the difference with an existing one.
-    Returns the diff.
+    Returns the diff and the generated contributing contents.
     """
     TEMPLATE_FILE = Path(temp_path) / "contributing.md.template"
     INPUTS_FILE = Path(charm_path) / "contributing_inputs.yaml"
-    OUTPUT_FILE = Path(temp_path) / "contributing.md"
 
     with open(TEMPLATE_FILE, 'r') as f:
         template = f.read()
@@ -29,9 +28,6 @@ def compute_diff(temp_path: str, charm_path: str):
         value = inputs_data[key]
         print(f"Replacing {key} with {value}")
         template = template.replace(f"{{{{ {key} }}}}", value)
-
-    with open(OUTPUT_FILE, 'w') as f:
-        f.write(template)
 
     print("Generated contributing file from template.")
 
@@ -49,8 +45,9 @@ def compute_diff(temp_path: str, charm_path: str):
     else:
         existing_contributing_contents = ""
         print("No existing contributing file found")
-        
-    return list(difflib.ndiff(existing_contributing_contents.splitlines(), template.splitlines()))
+
+    diff = list(difflib.ndiff(existing_contributing_contents.splitlines(), template.splitlines()))
+    return diff, template
 
 def set_comparison_result_to_github(diff):
     """
@@ -74,5 +71,11 @@ if __name__ == "__main__":
     parser.add_argument('temp_path', help='The temporary path for the operation.')
     parser.add_argument('charm_path', help='The charm path in the repository.')
     args = parser.parse_args()
-    diff = compute_diff(args.temp_path, args.charm_path)
+    diff, generated_contents = generate_and_compare_contributing(args.temp_path, args.charm_path)
+    
+    # Write the generated contributing.md file
+    OUTPUT_FILE = Path(args.temp_path) / "contributing.md"
+    with open(OUTPUT_FILE, 'w') as f:
+        f.write(generated_contents)
+    
     set_comparison_result_to_github(diff)

@@ -36,8 +36,8 @@ def generate_and_compare_contributing(temp_path: str, charm_path: str):
 
     remaining_expr = re.findall(r'{{[^}]*}}', template)
     if remaining_expr:
-        err_msg = "Error: Some {{ }} expressions are still present in the generated template:"
-        print(err_msg)
+        err_msg = "Error: Some {{ }} expressions are still present in the generated template"
+        print(f"{err_msg}:")
         print("\n".join(remaining_expr))
         raise ResiduePlaceholdersError(err_msg)
 

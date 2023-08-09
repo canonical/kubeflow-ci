@@ -114,4 +114,26 @@ def test_generate_and_compare_contributing_diff(charm_path, expected_diff):
     assert relevant_diff == expected_diff
 
 
+def read_expected_contents(charm_path: str) -> str:
+    """Read the expected contents of the contributing file from the expected file."""
+    expected_file_path = Path(charm_path) / "contributing.md.expected"
+    with open(expected_file_path, 'r') as f:
+        return f.read()
+
+@pytest.mark.parametrize(
+    "charm_path",
+    [
+        "./happy",
+        "./no_contrib",
+        "./outdated",
+    ]
+)
+def test_generate_and_compare_contributing_contents(charm_path):
+    temp_path = "temp"
+    _, generated_contents = generate_and_compare_contributing(temp_path, charm_path)
+    
+    expected_contents = read_expected_contents(charm_path)
+    
+    assert generated_contents == expected_contents
+
 # TODO: Add tests for expected failures: missing template, missing placeholders

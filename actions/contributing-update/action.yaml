@@ -17,11 +17,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: 'Install yq'
-      shell: bash
-      run: |
-          wget https://github.com/mikefarah/yq/releases/download/v4.34.2/yq_linux_amd64.tar.gz -O /tmp/yq.tar.gz
-          tar xzf /tmp/yq.tar.gz -C /usr/local/bin/
     - uses: 'actions/checkout@v3'
     - name: 'Make temporary dir for this job'
       shell: bash

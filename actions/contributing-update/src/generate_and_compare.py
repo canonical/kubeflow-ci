@@ -9,10 +9,10 @@ from pathlib import Path
 def set_github_output(name, value):
     os.system(f'echo "{name}={value}" >> $GITHUB_OUTPUT')
 
-def generate_and_compare_contributing(temp_path: str, charm_path: str):
+def compute_diff(temp_path: str, charm_path: str):
     """
-    Generates a contributing file from a template and compares it with an existing one.
-    Sets GitHub output based on the comparison result.
+    Generates a contributing file from a template and computes the difference with an existing one.
+    Returns the diff.
     """
     TEMPLATE_FILE = Path(temp_path) / "contributing.md.template"
     INPUTS_FILE = Path(charm_path) / "contributing_inputs.yaml"
@@ -49,8 +49,13 @@ def generate_and_compare_contributing(temp_path: str, charm_path: str):
     else:
         existing_contributing_contents = ""
         print("No existing contributing file found")
+        
+    return list(difflib.ndiff(existing_contributing_contents.splitlines(), template.splitlines()))
 
-    diff = list(difflib.ndiff(existing_contributing_contents.splitlines(), template.splitlines()))
+def set_comparison_result_to_github(diff):
+    """
+    Sets the GitHub output based on the provided diff.
+    """
     differences = [line for line in diff if line.startswith('+ ') or line.startswith('- ')]
 
     if differences:
@@ -69,4 +74,5 @@ if __name__ == "__main__":
     parser.add_argument('temp_path', help='The temporary path for the operation.')
     parser.add_argument('charm_path', help='The charm path in the repository.')
     args = parser.parse_args()
-    generate_and_compare_contributing(args.temp_path, args.charm_path)
+    diff = compute_diff(args.temp_path, args.charm_path)
+    set_comparison_result_to_github(diff)

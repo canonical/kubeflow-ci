@@ -22,12 +22,11 @@ def find_charms_in_dir(base_dir: str = "./", charms_subdir="charms"):
     base_dir = Path(base_dir)
     charms_dir = base_dir / charms_subdir
     
-    # Look for both .yaml and .yml files in subdirectories using a single glob pattern
-    metadata_files = list(charms_dir.glob("*/metadata.y*ml"))
+    metadata_files = list(charms_dir.glob("*/metadata.yaml")) + list(charms_dir.glob("*/metadata.yml"))
     
     if not metadata_files:
         # No nested charm directories found, check if the top level dir is a charm
-        metadata_files = list(base_dir.glob("metadata.y*ml"))
+        metadata_files = list(base_dir.glob("metadata.yaml")) + list(base_dir.glob("metadata.yml"))
 
     # Return the parent directory of the relevant metadata_files and remove duplicates
     charm_dirs = sorted(list(set(metadata_file.parent for metadata_file in metadata_files)))

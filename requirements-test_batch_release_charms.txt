@@ -8,6 +8,10 @@ anyio==3.7.1
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   httpcore
+attrs==23.1.0
+    # via
+    #   -r ./scripts/release-charms/requirements.txt
+    #   jsonschema
 certifi==2023.7.22
     # via
     #   -r ./scripts/release-charms/requirements.txt
@@ -19,7 +23,7 @@ cffi==1.15.1
     #   -r ./scripts/release-charms/requirements.txt
     #   cryptography
     #   pynacl
-charmed-kubeflow-chisme==0.0.11
+charmed-kubeflow-chisme==0.2.0
     # via -r ./scripts/release-charms/requirements.txt
 charset-normalizer==3.2.0
     # via
@@ -64,6 +68,10 @@ idna==3.4
     #   anyio
     #   httpx
     #   requests
+importlib-resources==6.0.1
+    # via
+    #   -r ./scripts/release-charms/requirements.txt
+    #   jsonschema
 iniconfig==2.0.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
@@ -72,6 +80,10 @@ jinja2==3.1.2
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   charmed-kubeflow-chisme
+jsonschema==4.17.3
+    # via
+    #   -r ./scripts/release-charms/requirements.txt
+    #   serialized-data-interface
 lightkube==0.14.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
@@ -88,6 +100,7 @@ ops==2.5.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   charmed-kubeflow-chisme
+    #   serialized-data-interface
 ordered-set==4.1.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
@@ -96,6 +109,10 @@ packaging==23.1
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   pytest
+pkgutil-resolve-name==1.3.10
+    # via
+    #   -r ./scripts/release-charms/requirements.txt
+    #   jsonschema
 pluggy==1.2.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
@@ -104,7 +121,7 @@ pycparser==2.21
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   cffi
-pygithub==1.59.0
+pygithub==1.59.1
     # via -r ./scripts/release-charms/requirements.txt
 pyjwt[crypto]==2.8.0
     # via
@@ -114,6 +131,10 @@ pynacl==1.5.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   pygithub
+pyrsistent==0.19.3
+    # via
+    #   -r ./scripts/release-charms/requirements.txt
+    #   jsonschema
 pytest==7.4.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
@@ -128,10 +149,12 @@ pyyaml==6.0.1
     #   -r ./scripts/release-charms/requirements.txt
     #   lightkube
     #   ops
+    #   serialized-data-interface
 requests==2.31.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   pygithub
+    #   serialized-data-interface
 ruamel-yaml==0.17.32
     # via
     #   -r ./scripts/release-charms/requirements.txt
@@ -140,6 +163,10 @@ ruamel-yaml-clib==0.2.7
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   ruamel-yaml
+serialized-data-interface==0.7.0
+    # via
+    #   -r ./scripts/release-charms/requirements.txt
+    #   charmed-kubeflow-chisme
 sniffio==1.3.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
@@ -172,3 +199,7 @@ wrapt==1.15.0
     # via
     #   -r ./scripts/release-charms/requirements.txt
     #   deprecated
+zipp==3.16.2
+    # via
+    #   -r ./scripts/release-charms/requirements.txt
+    #   importlib-resources

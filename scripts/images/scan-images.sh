@@ -19,10 +19,6 @@ fi
 echo "Scan container images specified in $FILE"
 DATE=$(date +%F)
 SCAN_SUMMARY_FILE="scan-summary.csv"
-if [ ! -f $SCAN_SUMMARY_FILE ]; then
-    # create header for scan summary file, if it does not exist
-    echo "IMAGE,BASE,CRITICAL,HIGH,MEDIUM,LOW,CRITICAL-OS,CRITICAL-LANG,HIGH-OS,HIGH-LANG,MEDIUM-OS,MEDIUM-LANG,LOW-OS,LOW-LANG" >> $SCAN_SUMMARY_FILE
-fi
 
 # create directory for trivy reports
 mkdir -p "$TRIVY_REPORTS_DIR"
@@ -45,13 +41,11 @@ for IMAGE in "${IMAGE_LIST[@]}"; do
     echo "Scan image $IMAGE report in $TRIVY_REPORT"
     docker pull $IMAGE
     docker run -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`:`pwd` -w `pwd` --name=scanner aquasec/trivy image --timeout 30m -f $TRIVY_REPORT_TYPE -o $TRIVY_REPORT --ignore-unfixed $IMAGE
-    if [ "$TRIVY_REPORT_TYPE" = "json" ]; then
-      # for JSON type retrieve severity counts
-      get-summary.py --report-path $TRIVY_REPORT >> $SCAN_SUMMARY_FILE
-    fi
     docker rmi $IMAGE
     docker rm -f $(docker ps -a -q)
     df . -h
 done
+
+get-summary.py --report-path $TRIVY_REPORTS_DI --print-header >> $SCAN_SUMMARY_FILE
 
 cat $SCAN_SUMMARY_FILE

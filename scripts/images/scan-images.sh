@@ -46,6 +46,6 @@ for IMAGE in "${IMAGE_LIST[@]}"; do
     df . -h
 done
 
-./get-summary.py --report-path $TRIVY_REPORTS_DIR --print-header >> $SCAN_SUMMARY_FILE
+./get-summary.py --report-path $TRIVY_REPORTS_DIR --print-header > $SCAN_SUMMARY_FILE
 
 cat $SCAN_SUMMARY_FILE

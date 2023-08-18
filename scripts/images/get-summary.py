@@ -39,23 +39,25 @@ def get_base_os(report_json: dict) -> str:
     """Return the OS base name by parsing the trivy report data."""
     base = "N/A"
     if "OS" in report_json["Metadata"]:
-        base = "%s:%s" % (report_json['Metadata']['OS']['Family'],
-                          report_json['Metadata']['OS']['Name'])
+        base = "%s:%s" % (
+            report_json["Metadata"]["OS"]["Family"],
+            report_json["Metadata"]["OS"]["Name"],
+        )
 
     return base
 
 
 def get_oci_image_name(report_json: dict) -> str:
     """Return the name of the OCI Image from the trivy report data."""
-    OCI_IMAGE_KEY = "ArtifactName"
-    if OCI_IMAGE_KEY not in report_json:
+    oci_image_key = "ArtifactName"
+    if oci_image_key not in report_json:
         raise ValueError("No 'ArtifactName' key was found on the report")
 
-    return report_json[OCI_IMAGE_KEY]
+    return report_json[oci_image_key]
 
 
 def flatten_vulnerabilities(report_json) -> List[dict]:
-    """Return a list of vulnerabilites that contain severity and class."""
+    """Return a list of vulnerabilities that contain severity and class."""
     if "Results" not in report_json:
         # no scan results found, skip this report
         return []
@@ -68,8 +70,7 @@ def flatten_vulnerabilities(report_json) -> List[dict]:
 
         # class is either os-pkgs or lang-pkgs
         for vuln in result["Vulnerabilities"]:
-            vuln_list.append({"class": result["Class"],
-                              "severity": vuln["Severity"]})
+            vuln_list.append({"class": result["Class"], "severity": vuln["Severity"]})
 
     return vuln_list
 
@@ -77,11 +78,24 @@ def flatten_vulnerabilities(report_json) -> List[dict]:
 def main(report_path, print_header):
     file_list = get_reports_files_list(report_path)
 
-    HEADER_ROW = ["IMAGE", "BASE", "CRITICAL", "HIGH", "MEDIUM", "LOW",
-                  "CRITICAL-OS", "CRITICAL-LANG", "HIGH-OS", "HIGH-LANG",
-                  "MEDIUM-OS", "MEDIUM-LANG", "LOW-OS", "LOW-LANG"]
+    header_roq = [
+        "IMAGE",
+        "BASE",
+        "CRITICAL",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "CRITICAL-OS",
+        "CRITICAL-LANG",
+        "HIGH-OS",
+        "HIGH-LANG",
+        "MEDIUM-OS",
+        "MEDIUM-LANG",
+        "LOW-OS",
+        "LOW-LANG",
+    ]
     if print_header:
-        print(",".join(HEADER_ROW))
+        print(",".join(header_roq))
 
     for file in file_list:
         if file.suffix != ".json":
@@ -94,12 +108,9 @@ def main(report_path, print_header):
         base_os = get_base_os(report_json)
 
         # calculate total number of CVEs per category
-        lang_pkgs = {"CRITICAL": 0, "HIGH": 0,
-                     "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
-        os_pkgs = {"CRITICAL": 0, "HIGH": 0,
-                   "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
-        all_pkgs = {"CRITICAL": 0, "HIGH": 0,
-                    "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
+        lang_pkgs = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
+        os_pkgs = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
+        all_pkgs = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
 
         for vulnerability in flatten_vulnerabilities(report_json):
             clss = vulnerability["class"]
@@ -112,16 +123,21 @@ def main(report_path, print_header):
                 lang_pkgs[sev] += 1
 
         base_info = "%s,%s" % (oci_image, base_os)
-        all_pkgs_info = "%s,%s,%s,%s" % (all_pkgs['CRITICAL'],
-                                         all_pkgs['HIGH'],
-                                         all_pkgs['MEDIUM'], all_pkgs['LOW'])
-        crit_info = "%s,%s" % (os_pkgs['CRITICAL'], lang_pkgs['CRITICAL'])
-        high_info = "%s,%s" % (os_pkgs['HIGH'], lang_pkgs['HIGH'])
-        medium_info = "%s,%s" % (os_pkgs['MEDIUM'], lang_pkgs['MEDIUM'])
-        low_info = "%s,%s" % (os_pkgs['LOW'], lang_pkgs['LOW'])
+        all_pkgs_info = "%s,%s,%s,%s" % (
+            all_pkgs["CRITICAL"],
+            all_pkgs["HIGH"],
+            all_pkgs["MEDIUM"],
+            all_pkgs["LOW"],
+        )
+        crit_info = "%s,%s" % (os_pkgs["CRITICAL"], lang_pkgs["CRITICAL"])
+        high_info = "%s,%s" % (os_pkgs["HIGH"], lang_pkgs["HIGH"])
+        medium_info = "%s,%s" % (os_pkgs["MEDIUM"], lang_pkgs["MEDIUM"])
+        low_info = "%s,%s" % (os_pkgs["LOW"], lang_pkgs["LOW"])
 
-        print("%s,%s,%s,%s,%s,%s" % (base_info, all_pkgs_info, crit_info,
-                                     high_info, medium_info, low_info))
+        print(
+            "%s,%s,%s,%s,%s,%s"
+            % (base_info, all_pkgs_info, crit_info, high_info, medium_info, low_info)
+        )
 
 
 if __name__ == "__main__":

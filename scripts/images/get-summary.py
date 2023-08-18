@@ -8,9 +8,10 @@
 import argparse
 import json
 from pathlib import Path
+from typing import List
 
 
-def get_reports_files_list(report_path: str) -> list[str]:
+def get_reports_files_list(report_path: str) -> List[str]:
     """
     Return the list of report files to be scanned.
 
@@ -53,7 +54,7 @@ def get_oci_image_name(report_json: dict) -> str:
     return report_json[OCI_IMAGE_KEY]
 
 
-def flatten_vulnerabilities(report_json) -> list[dict]:
+def flatten_vulnerabilities(report_json) -> List[dict]:
     """Return a list of vulnerabilites that contain severity and class."""
     if "Results" not in report_json:
         # no scan results found, skip this report

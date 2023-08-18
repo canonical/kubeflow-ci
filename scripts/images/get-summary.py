@@ -10,43 +10,13 @@ import json
 from pathlib import Path
 
 
-def parse_json(filename):
-    """Parse JSON file"""
-    record_list = []
-    with open(filename, "r") as json_file:
-        data = json.load(json_file)
+def get_reports_files_list(report_path: str) -> list[str]:
+    """
+    Return the list of report files to be scanned.
 
-    artifact = data["ArtifactName"]
-    if "OS" in data["Metadata"]:
-        base = f"{data['Metadata']['OS']['Family']}:{data['Metadata']['OS']['Name']}"
-    else:
-        base = "N/A"
-
-    if "Results" not in data:
-        # no scan results found, skip this report
-        print(f"No results in report {filename}")
-        return []
-
-    for result in data["Results"]:
-        if "Vulnerabilities" not in result or len(result["Vulnerabilities"]) == 0:
-            # no vulnerabilities found, skip this report
-            continue
-        package_type = result["Class"]
-        vuln_list = result["Vulnerabilities"]
-        for vuln in vuln_list:
-            record_list.append(
-                {
-                    "artifact": artifact,
-                    "base": base,
-                    "class": package_type,
-                    "severity": vuln["Severity"],
-                }
-            )
-
-    return record_list
-
-
-def main(report_path):
+    If a folder is provided, then a list of all the files will be used. If only
+    a single file is provided, then the output list will contain that file.
+    """
     input_path = Path(report_path)
 
     file_list = []
@@ -56,35 +26,106 @@ def main(report_path):
     elif input_path.is_file():
         file_list.append(input_path)
     else:
-        print(f"Invalid input {report_path} supplied")
-        return
+        raise ValueError(f"Invalid input {report_path} supplied")
 
     if not file_list:
-        print(f"Failed to retrieve list of files from {report_path}")
-        return
+        raise ValueError(f"Failed to retrieve list of files for {report_path}")
 
-    for file in file_list:
-        if file.suffix == ".json":
-            records = parse_json(file)
-        else:
+    return file_list
+
+
+def get_base_os(report_json: dict) -> str:
+    """Return the OS base name by parsing the trivy report data."""
+    base = "N/A"
+    if "OS" in report_json["Metadata"]:
+        base = "%s:%s" % (report_json['Metadata']['OS']['Family'],
+                          report_json['Metadata']['OS']['Name'])
+
+    return base
+
+
+def get_oci_image_name(report_json: dict) -> str:
+    """Return the name of the OCI Image from the trivy report data."""
+    OCI_IMAGE_KEY = "ArtifactName"
+    if OCI_IMAGE_KEY not in report_json:
+        raise ValueError("No 'ArtifactName' key was found on the report")
+
+    return report_json[OCI_IMAGE_KEY]
+
+
+def flatten_vulnerabilities(report_json) -> list[dict]:
+    """Return a list of vulnerabilites that contain severity and class."""
+    if "Results" not in report_json:
+        # no scan results found, skip this report
+        return []
+
+    vuln_list = []
+    for result in report_json["Results"]:
+        if not result.get("Vulnerabilities", 0):
+            # no vulnerabilities found, skip this report
             continue
 
-        # create and output summary
-        lang_pkgs = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
-        os_pkgs = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
-        for record in records:
-            if record["class"] == "os-pkgs":
-                os_pkgs[record["severity"]] = os_pkgs[record["severity"]] + 1
-            if record["class"] == "lang-pkgs":
-                lang_pkgs[record["severity"]] = lang_pkgs[record["severity"]] + 1
+        # class is either os-pkgs or lang-pkgs
+        for vuln in result["Vulnerabilities"]:
+            vuln_list.append({"class": result["Class"],
+                              "severity": vuln["Severity"]})
 
-        print(
-            f"{record['artifact']},{record['base']},{os_pkgs['CRITICAL']},{os_pkgs['HIGH']},{os_pkgs['MEDIUM']},{os_pkgs['LOW']},{lang_pkgs['CRITICAL']},{lang_pkgs['HIGH']},{lang_pkgs['MEDIUM']},{lang_pkgs['LOW']}"
-        )  # noqa
+    return vuln_list
+
+
+def main(report_path, print_header):
+    file_list = get_reports_files_list(report_path)
+
+    HEADER_ROW = ["IMAGE", "BASE", "CRITICAL", "HIGH", "MEDIUM", "LOW",
+                  "CRITICAL-OS", "CRITICAL-LANG", "HIGH-OS", "HIGH-LANG",
+                  "MEDIUM-OS", "MEDIUM-LANG", "LOW-OS", "LOW-LANG"]
+    if print_header:
+        print(",".join(HEADER_ROW))
+
+    for file in file_list:
+        if file.suffix != ".json":
+            raise ValueError("File is not .json %s" % file)
+
+        with open(file, "r") as json_file:
+            report_json = json.load(json_file)
+
+        oci_image = get_oci_image_name(report_json)
+        base_os = get_base_os(report_json)
+
+        # calculate total number of CVEs per category
+        lang_pkgs = {"CRITICAL": 0, "HIGH": 0,
+                     "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
+        os_pkgs = {"CRITICAL": 0, "HIGH": 0,
+                   "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
+        all_pkgs = {"CRITICAL": 0, "HIGH": 0,
+                    "MEDIUM": 0, "LOW": 0, "UNKNOWN": 0}
+
+        for vulnerability in flatten_vulnerabilities(report_json):
+            clss = vulnerability["class"]
+            sev = vulnerability["severity"]
+
+            all_pkgs[sev] += 1
+            if clss == "os-pkgs":
+                os_pkgs[sev] += 1
+            if clss == "lang-pkgs":
+                lang_pkgs[sev] += 1
+
+        base_info = "%s,%s" % (oci_image, base_os)
+        all_pkgs_info = "%s,%s,%s,%s" % (all_pkgs['CRITICAL'],
+                                         all_pkgs['HIGH'],
+                                         all_pkgs['MEDIUM'], all_pkgs['LOW'])
+        crit_info = "%s,%s" % (os_pkgs['CRITICAL'], lang_pkgs['CRITICAL'])
+        high_info = "%s,%s" % (os_pkgs['HIGH'], lang_pkgs['HIGH'])
+        medium_info = "%s,%s" % (os_pkgs['MEDIUM'], lang_pkgs['MEDIUM'])
+        low_info = "%s,%s" % (os_pkgs['LOW'], lang_pkgs['LOW'])
+
+        print("%s,%s,%s,%s,%s,%s" % (base_info, all_pkgs_info, crit_info,
+                                     high_info, medium_info, low_info))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--report-path")
+    parser.add_argument("--print-header", action="store_true")
     args = parser.parse_args()
-    main(args.report_path)
+    main(args.report_path, args.print_header)

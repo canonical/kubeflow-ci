@@ -78,7 +78,10 @@ def main(report_path):
             if record["class"] == "lang-pkgs":
                 lang_pkgs[record["severity"]] = lang_pkgs[record["severity"]] + 1
 
-        print(f"{record['artifact']},{record['base']},{os_pkgs['CRITICAL']},{os_pkgs['HIGH']},{os_pkgs['MEDIUM']},{os_pkgs['LOW']},{lang_pkgs['CRITICAL']},{lang_pkgs['HIGH']},{lang_pkgs['MEDIUM']},{lang_pkgs['LOW']}")
+        print(
+            f"{record['artifact']},{record['base']},{os_pkgs['CRITICAL']},{os_pkgs['HIGH']},{os_pkgs['MEDIUM']},{os_pkgs['LOW']},{lang_pkgs['CRITICAL']},{lang_pkgs['HIGH']},{lang_pkgs['MEDIUM']},{lang_pkgs['LOW']}"
+        )  # noqa
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

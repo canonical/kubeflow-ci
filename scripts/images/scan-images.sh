@@ -21,7 +21,7 @@ DATE=$(date +%F)
 SCAN_SUMMARY_FILE="scan-summary.csv"
 if [ ! -f $SCAN_SUMMARY_FILE ]; then
     # create header for scan summary file, if it does not exist
-    echo "IMAGE,BASE,OS-CRITICAL,OS-HIGH,OS-MEDIUM,OS-LOW,LANG-CRITICAL,LANG-HIGH,LANG-MEDIUM,LANG-LOW" >> $SCAN_SUMMARY_FILE
+    echo "IMAGE,BASE,CRITICAL,HIGH,MEDIUM,LOW,CRITICAL-OS,CRITICAL-LANG,HIGH-OS,HIGH-LANG,MEDIUM-OS,MEDIUM-LANG,LOW-OS,LOW-LANG" >> $SCAN_SUMMARY_FILE
 fi
 
 # create directory for trivy reports

@@ -17,8 +17,6 @@ if [ -d "$TRIVY_REPORTS_DIR" ]; then
 fi
 
 echo "Scan container images specified in $FILE"
-DATE=$(date +%F)
-SCAN_SUMMARY_FILE="scan-summary.csv"
 
 # create directory for trivy reports
 mkdir -p "$TRIVY_REPORTS_DIR"
@@ -45,7 +43,3 @@ for IMAGE in "${IMAGE_LIST[@]}"; do
     docker rm -f $(docker ps -a -q)
     df . -h
 done
-
-./get-summary.py --report-path $TRIVY_REPORTS_DIR --print-header > $SCAN_SUMMARY_FILE
-
-cat $SCAN_SUMMARY_FILE

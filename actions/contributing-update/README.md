@@ -12,10 +12,12 @@ This file, existing in charm's directory, defines all charm-specific inputs that
 
 Whenever we want to make changes to a charm contributing.md, we:
 
-1. Update contributing_inputs.yaml
+1. Update `contributing_inputs.yaml`
 1. We can also update the `contributing.md` file directly if we like, if we want to avoid another PR
 1. Push our changes
 1. If the freshly generated `contributing.md`, based on the updated `contributing_inputs.yaml` plus the `contributing.md.template`, differs from `contributing.md`, the automation will catch this, and a PR will be opened to overwrite the existing `contributing.md` with the new one.
+
+Note: the generate PR will target the `main` branch, BUT the target branch could always be changed to the same branch as the one updating `contributing_inputs.yaml`, and then merged into that without review, to avoid having two PRs to review.
 
 ### Template Updates
 

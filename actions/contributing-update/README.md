@@ -1,4 +1,4 @@
-## Contributing Workflow
+# Contributing Workflow
 
 This action checks the contributing file for a charm and updates it if necessary. The action runs a script that generates a fresh contributing file from a template and placeholder values defined at the charm level. This generated file is compared against the contributing file already in the charm's directory. If they differ, another step is run to create a PR overwriting the existing file with the freshly generated one.
 

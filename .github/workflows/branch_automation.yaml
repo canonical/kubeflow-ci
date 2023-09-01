@@ -12,7 +12,7 @@ on:
 jobs:
   branch-track-creation:
     name: Branch creation
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       KUBEFLOW_BOT_TOKEN: ${{ secrets.KUBEFLOW_BOT_TOKEN }}
     steps:

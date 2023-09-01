@@ -6,7 +6,7 @@ on:
 jobs:
   lint:
     name: Lint Code
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - run: sudo apt update && sudo apt install tox
@@ -14,7 +14,7 @@ jobs:
 
   branch_creation_tests:
     name: Branch Creation Script Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - run: sudo apt update && sudo apt install tox
@@ -22,7 +22,7 @@ jobs:
 
   batch_release_charms_tests:
     name: Batch Release Charms Script Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - run: sudo apt update && sudo apt install tox

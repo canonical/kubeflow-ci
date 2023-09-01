@@ -10,7 +10,7 @@ This file, existing in charm's directory, defines all charm-specific inputs that
 
 ### Charm Specific
 
-Whenever we want to make changes to a charm contributing.md, we:
+Whenever we want to make changes to a charm `contributing.md`, we:
 
 1. Update `contributing_inputs.yaml`
 1. We can also update the `contributing.md` file directly if we like, if we want to avoid another PR

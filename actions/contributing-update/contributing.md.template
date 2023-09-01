@@ -40,7 +40,7 @@ source .tox/{{ tox_example_dev_env }}/bin/activate
 
 ### Testing
 
-Use tox for testing. For example to test {{ tox_example_test_env }}, run:
+Use tox for testing. For example to test the {{ tox_example_test_env }} environment, run:
 
 ```shell
 tox -e {{ tox_example_test_env }}

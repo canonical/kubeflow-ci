@@ -1,0 +1,5 @@
+charm: "test-charm"
+tox_example_dev_env: "lint"
+deploy_opts: |-
+  \
+    --resource oci-image=$(yq '.resources."oci-image"."upstream-source"' metadata.yaml)

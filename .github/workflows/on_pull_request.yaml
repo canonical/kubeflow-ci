@@ -27,3 +27,38 @@ jobs:
       - uses: actions/checkout@v3
       - run: sudo apt update && sudo apt install tox
       - run: tox -e test_batch_release_charms
+
+  test-dump-charm-debug-artifacts:
+    name: Test dump-charm-debug-artifacts
+    runs-on: ubuntu-22.04
+
+    steps:
+    # Set things up like a charm would.  Get juju and microk8s
+    - name: Check out repo
+      uses: actions/checkout@v3
+
+    - name: Setup operator environment
+      uses: charmed-kubernetes/actions-operator@main
+      with:
+        provider: microk8s
+        channel: 1.24/stable
+        charmcraft-channel: latest/candidate
+        microk8s-addons: "dns storage rbac metallb:10.64.140.43-10.64.140.49"
+    # TODO: Remove once the actions-operator does this automatically
+    - name: Configure kubectl
+      run: |
+        sg microk8s -c "microk8s config > ~/.kube/config"
+
+    - name: Add model
+      run: |
+        juju add-model kubeflow
+        juju switch kubeflow
+
+    - name: Make some fake charmcraft logs
+      run: |
+        mkdir -p /home/runner/snap/charmcraft/common/cache/charmcraft/log/
+        echo fakelog1 > /home/runner/snap/charmcraft/common/cache/charmcraft/log/charmcraft-fake1.log
+        echo fakelog2 > /home/runner/snap/charmcraft/common/cache/charmcraft/log/charmcraft-fake2.log
+
+    - uses: ./actions/dump-charm-debug-artifacts/
+      if: always()

@@ -12,7 +12,7 @@ runs:
       id: mkdir
       shell: bash
       run: |
-        LOG_DIR="tmp_logs"
+        LOG_DIR="${LOGDUMP_OUTPUT_DIR:-tmp_logs_$GITHUB_JOB}"
         echo "log-dir=$(echo $LOG_DIR)" >> $GITHUB_OUTPUT
         mkdir $LOG_DIR
 

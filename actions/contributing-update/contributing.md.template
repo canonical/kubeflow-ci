@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the processes and practices recommended for contributing enhancements to {{ charm }}.
+This document outlines the processes and practices recommended for contributing enhancements to ``{{ charm }}``.
 
 ## Talk to us First
 
@@ -23,7 +23,7 @@ Familiarising yourself with the [Charmed Operator Framework](https://juju.is/doc
 
 ## Build Charm
 
-To build {{ charm }} run:
+To build ``{{ charm }}`` run:
 
 ```shell
 charmcraft pack

@@ -1,0 +1,81 @@
+name: 'Build and publish rock'
+description: 'Builds and publishes specified ROCK'
+on:
+  workflow_call:
+    inputs:
+      rockcraft-dir:
+        description: "Path to rock directory, i.e. directory containing rockcraft.yaml"
+        required: true
+        default: '.'
+        type: string
+      source_branch:
+        description: Github branch from this repo to publish.  If blank, will use the default branch
+        default: ''
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      rockcraft-dir:
+        description: "Path to rock directory, i.e. directory containing rockcraft.yaml"
+        required: true
+        default: '.'
+        type: string
+      source_branch:
+        description: Github branch from this repo to publish.  If blank, will use the default branch
+        default: ''
+        required: false
+        type: string
+  secrets:
+    DOCKER_USERNAME:
+      required: true
+    DOCKER_PASSWORD:
+      required: true
+
+runs:
+  using: 'composite'
+  steps:
+    # Ideally we'd use self-hosted runners, but this effort is still not stable.
+    # This action will remove unused software (dotnet, haskell, android libs, codeql,
+    # and docker images) from the GH runner, which will liberate around 60 GB of storage
+    # distributed in 40GB for root and around 20 for a mnt point.
+    - name: Maximise GH runner space
+      uses: easimon/maximize-build-space@v7
+      with:
+        root-reserve-mb: 40960
+        remove-dotnet: 'true'
+        remove-haskell: 'true'
+        remove-android: 'true'
+        remove-codeql: 'true'
+        remove-docker-images: 'true'
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.source_branch }}
+
+    - name: Build ROCK
+      uses: canonical/craft-actions/rockcraft-pack@main
+      id: rockcraft
+      with:
+        path: ./${{ inputs.rockcraft-dir }}
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Copy ROCK to Docker and publish
+      id: rock_in_docker
+      run: |
+        NAME=$(yq eval ".name" rockcraft.yaml)
+        VERSION=$(yq eval ".version" rockcraft.yaml)
+        ARCH=$(yq eval ".platforms | keys" rockcraft.yaml | awk -F ' ' '{print $2}')
+        ROCK="${NAME}_${VERSION}_${ARCH}"
+        COMMIT_ID=$(git rev-parse --short HEAD)
+        sudo skopeo --insecure-policy copy oci-archive:$ROCK.rock docker-daemon:charmedkubeflow/$NAME:$VERSION
+        echo "image=$ROCK:$VERSION" >> "$GITHUB_OUTPUT"
+        docker tag charmedkubeflow/$NAME:$VERSION charmedkubeflow/$NAME:${VERSION}_${COMMIT_ID}
+        docker push charmedkubeflow/$NAME:${VERSION}_${COMMIT_ID}
+      working-directory: ${{ inputs.rockcraft-dir }}

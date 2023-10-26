@@ -3,8 +3,8 @@ name: Branch Creation Automation
 on:
   workflow_dispatch:
     inputs:
-      release_directory_path:
-        description: 'Release directory path relative to the root of this repository'
+      yaml_file_path:
+        description: 'yaml file path relative to the root of bundle-kubeflow repository'
         required: true
   repository_dispatch:
     types: [branch_creation]
@@ -19,12 +19,18 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: canonical/bundle-kubeflow
+          path: bundle-kubeflow
           fetch-depth: 0
+      - uses: actions/checkout@v3
+        with:
+          path: kubeflow-ci
       - name: Install tox
         run: sudo apt install tox
       - name: Run script (on_push)
         if: ${{ github.event_name == 'repository_dispatch'}}
         run: tox -e branch_creation
+        working-directory: ./kubeflow-ci
       - name: Run script (Workflow Dispatch)
         if: ${{ github.event_name == 'workflow_dispatch'}}
-        run: tox -e branch_creation ${{ inputs.release_directory_path }}
+        run: tox -e branch_creation -- -f ${{ inputs.yaml_file_path }}
+        working-directory: ./kubeflow-ci

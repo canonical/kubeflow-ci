@@ -4,43 +4,41 @@
 #
 #    pip-compile requirements-test_branch_creation.in
 #
-certifi==2023.7.22
+certifi==2024.6.2
     # via requests
-charset-normalizer==3.2.0
+charset-normalizer==3.3.2
     # via requests
-exceptiongroup==1.1.2
+exceptiongroup==1.2.1
     # via pytest
-gitdb==4.0.10
+gitdb==4.0.11
     # via gitpython
-gitpython==3.1.32
+gitpython==3.1.43
     # via -r requirements-test_branch_creation.in
-idna==3.4
+idna==3.7
     # via requests
 iniconfig==2.0.0
     # via pytest
-packaging==23.1
+packaging==24.1
     # via pytest
-pluggy==1.2.0
+pluggy==1.5.0
     # via pytest
-pytest==7.4.0
+pytest==8.2.2
     # via
     #   -r requirements-test_branch_creation.in
     #   pytest-mock
-pytest-mock==3.11.1
+pytest-mock==3.14.0
     # via -r requirements-test_branch_creation.in
 pyyaml==6.0.1
     # via -r requirements-test_branch_creation.in
-requests==2.31.0
+requests==2.32.3
     # via
     #   -r requirements-test_branch_creation.in
     #   requests-mock
-requests-mock==1.11.0
+requests-mock==1.12.1
     # via -r requirements-test_branch_creation.in
-six==1.16.0
-    # via requests-mock
-smmap==5.0.0
+smmap==5.0.1
     # via gitdb
 tomli==2.0.1
     # via pytest
-urllib3==2.0.4
+urllib3==2.2.2
     # via requests

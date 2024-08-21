@@ -6,6 +6,7 @@
 #
 # Usage: scan.sh <file>
 #
+set -xe
 
 FILE=$1
 TRIVY_REPORTS_DIR="trivy-reports"

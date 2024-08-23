@@ -4,6 +4,8 @@
 # charm's repository one by one using specified branch and collects images referred by that charm
 # using that repository's image collection script
 #
+set -xe
+
 BUNDLE_FILE=$1
 IMAGES=()
 # retrieve all repositories and branches for CKF

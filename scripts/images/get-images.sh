@@ -1,4 +1,7 @@
 #!/usr/bin/bash
+
+set -xe
+
 BUNDLE_FILE=$1
 IMAGES=()
 REPOS=($(grep _github_repo_name $BUNDLE_FILE | awk '{print $2}' | sort --unique))

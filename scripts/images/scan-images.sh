@@ -39,7 +39,9 @@ for IMAGE in "${IMAGE_LIST[@]}"; do
     fi
     echo "Scan image $IMAGE report in $TRIVY_REPORT"
     docker pull $IMAGE
-    docker run -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`:`pwd` -w `pwd` --name=scanner aquasec/trivy image --timeout 30m -f $TRIVY_REPORT_TYPE -o $TRIVY_REPORT --ignore-unfixed $IMAGE
+    # Adding --db-repository public.ecr.aws/aquasecurity/trivy-db:2 option
+    # as a workaround for https://github.com/aquasecurity/trivy-action/issues/389
+    docker run -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`:`pwd` -w `pwd` --name=scanner aquasec/trivy image --timeout 30m -f $TRIVY_REPORT_TYPE -o $TRIVY_REPORT --ignore-unfixed $IMAGE --db-repository public.ecr.aws/aquasecurity/trivy-db:2
     docker rmi $IMAGE
     docker rm -f $(docker ps -a -q)
     df . -h

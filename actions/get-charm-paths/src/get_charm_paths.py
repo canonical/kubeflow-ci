@@ -25,16 +25,16 @@ def find_charms_in_dir(base_dir: str = "./", charms_subdir="charms"):
     root_dir = Path(base_dir)
     charms_dir = root_dir / charms_subdir
 
-    metadata_files = (
+    tracked_files = (
         list(charms_dir.glob("*/metadata.yaml"))
         + list(charms_dir.glob("*/metadata.yml"))
         + list(charms_dir.glob("*/charmcraft.yaml"))
     )
 
-    if not metadata_files:
+    if not tracked_files:
         # No nested charm directories found, check if the top level dir is
         # a charm
-        metadata_files = (
+        tracked_files = (
             list(root_dir.glob("metadata.yaml"))
             + list(root_dir.glob("metadata.yml"))
             + list(root_dir.glob("charmcraft.yaml"))
@@ -42,7 +42,7 @@ def find_charms_in_dir(base_dir: str = "./", charms_subdir="charms"):
 
     # Return the parent directory of the relevant metadata_files and
     # remove duplicates
-    parent_dirs = [metadata_file.parent for metadata_file in metadata_files]
+    parent_dirs = [tracked_file.parent for tracked_file in tracked_files]
     charm_dirs = sorted(list(set(parent_dirs)))
 
     return charm_dirs

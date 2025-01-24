@@ -16,19 +16,6 @@ runs:
         echo "log-dir=$(echo $LOG_DIR)" >> $GITHUB_OUTPUT
         mkdir $LOG_DIR
 
-    - name: 'Install juju-crashdump'
-      shell: bash
-      run: sudo snap install juju-crashdump --classic
-
-    - name: 'Install ketall'
-      # https://github.com/corneliusweig/ketall
-      shell: bash
-      run: |
-        wget https://github.com/corneliusweig/ketall/releases/download/v1.3.8/get-all-amd64-linux.tar.gz
-        tar -xf get-all-amd64-linux.tar.gz
-        mkdir -p $HOME/.local/bin/
-        mv get-all-amd64-linux $HOME/.local/bin/ketall
-
     # Dump logs
 
     - name: Collect all logs
@@ -38,6 +25,28 @@ runs:
         bash ${{ github.action_path }}/logdump.bash
 
     # Save logs
+
+    - name: Echo
+      run: |
+        echo github.job.name
+        echo ${{github.job.run_id}}
+        echo github.job.run-name
+        echo ${{github.job.run-name}}
+        echo github.run-name
+        echo ${{github.run-name}}
+        echo github.action
+        echo ${{github.action}}
+        echo github.job
+        echo ${{github.job}}
+        echo github.run_number
+        echo ${{github.run_number}}
+        echo github.run_id
+        echo ${{github.run_id}}
+        echo github.job.run_id
+        echo ${{github.job.run_id}}
+        echo github.workflow
+        echo ${{github.workflow}}
+        echo "DONE"
 
     - name: Upload debug artifacts
       uses: actions/upload-artifact@v4

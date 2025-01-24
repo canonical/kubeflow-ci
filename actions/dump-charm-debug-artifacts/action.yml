@@ -37,6 +37,8 @@ runs:
         echo ${{github.run_id}}
         echo github.job.run_id
         echo ${{github.job.run_id}}
+        echo github.job.container_id
+        echo ${{github.job.container_id}}
         echo github.workflow
         echo ${{github.workflow}}
         echo "DONE"
@@ -52,6 +54,6 @@ runs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: ${{ github.job }}-${{github.run_id}}-juju-kubernetes-charmcraft-logs
+        name: ${{ github.job }}-${{github.job.container_id}}-juju-kubernetes-charmcraft-logs
         path: ${{ steps.mkdir.outputs.log-dir }}
         if-no-files-found: error

@@ -42,11 +42,11 @@ runs:
         echo ${{github.workflow}}
         echo "DONE"
 
-    - name: Export pwd to folder-name
+    - name: Export artifact prefixes
       shell: bash
-      id: pwd
-      run: echo "folder-name=${pwd}" >> "$GITHUB_OUTPUT"
-
+      run: |
+        echo "folder_name=$(pwd)" >> "$GITHUB_ENV"
+        echo "random_id=$(RANDOM)" >> "$GITHUB_ENV"
 
     - name: Collect all logs
       shell: bash
@@ -58,6 +58,6 @@ runs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: ${{ github.job }}-${{ steps.pwd.outputs.folder-name }}-$RANDOM-juju-kubernetes-charmcraft-logs
+        name: ${{ github.job }}-${{ env.folder_name }} ${{ env.random_id }}-juju-kubernetes-charmcraft-logs
         path: ${{ steps.mkdir.outputs.log-dir }}
         if-no-files-found: error

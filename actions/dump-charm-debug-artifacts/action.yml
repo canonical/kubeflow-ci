@@ -18,14 +18,6 @@ runs:
 
     # Dump logs
 
-    - name: Collect all logs
-      shell: bash
-      run: |
-        export OUTPUT_DIR=${{ steps.mkdir.outputs.log-dir }}
-        bash ${{ github.action_path }}/logdump.bash
-
-    # Save logs
-
     - name: Echo
       shell: bash
       run: |
@@ -49,6 +41,13 @@ runs:
         echo ${{github.workflow}}
         echo "DONE"
 
+
+    - name: Collect all logs
+      shell: bash
+      run: |
+        touch ${{ steps.mkdir.outputs.log-dir }}/dummy.txt
+
+    # Save logs
     - name: Upload debug artifacts
       uses: actions/upload-artifact@v4
       if: always()

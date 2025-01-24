@@ -27,6 +27,7 @@ runs:
     # Save logs
 
     - name: Echo
+      shell: bash
       run: |
         echo github.job.name
         echo ${{github.job.run_id}}

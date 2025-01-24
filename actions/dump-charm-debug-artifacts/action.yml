@@ -46,7 +46,7 @@ runs:
       shell: bash
       run: |
         echo "folder_name=${PWD##*/}" >> "$GITHUB_ENV"
-        echo "random_id=$(RANDOM)" >> "$GITHUB_ENV"
+        echo "random_id=${RANDOM}" >> "$GITHUB_ENV"
 
     - name: Collect all logs
       shell: bash

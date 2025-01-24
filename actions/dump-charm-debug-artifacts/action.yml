@@ -43,6 +43,7 @@ runs:
         echo "DONE"
 
     - name: Export pwd to folder-name
+      shell: bash
       id: pwd
       run: echo "folder-name=${pwd}" >> "$GITHUB_OUTPUT"
 

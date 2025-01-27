@@ -27,7 +27,7 @@ To use this as a GitHub action, do:
 ```
 
 > [!IMPORTANT]
-> When calling the action multiple times for the same job (i.e. using a matrix), it's crucial to define `artifact-prefix`. Otherwise, the action will fail trying to upload logs from different jobs to the same file.
+> When calling the action from multiple runs of the same job (i.e. using a matrix), it's crucial to define `artifact-prefix`. Otherwise, the action will fail trying to upload logs from different job runs to the same file.
 
 To use this script directly, do:
 

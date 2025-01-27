@@ -1,5 +1,9 @@
 name: 'Dump Charm Debug Artifacts'
 description: 'Dumps to Artifacts useful Juju, Kubernetes, and Charmcraft log information.  Requires kubectl to be set up with a context, and charmcraft to be installed.'
+inputs:
+  artifact-prefix:
+    description: "String used to prefix the uploaded artifact in order to ensure unique artifact names."
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -16,37 +20,15 @@ runs:
         echo "log-dir=$(echo $LOG_DIR)" >> $GITHUB_OUTPUT
         mkdir $LOG_DIR
 
-    # Dump logs
-    - name: Echo
+    - name: Export artifact prefix
       shell: bash
       run: |
-        echo github.job.name
-        echo ${{github.job.run_id}}
-        echo github.job.run-name
-        echo ${{github.job.run-name}}
-        echo github.run-name
-        echo ${{github.run-name}}
-        echo github.action
-        echo ${{github.action}}
-        echo github.job
-        echo ${{github.job}}
-        echo github.run_number
-        echo ${{github.run_number}}
-        echo github.run_id
-        echo ${{github.run_id}}
-        echo github.job.run_id
-        echo ${{github.job.run_id}}
-        echo github.job.container_id
-        echo ${{github.job.container_id}}
-        echo github.workflow
-        echo ${{github.workflow}}
-        echo "DONE"
-
-    - name: Export artifact prefixes
-      shell: bash
-      run: |
-        echo "folder_name=${PWD##*/}" >> "$GITHUB_ENV"
-        echo "random_id=${RANDOM}" >> "$GITHUB_ENV"
+        if [ -n "${{ inputs.artifact-prefix }}" ];
+        then
+          echo "prefix=${{ github.job }}-${{ inputs.artifact-prefix }}" >> "$GITHUB_ENV"
+        else
+          echo "prefix=${{ github.job }}" >> "$GITHUB_ENV"
+        fi
 
     - name: Collect all logs
       shell: bash
@@ -58,6 +40,6 @@ runs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: ${{ github.job }}-${{ env.folder_name }}-${{ env.random_id }}-juju-kubernetes-charmcraft-logs
+        name: ${{ github.job }}-${{ env.artifact_id }}-juju-kubernetes-charmcraft-logs
         path: ${{ steps.mkdir.outputs.log-dir }}
         if-no-files-found: error

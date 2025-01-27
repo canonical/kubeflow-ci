@@ -40,6 +40,6 @@ runs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: ${{ github.job }}-${{ env.artifact_id }}-juju-kubernetes-charmcraft-logs
+        name: ${{ env.prefix }}-juju-kubernetes-charmcraft-logs
         path: ${{ steps.mkdir.outputs.log-dir }}
         if-no-files-found: error

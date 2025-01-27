@@ -43,7 +43,7 @@ runs:
 
     # Save logs
 
-    - name: Export artifact prefix
+    - name: Set artifact prefix env
       shell: bash
       run: |
         if [ -n "${{ inputs.artifact-prefix }}" ];

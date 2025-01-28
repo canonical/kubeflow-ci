@@ -2,7 +2,7 @@
 
 Dumps logs relevant to kubernetes-based Juju charms to a GitHub Artifact.
 
-Logs are both printed to screen and dumped to the artifact "juju-kubernetes-charmcraft-logs".
+Logs are both printed to screen and dumped to the artifact `<prefix>-juju-kubernetes-charmcraft-logs`. Prefix has the form of `<job_name>-<artifact_prefix_input>`, where `-<artifact_prefix_input>` is present only when passed as an input to the job.
 
 Prerequisites for running this action in a workflow:
 * charmcraft
@@ -15,8 +15,6 @@ sensitive information is being shared.
 
 ## Example usage
 
-TODO: Complete the path below once this is placed in a longterm location.
-
 To use this as a GitHub action, do:
 
 ```yaml
@@ -24,7 +22,12 @@ To use this as a GitHub action, do:
   # always() if you want this to run on every run, regardless of failure. 
   # more details: https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
   if: always()
+  with:
+    artifact-prefix: {{ matrix.charm }} # optional, see note below
 ```
+
+> [!IMPORTANT]
+> When calling the action from multiple runs of the same job (i.e. using a matrix), it's crucial to define `artifact-prefix`. Otherwise, the action will fail trying to upload logs from different job runs to the same file.
 
 To use this script directly, do:
 

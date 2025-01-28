@@ -8,7 +8,7 @@ jobs:
     name: Lint Code
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: sudo apt update && sudo apt install tox
       - run: tox -e lint
 
@@ -16,7 +16,7 @@ jobs:
     name: Branch Creation Script Tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: sudo apt update && sudo apt install tox
       - run: tox -e test_branch_creation
 
@@ -24,7 +24,7 @@ jobs:
     name: Batch Release Charms Script Tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: sudo apt update && sudo apt install tox
       - run: tox -e test_batch_release_charms
 
@@ -35,7 +35,7 @@ jobs:
     steps:
     # Set things up like a charm would.  Get juju and microk8s
     - name: Check out repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup operator environment
       uses: charmed-kubernetes/actions-operator@main

@@ -8,40 +8,30 @@ from scripts.branch_creation import (
     GITHUB_API_URL,
     create_git_branch,
     get_latest_commit_sha,
-    get_modified_releases_dirs,
-    parse_yamls,
+    get_modified_releases_files,
+    parse_yaml_file,
     trim_bundle_dict,
 )
 
 
-def test_get_modified_releases_dirs_only_include_files_in_releases_dir():
+def test_get_modified_releases_files_only_include_files_in_releases_dir():
     file_paths = [
         "scripts/branch_creation.py",
         "scripts/tests/test_branch_creation.py",
         "scripts/tests/test_bundle.yaml",
         "tox.ini",
     ]
-    result = get_modified_releases_dirs(file_paths)
-    assert result == set()
+    result = get_modified_releases_files(file_paths)
+    assert result == []
 
 
-def test_get_modified_releases_dirs_only_include_yaml_changes():
+def test_get_modified_releases_files_only_include_yaml_changes():
     file_paths = [
-        "releases/1.3/charm.yaml",
+        "releases/1.3/bundle.yaml",
         "releases/1.4/script.py",
     ]
-    result = get_modified_releases_dirs(file_paths)
-    assert result == set(["releases/1.3"])
-
-
-def test_get_modified_releases_dirs_no_duplicates_in_return():
-    file_paths = [
-        "releases/1.4/charm.yaml",
-        "releases/1.4/bundle.yaml",
-        "releases/1.2/bundle.yaml",
-    ]
-    result = get_modified_releases_dirs(file_paths)
-    assert result == set(["releases/1.4", "releases/1.2"])
+    result = get_modified_releases_files(file_paths)
+    assert result == ["releases/1.3/bundle.yaml"]
 
 
 def test_trim_bundle_dict_success():
@@ -151,10 +141,9 @@ def test_trim_bundle_dict_input_missing_charm_key(caplog):
     assert "Unexpecting yaml format." in caplog.text
 
 
-def test_parse_yamls_success():
-    result = parse_yamls("scripts/tests")
+def test_parse_yaml_file_success():
+    result = parse_yaml_file("../kubeflow-ci/scripts/tests/test_bundle.yaml")
     assert result == {
-        "spark-k8s": {"version": "3.1", "github_repo_name": "spark-operator"},
         "admission-webhook": {
             "version": "1.4",
             "github_repo_name": "admission-webhook-operator",
@@ -164,9 +153,14 @@ def test_parse_yamls_success():
     }
 
 
-def test_parse_yaml_fail(caplog):
-    parse_yamls("./nonexistent_directory")
-    assert "Cannot proceed with script. Failed to find directory" in caplog.text
+def test_parse_yaml_file_fail_wrong_file_type(caplog):
+    parse_yaml_file("./test_bundle.md")
+    assert "Cannot proceed with script. File provided is not a yaml" in caplog.text
+
+
+def test_parse_yaml_file_fail_not_found(caplog):
+    parse_yaml_file("./nonexistent_file.yaml")
+    assert "Cannot proceed with script. Failed to find file" in caplog.text
 
 
 def test_latest_commit_sha_repo_with_branch_main(requests_mock: Mocker):

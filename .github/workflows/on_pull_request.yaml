@@ -6,26 +6,38 @@ on:
 jobs:
   lint:
     name: Lint Code
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
-      - run: sudo apt update && sudo apt install tox
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: 3.8
+      - run: pip install tox
       - run: tox -e lint
 
   branch_creation_tests:
     name: Branch Creation Script Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
-      - run: sudo apt update && sudo apt install tox
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: 3.8
+      - run: pip install tox
       - run: tox -e test_branch_creation
 
   batch_release_charms_tests:
     name: Batch Release Charms Script Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
-      - run: sudo apt update && sudo apt install tox
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: 3.8
+      - run: pip install tox
       - run: tox -e test_batch_release_charms
 
   test-dump-charm-debug-artifacts:

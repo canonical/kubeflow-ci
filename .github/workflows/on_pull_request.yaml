@@ -42,7 +42,7 @@ jobs:
 
   test-dump-charm-debug-artifacts:
     name: Test dump-charm-debug-artifacts
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     # Set things up like a charm would.  Get juju and microk8s

@@ -1,0 +1,3 @@
+canonical/bundle-kubeflow
+canonical/charmed-kubeflow-chisme
+canonical/charmed-kubeflow-solutions

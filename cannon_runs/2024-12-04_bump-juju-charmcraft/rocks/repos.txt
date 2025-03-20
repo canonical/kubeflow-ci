@@ -1,0 +1,14 @@
+canonical/argo-workflows-rocks
+canonical/base-mlflow
+canonical/dex-auth-rocks
+canonical/katib-rocks
+canonical/knative-rocks
+canonical/kserve-rocks
+canonical/kubeflow-rocks
+canonical/mlflow-prometheus-exporter
+canonical/pipelines-rocks
+canonical/filebrowser-rock
+canonical/metacontroller-rock
+canonical/oidc-authservice-rock
+canonical/resource-dispatcher-rock
+canonical/training-operator-rock

@@ -1,0 +1,7 @@
+canonical/bundle-kubeflow
+canonical/charmed-kubeflow-chisme
+canonical/charmed-kubeflow-solutions
+canonical/charmed-kubeflow-uats
+canonical/charmed-kubeflow-workflows
+canonical/charmed-mlflow-solutions
+canonical/kubeflow-ci

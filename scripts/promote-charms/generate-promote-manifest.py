@@ -1,10 +1,13 @@
-import yaml
 import sys
+
+import yaml
+
 
 def load_yaml(file_path):
     """Load YAML data from a file."""
     with open(file_path, "r") as f:
         return yaml.safe_load(f)
+
 
 def generate_promote_manifest(source_yaml, dest_yaml):
     """Generate the promotion manifest from source and destination YAMLs."""
@@ -20,19 +23,23 @@ def generate_promote_manifest(source_yaml, dest_yaml):
             promote_data["applications"][app_name] = {
                 "charm": source_details["charm"],
                 "source-channel": source_details["channel"],
-                "destination-channel": dest_apps[app_name]["channel"]
+                "destination-channel": dest_apps[app_name]["channel"],
             }
 
     return promote_data
+
 
 def save_yaml(data, filename):
     """Save data as a YAML file."""
     with open(filename, "w") as f:
         yaml.dump(data, f, default_flow_style=False)
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python script.py <source_bundle.yaml> <destination_bundle.yaml> [output.yaml]")
+        print(
+            "Usage: python script.py <source_bundle.yaml> <destination_bundle.yaml> [output.yaml]"
+        )
         sys.exit(1)
 
     source_file = sys.argv[1]

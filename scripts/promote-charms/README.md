@@ -13,39 +13,24 @@ charmcraft promote
     --yes
 ```
 
-## Step 1: Generate promote-manifest.yaml
-
-In order to run the `promote.py` script, first generate the `promote-manifest.yaml` file. This is done using the `generate-promote-manifest.py` file and passing as inputs the source bundle file and the destination bundle file:
+## Usage
+In order to promote charms from a bundle's channels to those of another, run the `promote-charms.py` script, passing as inputs the source bundle file and the destination bundle file:
 ```bash
-python3 generate-promote-manifest.py <path-to-source-bundle.yaml-file> <path-to-destination-bundle.yaml-file>
+python3 promote-charms.py <path-to-source-bundle.yaml-file> <path-to-destination-bundle.yaml-file>
 ```
+
+It is recommended to first run a **dry run** to verify the expected results, using the `--dry-run` option.
+
 For example:
 ```bash
-python3 generate-promote-manifest.py ~/canonical/bundle-kubeflow/releases/1.10/candidate/bundle.yaml ~/canonical/bundle-kubeflow/releases/1.10/stable/bundle.yaml
+python3 generate-promote-manifest.py ~/canonical/bundle-kubeflow/releases/1.10/candidate/bundle.yaml ~/canonical/bundle-kubeflow/releases/1.10/stable/bundle.yaml --dry-run
 ```
 
-This creates a `promote-manifest.yaml` file in the form of:
-```
-applications:
-  admission-webhook:
-    charm: admission-webhook
-    destination-channel: 1.10/stable
-    source-channel: 1.10/candidate
-  argo-controller:
-    charm: argo-controller
-    destination-channel: 3.4/stable
-    source-channel: 3.4/candidate
-[...]
-```
+For proceeding with the actual promotion, remove the `--dry-run` and rerun.
+
 > [!NOTE]
-> The produced manifest does not include charms that have a `_github_dependency_repo_name`,since those are not maintained by the Kubeflow team.
-
-## Step 2: Run the promote.py script
+> The script does not promote charms that have a `_github_dependency_repo_name`,since those are not maintained by the Kubeflow team.
 
 > [!NOTE]
 > Ensure that you are logged in by running `charmcraft whoami`. If not, use `charmcraft login`.
 
-Using the previous `promote-manifest.yaml`, run the following command. There is also the `--dry-run` option which can be used in order to verify first that the promotions to-be-done are the expected ones. 
-```bash
-python3 promote.py ./promote-manifest.yaml
-```

@@ -1,14 +1,36 @@
 import argparse
 import subprocess
-
 import yaml
 
 
-def promote_charms(yaml_file, dry_run=False):
-    with open(yaml_file, "r") as f:
-        data = yaml.safe_load(f)
+def load_yaml(file_path):
+    """Load YAML data from a file."""
+    with open(file_path, "r") as f:
+        return yaml.safe_load(f)
 
-    applications = data.get("applications", {})
+
+def generate_promote_manifest(source_yaml, dest_yaml):
+    """Generate the promotion manifest from source and destination YAMLs."""
+    source_apps = source_yaml.get("applications", {})
+    dest_apps = dest_yaml.get("applications", {})
+
+    promote_data = {"applications": {}}
+
+    for app_name, source_details in source_apps.items():
+        if app_name in dest_apps:
+            if "_github_dependency_repo_name" in source_details:
+                continue
+            promote_data["applications"][app_name] = {
+                "charm": source_details["charm"],
+                "source-channel": source_details["channel"],
+                "destination-channel": dest_apps[app_name]["channel"],
+            }
+
+    return promote_data
+
+
+def promote_charms(promote_manifest, dry_run=False):
+    applications = promote_manifest.get("applications", {})
 
     if dry_run:
         print("Executing in dry run mode.")
@@ -48,9 +70,16 @@ def promote_charms(yaml_file, dry_run=False):
         print("\n##############################################\n")
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Promote charms between channels.")
-    parser.add_argument("yaml_file", help="YAML file containing charm promotion details")
+    parser.add_argument(
+        "source_bundle",
+        help="Path to the source bundle YAML file",
+    )
+    parser.add_argument(
+        "destination_bundle",
+        help="Path to the destination bundle YAML file",
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -59,4 +88,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    promote_charms(args.yaml_file, args.dry_run)
+    source_yaml = load_yaml(args.source_bundle)
+    dest_yaml = load_yaml(args.destination_bundle)
+
+    promote_manifest = generate_promote_manifest(source_yaml, dest_yaml)
+    promote_charms(promote_manifest, args.dry_run)
+
+
+if __name__ == "__main__":
+    main()

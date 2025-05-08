@@ -44,7 +44,6 @@ def main(
     release_dispatches = []
 
     for source_application_name, source_application in source_bundle.applications.items():
-
         # Find a matching application in the destination bundle
         try:
             validate_application_in_scope(source_application_name, source_application)

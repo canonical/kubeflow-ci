@@ -1,5 +1,9 @@
 name: 'Dump Charm Debug Artifacts'
 description: 'Dumps to Artifacts useful Juju, Kubernetes, and Charmcraft log information.  Requires kubectl to be set up with a context, and charmcraft to be installed.'
+inputs:
+  artifact-prefix:
+    description: "String used to prefix the uploaded artifact in order to ensure unique artifact names."
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -12,7 +16,7 @@ runs:
       id: mkdir
       shell: bash
       run: |
-        LOG_DIR="tmp_logs"
+        LOG_DIR="${LOGDUMP_OUTPUT_DIR:-tmp_logs_$GITHUB_JOB}"
         echo "log-dir=$(echo $LOG_DIR)" >> $GITHUB_OUTPUT
         mkdir $LOG_DIR
 
@@ -26,8 +30,8 @@ runs:
       run: |
         wget https://github.com/corneliusweig/ketall/releases/download/v1.3.8/get-all-amd64-linux.tar.gz
         tar -xf get-all-amd64-linux.tar.gz
-        mkdir -p /home/runner/.local/bin/
-        mv get-all-amd64-linux /home/runner/.local/bin/ketall
+        mkdir -p $HOME/.local/bin/
+        mv get-all-amd64-linux $HOME/.local/bin/ketall
 
     # Dump logs
 
@@ -39,10 +43,20 @@ runs:
 
     # Save logs
 
+    - name: Set artifact prefix env
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.artifact-prefix }}" ];
+        then
+          echo "prefix=${{ github.job }}-${{ inputs.artifact-prefix }}" >> "$GITHUB_ENV"
+        else
+          echo "prefix=${{ github.job }}" >> "$GITHUB_ENV"
+        fi
+
     - name: Upload debug artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: juju-kubernetes-charmcraft-logs
+        name: ${{ env.prefix }}-juju-kubernetes-charmcraft-logs
         path: ${{ steps.mkdir.outputs.log-dir }}
         if-no-files-found: error

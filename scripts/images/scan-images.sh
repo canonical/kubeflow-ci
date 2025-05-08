@@ -6,11 +6,11 @@
 #
 # Usage: scan.sh <file>
 #
+set -xe
 
 FILE=$1
 TRIVY_REPORTS_DIR="trivy-reports"
 TRIVY_REPORT_TYPE="json"
-REPORT_TOTALS=false
 
 if [ -d "$TRIVY_REPORTS_DIR" ]; then
     echo "WARNING: $TRIVY_REPORTS_DIR directory already exists. Some reports might not be generated."
@@ -18,12 +18,6 @@ if [ -d "$TRIVY_REPORTS_DIR" ]; then
 fi
 
 echo "Scan container images specified in $FILE"
-DATE=$(date +%F)
-SCAN_SUMMARY_FILE="scan-summary.csv"
-if [ ! -f $SCAN_SUMMARY_FILE ]; then
-    # create header for scan summary file, if it does not exist
-    echo "IMAGE,BASE,CRITICAL,HIGH,MEDIUM,LOW " >> $SCAN_SUMMARY_FILE
-fi
 
 # create directory for trivy reports
 mkdir -p "$TRIVY_REPORTS_DIR"
@@ -45,24 +39,10 @@ for IMAGE in "${IMAGE_LIST[@]}"; do
     fi
     echo "Scan image $IMAGE report in $TRIVY_REPORT"
     docker pull $IMAGE
-    docker run -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`:`pwd` -w `pwd` aquasec/trivy image --timeout 30m -f $TRIVY_REPORT_TYPE -o $TRIVY_REPORT --ignore-unfixed $IMAGE
-    if [ "$TRIVY_REPORT_TYPE" = "json" ]; then
-      # for JSON type retrieve severity counts
-      NUM_CRITICAL=$(grep CRITICAL $TRIVY_REPORT | wc -l)
-      NUM_HIGH=$(grep HIGH $TRIVY_REPORT | wc -l)
-      NUM_MEDIUM=$(grep MEDIUM $TRIVY_REPORT | wc -l)
-      NUM_LOW=$(grep LOW $TRIVY_REPORT | wc -l)
-      BASE=$(cat $TRIVY_REPORT | jq '.Metadata.OS | "\(.Family):\(.Name)"' | sed 's/"//g')
-      echo "$IMAGE,$BASE,$NUM_CRITICAL,$NUM_HIGH,$NUM_MEDIUM,$NUM_LOW" >> $SCAN_SUMMARY_FILE
-    fi
+    # Adding --db-repository public.ecr.aws/aquasecurity/trivy-db:2 option
+    # as a workaround for https://github.com/aquasecurity/trivy-action/issues/389
+    docker run -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`:`pwd` -w `pwd` --name=scanner aquasec/trivy image --timeout 30m -f $TRIVY_REPORT_TYPE -o $TRIVY_REPORT --ignore-unfixed $IMAGE --db-repository public.ecr.aws/aquasecurity/trivy-db:2 --java-db-repository public.ecr.aws/aquasecurity/trivy-java-db:1
     docker rmi $IMAGE
+    docker rm -f $(docker ps -a -q)
+    df . -h
 done
-
-if [ "$REPORT_TOTALS" = true ]; then
-    NUM_CRITICAL=$(grep CRITICAL "$TRIVY_REPORTS_DIR/*" | wc -l)
-    NUM_HIGH=$(grep HIGH "$TRIVY_REPORTS_DIR/*" | wc -l)
-    NUM_MEDIUM=$(grep MEDIUM "$TRIVY_REPORTS_DIR/*" | wc -l)
-    NUM_LOW=$(grep LOW "$TRIVY_REPORTS_DIR/*" | wc -l)
-    echo ",Totals:,$NUM_CRITICAL,$NUM_HIGH,$NUM_MEDIUM,$NUM_LOW" >> $SCAN_SUMMARY_FILE
-fi
-cat $SCAN_SUMMARY_FILE

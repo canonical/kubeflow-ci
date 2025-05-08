@@ -12,7 +12,7 @@ on:
 jobs:
   branch-track-creation:
     name: Branch creation
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       KUBEFLOW_BOT_TOKEN: ${{ secrets.KUBEFLOW_BOT_TOKEN }}
     steps:
@@ -20,8 +20,12 @@ jobs:
         with:
           repository: canonical/bundle-kubeflow
           fetch-depth: 0
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: 3.8
       - name: Install tox
-        run: sudo apt install tox
+        run: pip install tox
       - name: Run script (on_push)
         if: ${{ github.event_name == 'repository_dispatch'}}
         run: tox -e branch_creation

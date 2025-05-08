@@ -8,7 +8,7 @@ jobs:
     name: Lint Code
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python 3.8
         uses: actions/setup-python@v5.3.0
         with:
@@ -20,7 +20,7 @@ jobs:
     name: Branch Creation Script Tests
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python 3.8
         uses: actions/setup-python@v5.3.0
         with:
@@ -32,7 +32,7 @@ jobs:
     name: Batch Release Charms Script Tests
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python 3.8
         uses: actions/setup-python@v5.3.0
         with:
@@ -47,7 +47,7 @@ jobs:
     steps:
     # Set things up like a charm would.  Get juju and microk8s
     - name: Check out repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup operator environment
       uses: charmed-kubernetes/actions-operator@main

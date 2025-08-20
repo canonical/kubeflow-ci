@@ -1,7 +1,6 @@
 name: Sync Github token to rock repos
 
 on:
-  pull_request:
   workflow_dispatch:
     inputs:
       DRY_RUN:

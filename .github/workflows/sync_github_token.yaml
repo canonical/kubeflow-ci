@@ -16,7 +16,7 @@ jobs:
       - uses: jpoehnelt/secrets-sync-action@7840777f242539d96b60477b66aa1c179e7644ea
         with:
           secrets: |
-            ^PAT_TOKEN$
+            ^GH_TOKEN$
           repositories: |
             ^canonical/katib-rocks
             ^canonical/pipelines-rocks
@@ -34,7 +34,7 @@ jobs:
             ^canonical/training-operator-rock
             ^canonical/dex-auth-rocks
           dry_run: ${{ github.event.inputs.DRY_RUN }}
-          github_token: ${{ secrets.PAT_TOKEN }}
+          github_token: ${{ secrets.GH_TOKEN }}
           concurrency: 10
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}

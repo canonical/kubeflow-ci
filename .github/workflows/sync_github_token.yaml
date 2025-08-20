@@ -1,0 +1,40 @@
+name: Sync Github token to rock repos
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      DRY_RUN:
+        description: 'true/false whether to run action in dry-run mode'
+        required: true
+        default: 'true'
+
+jobs:
+  sync_charmstore_credentials:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: jpoehnelt/secrets-sync-action@7840777f242539d96b60477b66aa1c179e7644ea
+        with:
+          secrets: |
+            ^GH_TOKEN$
+          repositories: |
+            ^canonical/katib-rocks
+            ^canonical/pipelines-rocks
+            ^canonical/kserve-rocks
+            ^canonical/resource-dispatcher-rock
+            ^canonical/feast-rocks
+            ^canonical/kubeflow-rocks
+            ^canonical/seldonio-rocks
+            ^canonical/knative-rocks
+            ^canonical/metacontroller-rock
+            ^canonical/filebrowser-rock
+            ^canonical/argo-workflows-rocks
+            ^canonical/oidc-authservice-rock
+            ^canonical/tensorflow-rock
+            ^canonical/training-operator-rock
+            ^canonical/dex-auth-rocks
+          dry_run: ${{ github.event.inputs.DRY_RUN }}
+          github_token: ${{ secrets.PAT_TOKEN }}
+          concurrency: 10
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}

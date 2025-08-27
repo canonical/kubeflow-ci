@@ -32,6 +32,7 @@ jobs:
             ^canonical/tensorflow-rock
             ^canonical/training-operator-rock
             ^canonical/dex-auth-rocks
+            ^canonical/base-mlflow
           dry_run: ${{ github.event.inputs.DRY_RUN }}
           github_token: ${{ secrets.GH_TOKEN }}
           concurrency: 10

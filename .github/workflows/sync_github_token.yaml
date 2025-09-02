@@ -23,7 +23,6 @@ jobs:
             ^canonical/resource-dispatcher-rock
             ^canonical/feast-rocks
             ^canonical/kubeflow-rocks
-            ^canonical/seldonio-rocks
             ^canonical/knative-rocks
             ^canonical/metacontroller-rock
             ^canonical/filebrowser-rock

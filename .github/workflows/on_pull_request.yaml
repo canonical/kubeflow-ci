@@ -12,7 +12,7 @@ jobs:
       - name: Set up Python 3.8
         uses: actions/setup-python@v5.3.0
         with:
-          python-version: 3.8
+          python-version: 3.13
       - run: pip install tox
       - run: tox -e lint
 
@@ -24,7 +24,7 @@ jobs:
       - name: Set up Python 3.8
         uses: actions/setup-python@v5.3.0
         with:
-          python-version: 3.8
+          python-version: 3.13
       - run: pip install tox
       - run: tox -e test_branch_creation
 
@@ -36,7 +36,7 @@ jobs:
       - name: Set up Python 3.8
         uses: actions/setup-python@v5.3.0
         with:
-          python-version: 3.8
+          python-version: 3.13
       - run: pip install tox
       - run: tox -e test_batch_release_charms
 

@@ -30,7 +30,7 @@ pytest-mock==3.11.1
     # via -r requirements-test_branch_creation.in
 pyyaml==6.0.1
     # via -r requirements-test_branch_creation.in
-requests==2.31.0
+requests==2.32.4
     # via
     #   -r requirements-test_branch_creation.in
     #   requests-mock

@@ -112,6 +112,7 @@ def create_pr(
     body: str,
     base: str = "main",
     label: Optional[str] = None,
+    draft: bool = False,
 ) -> str:
     """Open a PR via `gh pr create`. Returns the PR URL from gh's stdout."""
     cmd = [
@@ -125,6 +126,8 @@ def create_pr(
         "--body",
         body,
     ]
+    if draft:
+        cmd.append("--draft")
     result = _run(cmd, cwd=repo)
     pr_url = result.stdout.strip()
     if label:

@@ -8,7 +8,7 @@ in `git_ops`. Keeping the shape logic here makes it cheap to unit-test.
 from __future__ import annotations
 
 import time
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 from . import repair as repair_mod
 
@@ -27,8 +27,15 @@ def build_metadata(
     attempts: int,
     sanity_envs_run: List[str],
     skip_tox: bool,
+    sanity_ok: bool = True,
+    sanity_failure: Optional[dict] = None,
 ) -> dict:
-    """Snapshot everything the open-pr step needs into a JSON-able dict."""
+    """Snapshot everything the open-pr step needs into a JSON-able dict.
+
+    `sanity_ok=False` plus `sanity_failure` captures the structured failure
+    detail so the open-pr step can surface it in the PR body and mark the
+    PR as a draft for human review.
+    """
     based_on = []
     for old_res, new_res in resolved_pairs:
         based_on.append(
@@ -52,6 +59,8 @@ def build_metadata(
         "attempts": attempts,
         "sanity_envs_run": sanity_envs_run,
         "skip_tox": skip_tox,
+        "sanity_ok": sanity_ok,
+        "sanity_failure": sanity_failure,
     }
 
 
@@ -93,8 +102,21 @@ def pr_body(metadata: dict) -> str:
     skip_tox = metadata["skip_tox"]
     sanity_envs_run = metadata["sanity_envs_run"]
     based_on = metadata["based_on"]
+    sanity_ok = metadata.get("sanity_ok", True)
+    sanity_failure = metadata.get("sanity_failure")
 
     lines: List[str] = []
+
+    if not sanity_ok:
+        lines.append(
+            "> ⚠️ **Sanity tests did not pass on the CI worker** after all "
+            "configured retries. This PR is opened as a draft so a human "
+            "engineer has a starting point — the generated `rockcraft.yaml` "
+            "may need manual fixes. See the *Sanity-test failure* section "
+            "below for the last log tail."
+        )
+        lines.append("")
+
     lines.append("## Summary")
     lines.append("")
     lines.append(
@@ -138,6 +160,28 @@ def pr_body(metadata: dict) -> str:
         lines.append("")
         lines.extend(follow_ups)
         lines.append("")
+
+    if not sanity_ok and sanity_failure:
+        lines.append("## Sanity-test failure")
+        lines.append("")
+        lines.append(f"_{sanity_failure.get('error', '')}_")
+        lines.append("")
+        for entry in sanity_failure.get("attempts", []):
+            failed_env = entry.get("failed_env")
+            if not failed_env:
+                continue
+            timed_out = " (timed out)" if entry.get("timed_out") else ""
+            lines.append(
+                f"### Attempt {entry['attempt']} — `tox -e {failed_env}` "
+                f"rc={entry.get('returncode')}{timed_out}"
+            )
+            lines.append("")
+            log_tail = entry.get("log_tail", "")
+            if log_tail:
+                lines.append("```")
+                lines.extend(log_tail.splitlines()[-40:])
+                lines.append("```")
+                lines.append("")
 
     lines.append("---")
     lines.append("")

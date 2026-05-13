@@ -134,7 +134,15 @@ def run(
         f"sanity tests failed after {max_sanity_attempts} attempts; "
         f"last failing env: {last_env}"
     )
-    return RunResult(ok=False, attempts=attempts, final_error=final_error)
+    # Even on failure, propagate the most recent attempt's YAML so callers
+    # that want to open a best-effort PR have something to write to disk.
+    last_yaml = attempts[-1].rockcraft_yaml if attempts else None
+    return RunResult(
+        ok=False,
+        attempts=attempts,
+        final_rockcraft_yaml=last_yaml,
+        final_error=final_error,
+    )
 
 
 def prepare_work_dir(rock_dir: Path, work_dir: Path) -> Path:

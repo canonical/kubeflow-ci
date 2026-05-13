@@ -278,22 +278,9 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     _write_attempt_artifacts(out_dir, result)
 
-    if not result.ok:
-        _print_json(
-            {
-                "ok": False,
-                "attempts": len(result.attempts),
-                "error": result.final_error,
-                "work_dir": str(work_dir),
-                "attempts_log_dir": str(out_dir / "attempts"),
-            }
-        )
-        return 1
-
-    final_path = out_dir / "rockcraft.yaml.new"
-    final_path.write_text(result.final_rockcraft_yaml or "")
-
     # Defence in depth: confirm only rockcraft.yaml changed in work_dir.
+    # Runs in both success and failure paths so the single-file invariant
+    # is enforced even on best-effort PRs.
     try:
         run_mod.assert_only_rockcraft_changed(rock_dir, work_dir)
     except BumpRockError as exc:
@@ -307,11 +294,15 @@ def cmd_run(args: argparse.Namespace) -> int:
         )
         return 1
 
+    final_path = out_dir / "rockcraft.yaml.new"
+    final_path.write_text(result.final_rockcraft_yaml or "")
+
     sanity_envs = (
         []
         if args.skip_tox
         else [tr.env for tr in result.attempts[-1].test_results if tr.ok]
     )
+    sanity_failure = _sanity_failure_summary(result) if not result.ok else None
     metadata = pr_mod.build_metadata(
         rock_name=rock_dir.name,
         old_version=doc.version,
@@ -321,20 +312,68 @@ def cmd_run(args: argparse.Namespace) -> int:
         attempts=len(result.attempts),
         sanity_envs_run=sanity_envs,
         skip_tox=args.skip_tox,
+        sanity_ok=result.ok,
+        sanity_failure=sanity_failure,
     )
     (out_dir / "metadata.json").write_text(json.dumps(metadata, indent=2))
 
+    if result.ok:
+        _print_json(
+            {
+                "ok": True,
+                "attempts": len(result.attempts),
+                "rockcraft_yaml_new": str(final_path),
+                "metadata": str(out_dir / "metadata.json"),
+                "work_dir": str(work_dir),
+                "attempts_log_dir": str(out_dir / "attempts"),
+            }
+        )
+        return 0
+
     _print_json(
         {
-            "ok": True,
+            "ok": False,
             "attempts": len(result.attempts),
+            "error": result.final_error,
             "rockcraft_yaml_new": str(final_path),
             "metadata": str(out_dir / "metadata.json"),
             "work_dir": str(work_dir),
             "attempts_log_dir": str(out_dir / "attempts"),
+            "note": (
+                "Sanity tests failed but the generated rockcraft.yaml and "
+                "metadata.json are still on disk. "
+                + (
+                    "Exiting 0 because --allow-sanity-failure is set; the "
+                    "open-pr step will publish a draft PR for human review."
+                    if args.allow_sanity_failure
+                    else "Re-run with --allow-sanity-failure to publish a "
+                    "draft PR anyway."
+                )
+            ),
         }
     )
-    return 0
+    return 0 if args.allow_sanity_failure else 1
+
+
+def _sanity_failure_summary(result: run_mod.RunResult) -> dict:
+    """Compact view of why sanity failed; used by the PR body."""
+    summary = {
+        "error": result.final_error,
+        "attempts": [],
+    }
+    for outcome in result.attempts:
+        failed = run_mod.tox_mod.first_failure(outcome.test_results)
+        summary["attempts"].append(
+            {
+                "attempt": outcome.attempt,
+                "envs_run": [tr.env for tr in outcome.test_results],
+                "failed_env": failed.env if failed else None,
+                "returncode": failed.returncode if failed else None,
+                "timed_out": failed.timed_out if failed else False,
+                "log_tail": failed.log_tail if failed else "",
+            }
+        )
+    return summary
 
 
 def _write_attempt_artifacts(out_dir: Path, result: run_mod.RunResult) -> None:
@@ -385,6 +424,7 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
     commit_msg = pr_mod.commit_message(rock_name, target_version)
     title = pr_mod.pr_title(rock_name, target_version)
     body = pr_mod.pr_body(metadata)
+    draft = not metadata.get("sanity_ok", True)
 
     plan = {
         "target_repo": str(target_repo),
@@ -395,6 +435,7 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
         "pr_title": title,
         "pr_body_preview": body,
         "label": pr_mod.LABEL_AI_GENERATED,
+        "draft": draft,
     }
 
     if not args.confirm:
@@ -424,6 +465,7 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
         title=title,
         body=body,
         label=pr_mod.LABEL_AI_GENERATED,
+        draft=draft,
     )
 
     _print_json(
@@ -433,6 +475,7 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
             "pr_url": pr_url,
             "rock_name": rock_name,
             "target_version": target_version,
+            "draft": draft,
         }
     )
     return 0
@@ -526,6 +569,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--skip-tox",
         action="store_true",
         help="Skip the tox sanity pipeline (local prompt iteration only).",
+    )
+    p_run.add_argument(
+        "--allow-sanity-failure",
+        action="store_true",
+        help="Exit 0 even if sanity tests fail. The generated rockcraft.yaml "
+        "and metadata.json are still written so a follow-up `open-pr` can "
+        "publish a draft PR for human review.",
     )
     p_run.add_argument("--timeout", type=int, default=30, help="HTTP timeout (s).")
     p_run.set_defaults(func=cmd_run)

@@ -101,6 +101,20 @@ def test_create_pr_returns_url_and_labels(tmp_path):
     assert "--add-label" in calls[1]
 
 
+def test_create_pr_draft_passes_flag(tmp_path):
+    seq = [_completed(stdout="https://github.com/foo/bar/pull/9\n")]
+    captured = []
+
+    def fake(cmd, **kwargs):
+        captured.append(list(cmd))
+        return seq.pop(0)
+
+    with patch("subprocess.run", side_effect=fake):
+        url = git_ops.create_pr(tmp_path, title="t", body="b", draft=True)
+    assert url == "https://github.com/foo/bar/pull/9"
+    assert "--draft" in captured[0]
+
+
 def test_create_pr_swallows_label_failure(tmp_path):
     seq = [
         _completed(stdout="https://github.com/foo/bar/pull/1\n"),

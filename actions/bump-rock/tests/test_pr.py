@@ -114,6 +114,50 @@ def test_pr_body_skip_tox_notes_it():
     assert "Sanity tests were skipped" in body
 
 
+def test_pr_body_sanity_failure_shows_warning_and_log_tail():
+    md = _happy_metadata(
+        sanity_ok=False,
+        sanity_failure={
+            "error": "sanity tests failed after 3 attempts; last failing env: pack",
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "envs_run": ["pack"],
+                    "failed_env": "pack",
+                    "returncode": 1,
+                    "timed_out": False,
+                    "log_tail": "boom!\ntraceback line\n",
+                }
+            ],
+        },
+    )
+    body = pr.pr_body(md)
+    assert "Sanity tests did not pass" in body
+    assert "draft" in body
+    assert "## Sanity-test failure" in body
+    assert "tox -e pack" in body
+    assert "boom!" in body
+    assert "traceback line" in body
+
+
+def test_build_metadata_records_sanity_failure_payload():
+    failure = {"error": "x", "attempts": []}
+    md = pr.build_metadata(
+        rock_name="pmml",
+        old_version="0.17.0",
+        target_version="v0.18.0",
+        resolved_pairs=[(_result(OLD_REF), _result(NEW_REF))],
+        model="x",
+        attempts=3,
+        sanity_envs_run=[],
+        skip_tox=False,
+        sanity_ok=False,
+        sanity_failure=failure,
+    )
+    assert md["sanity_ok"] is False
+    assert md["sanity_failure"] == failure
+
+
 def test_pr_body_surfaces_repair_in_follow_ups():
     broken = urls.UpstreamRef(
         org="kserve", repo="kserve", ref="v0.17.0", path="wrongdir/pmml.Dockerfile"

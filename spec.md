@@ -258,8 +258,13 @@ Inside the rock folder, on the updated `rockcraft.yaml`:
   (see §6.6 single-file constraint). If the model believes a test must be
   updated to accommodate the bump, that suggestion is recorded for the PR
   body and not applied.
-- When the cap is hit the workflow fails with the last sanity log surfaced
-  in the job summary; no PR is opened (unless `dry_run` is set).
+- When the cap is hit, the workflow **still opens a PR — as a draft** —
+  so a human engineer has the LLM's best-effort `rockcraft.yaml` to
+  triage instead of nothing. The PR body prepends a "⚠️ Sanity tests did
+  not pass" banner and includes the last `tox -e <env>` log tail per
+  attempt in a `## Sanity-test failure` section. `metadata.json` carries
+  `sanity_ok=false` for downstream consumers. Opting out of this
+  behaviour is a single `--allow-sanity-failure` flag away on the CLI.
 
 ### 6.8 Open PR
 

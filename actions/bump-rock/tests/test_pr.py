@@ -134,10 +134,38 @@ def test_pr_body_sanity_failure_shows_warning_and_log_tail():
     body = pr.pr_body(md)
     assert "Sanity tests did not pass" in body
     assert "draft" in body
-    assert "## Sanity-test failure" in body
+    assert "## What did not pass" in body
     assert "tox -e pack" in body
     assert "boom!" in body
     assert "traceback line" in body
+
+
+def test_pr_body_surfaces_validator_errors_when_generate_failed():
+    md = _happy_metadata(
+        sanity_ok=False,
+        sanity_failure={
+            "error": "LLM could not produce a rockcraft.yaml that passed validators",
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "envs_run": [],
+                    "failed_env": None,
+                    "returncode": None,
+                    "timed_out": False,
+                    "log_tail": "",
+                    "validator_errors": [
+                        "output diverges from the original rockcraft.yaml "
+                        "in lines that are not version / source-tag changes.\n"
+                        "  -mkdir foo\n  +mkdir bar",
+                    ],
+                }
+            ],
+        },
+    )
+    body = pr.pr_body(md)
+    assert "validators rejected the model's output" in body
+    assert "diverges from the original" in body
+    assert "+mkdir bar" in body
 
 
 def test_build_metadata_records_sanity_failure_payload():

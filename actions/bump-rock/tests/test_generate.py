@@ -207,18 +207,23 @@ def test_generate_retries_with_validation_errors():
     assert "failed validation" in second[-1].content
 
 
-def test_generate_raises_after_retry_cap():
+def test_generate_returns_invalid_result_after_retry_cap():
+    """Spec §6.6 ladder: after total_attempts the call returns ok=False
+    with the last candidate so callers can publish a best-effort PR."""
     doc = rockcraft.load(FIXTURES / "happy")
     bad = _bumped_yaml(version="0.17.0", ref_in_url="v0.17.0")
     client = MockClient(responses=[bad, bad, bad])
-    with pytest.raises(BumpRockError, match="after 3 attempts"):
-        generate.generate(
-            client=client,
-            doc=doc,
-            pairs=[_make_pair()],
-            target_version="v0.18.0",
-            max_retries=2,
-        )
+    result = generate.generate(
+        client=client,
+        doc=doc,
+        pairs=[_make_pair()],
+        target_version="v0.18.0",
+        max_retries=2,
+    )
+    assert result.ok is False
+    assert result.attempts == 3
+    assert "0.17.0" in result.rockcraft_yaml
+    assert result.validator_errors
     assert len(client.calls) == 3
 
 

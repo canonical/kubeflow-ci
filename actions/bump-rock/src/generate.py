@@ -17,7 +17,7 @@ from __future__ import annotations
 import difflib
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple
 
 import yaml
@@ -78,11 +78,20 @@ CRITICAL — verbatim preservation of unchanged regions:
 
 @dataclass
 class GenerateResult:
-    """Outcome of a successful generate call."""
+    """Outcome of a generate call.
+
+    `ok=True` means a candidate passed all validators; `rockcraft_yaml` is
+    that candidate. `ok=False` means no inner attempt produced a valid
+    output; `rockcraft_yaml` carries the *last* candidate (best effort)
+    and `validator_errors` records why it failed. Either way the caller
+    receives a non-None YAML string so a best-effort PR can be opened.
+    """
 
     rockcraft_yaml: str
     attempts: int
     raw_responses: List[str]
+    ok: bool = True
+    validator_errors: List[str] = field(default_factory=list)
 
 
 def build_user_prompt(
@@ -279,6 +288,7 @@ def generate(
 
     total_attempts = 1 + max_retries
     last_errors: List[str] = []
+    last_candidate = ""
     for attempt in range(1, total_attempts + 1):
         log.info(
             "generate attempt %d/%d (additional_context=%s)",
@@ -289,6 +299,7 @@ def generate(
         response = client.complete(SYSTEM_PROMPT, conversation)
         raw_responses.append(response)
         candidate = strip_fences(response)
+        last_candidate = candidate
         errors = validate_output(candidate, doc, target_version)
         if not errors:
             log.info("  -> validators passed on attempt %d", attempt)
@@ -320,9 +331,18 @@ def generate(
             )
         )
 
-    raise BumpRockError(
-        f"LLM failed to produce valid rockcraft.yaml after {total_attempts} "
-        f"attempts. Last errors:\n  - " + "\n  - ".join(last_errors)
+    # All inner attempts failed validation. Return ok=False with the last
+    # candidate so the caller can still publish a best-effort draft PR.
+    log.warning(
+        "generate exhausted %d inner attempts without passing validators",
+        total_attempts,
+    )
+    return GenerateResult(
+        rockcraft_yaml=last_candidate,
+        attempts=total_attempts,
+        raw_responses=raw_responses,
+        ok=False,
+        validator_errors=last_errors,
     )
 
 

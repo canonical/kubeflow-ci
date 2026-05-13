@@ -36,6 +36,7 @@ class AttemptOutcome:
     attempt: int
     rockcraft_yaml: str
     test_results: List[tox_mod.TestResult] = field(default_factory=list)
+    validator_errors: List[str] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
@@ -89,6 +90,34 @@ def run(
             additional_context=feedback,
         )
         (work_dir / "rockcraft.yaml").write_text(gen.rockcraft_yaml)
+
+        if not gen.ok:
+            # Inner validator retries exhausted. Re-running generate with
+            # the same prompt won't help (the model can't get past the
+            # validators for this Dockerfile diff). Bail with the
+            # best-effort yaml so the open-pr step can publish a draft.
+            log.warning(
+                "generate gave up after %d inner attempts with %d validator "
+                "error(s); not retrying the outer loop.",
+                gen.attempts,
+                len(gen.validator_errors),
+            )
+            outcome = AttemptOutcome(
+                attempt=attempt_no,
+                rockcraft_yaml=gen.rockcraft_yaml,
+                validator_errors=gen.validator_errors,
+            )
+            attempts.append(outcome)
+            return RunResult(
+                ok=False,
+                attempts=attempts,
+                final_rockcraft_yaml=gen.rockcraft_yaml,
+                final_error=(
+                    "LLM could not produce a rockcraft.yaml that passed the "
+                    f"validators after {gen.attempts} attempts. See PR body "
+                    "for the validator errors."
+                ),
+            )
 
         if skip_tox:
             log.info("--skip-tox set; short-circuiting after first generate")

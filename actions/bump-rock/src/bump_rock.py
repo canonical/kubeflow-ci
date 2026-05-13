@@ -356,7 +356,12 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 
 def _sanity_failure_summary(result: run_mod.RunResult) -> dict:
-    """Compact view of why sanity failed; used by the PR body."""
+    """Compact view of why the run failed; used by the PR body.
+
+    Covers two failure modes:
+      - tox sanity failed → per-attempt tox env + log tail.
+      - generate validators failed → per-attempt validator error messages.
+    """
     summary = {
         "error": result.final_error,
         "attempts": [],
@@ -371,6 +376,7 @@ def _sanity_failure_summary(result: run_mod.RunResult) -> dict:
                 "returncode": failed.returncode if failed else None,
                 "timed_out": failed.timed_out if failed else False,
                 "log_tail": failed.log_tail if failed else "",
+                "validator_errors": list(outcome.validator_errors),
             }
         )
     return summary

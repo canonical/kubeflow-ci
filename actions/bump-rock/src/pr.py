@@ -162,26 +162,40 @@ def pr_body(metadata: dict) -> str:
         lines.append("")
 
     if not sanity_ok and sanity_failure:
-        lines.append("## Sanity-test failure")
+        lines.append("## What did not pass")
         lines.append("")
         lines.append(f"_{sanity_failure.get('error', '')}_")
         lines.append("")
         for entry in sanity_failure.get("attempts", []):
             failed_env = entry.get("failed_env")
-            if not failed_env:
-                continue
-            timed_out = " (timed out)" if entry.get("timed_out") else ""
-            lines.append(
-                f"### Attempt {entry['attempt']} — `tox -e {failed_env}` "
-                f"rc={entry.get('returncode')}{timed_out}"
-            )
-            lines.append("")
-            log_tail = entry.get("log_tail", "")
-            if log_tail:
-                lines.append("```")
-                lines.extend(log_tail.splitlines()[-40:])
-                lines.append("```")
+            validator_errors = entry.get("validator_errors") or []
+            if failed_env:
+                timed_out = " (timed out)" if entry.get("timed_out") else ""
+                lines.append(
+                    f"### Attempt {entry['attempt']} — `tox -e {failed_env}` "
+                    f"rc={entry.get('returncode')}{timed_out}"
+                )
                 lines.append("")
+                log_tail = entry.get("log_tail", "")
+                if log_tail:
+                    lines.append("```")
+                    lines.extend(log_tail.splitlines()[-40:])
+                    lines.append("```")
+                    lines.append("")
+            elif validator_errors:
+                lines.append(
+                    f"### Attempt {entry['attempt']} — validators rejected the "
+                    "model's output"
+                )
+                lines.append("")
+                for err in validator_errors:
+                    # Each error can be multi-line (e.g. the diff-tightness
+                    # one with embedded diff hunks). Render as a quoted
+                    # block to keep markdown readable.
+                    lines.append("```")
+                    lines.extend(err.splitlines()[:60])
+                    lines.append("```")
+                    lines.append("")
 
     lines.append("---")
     lines.append("")

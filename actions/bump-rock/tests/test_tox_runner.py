@@ -1,8 +1,6 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for the tox runner wrapper."""
-import io
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from src import tox_runner
@@ -27,9 +25,7 @@ def _fake_popen(lines, returncode=0):
 def test_subprocess_runner_success(tmp_path):
     proc = _fake_popen(["building...\n", "ok\n"], returncode=0)
     with patch("subprocess.Popen", return_value=proc) as popen_mock:
-        result = tox_runner.SubprocessToxRunner().run(
-            "pack", cwd=tmp_path, timeout=60
-        )
+        result = tox_runner.SubprocessToxRunner().run("pack", cwd=tmp_path)
     assert result.ok is True
     assert result.returncode == 0
     assert "ok" in result.log_tail
@@ -42,9 +38,7 @@ def test_subprocess_runner_success(tmp_path):
 def test_subprocess_runner_nonzero(tmp_path):
     proc = _fake_popen(["boom\n", "err\n"], returncode=1)
     with patch("subprocess.Popen", return_value=proc):
-        result = tox_runner.SubprocessToxRunner().run(
-            "sanity", cwd=tmp_path, timeout=60
-        )
+        result = tox_runner.SubprocessToxRunner().run("sanity", cwd=tmp_path)
     assert result.ok is False
     assert result.returncode == 1
     assert "boom" in result.log_tail
@@ -54,27 +48,10 @@ def test_subprocess_runner_nonzero(tmp_path):
 def test_subprocess_runner_streams_to_stderr(tmp_path, capsys):
     proc = _fake_popen(["line-one\n", "line-two\n"], returncode=0)
     with patch("subprocess.Popen", return_value=proc):
-        tox_runner.SubprocessToxRunner().run("pack", cwd=tmp_path, timeout=60)
+        tox_runner.SubprocessToxRunner().run("pack", cwd=tmp_path)
     captured = capsys.readouterr()
     assert "[tox -e pack] line-one" in captured.err
     assert "[tox -e pack] line-two" in captured.err
-
-
-def test_subprocess_runner_timeout(tmp_path):
-    # Iterator yields one line then we patch time.monotonic to claim the
-    # timeout has been exceeded so the runner kills the process.
-    proc = _fake_popen(["slow...\n"] * 5, returncode=0)
-    times = iter([0.0, 0.5, 999.0, 999.5, 1000.0, 1000.5, 1001.0, 1001.5])
-    with patch("subprocess.Popen", return_value=proc), patch(
-        "src.tox_runner.time.monotonic", side_effect=lambda: next(times)
-    ):
-        result = tox_runner.SubprocessToxRunner().run(
-            "pack", cwd=tmp_path, timeout=1
-        )
-    assert result.ok is False
-    assert result.timed_out is True
-    assert "slow" in result.log_tail
-    proc.kill.assert_called()
 
 
 class _StubRunner:
@@ -84,8 +61,8 @@ class _StubRunner:
         self.outcomes = outcomes
         self.calls = []
 
-    def run(self, env, *, cwd, timeout):
-        self.calls.append({"env": env, "cwd": cwd, "timeout": timeout})
+    def run(self, env, *, cwd):
+        self.calls.append({"env": env, "cwd": cwd})
         outcome = self.outcomes.pop(0)
         return tox_runner.TestResult(
             env=env,

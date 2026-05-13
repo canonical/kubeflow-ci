@@ -1,15 +1,12 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
-"""Subprocess wrapper for tox commands with per-env timeouts.
-
-Spec §7.3 timeouts:
-    - tox -e pack             : 30 min
-    - tox -e export-to-docker : 15 min
-    - tox -e sanity           : 15 min
+"""Subprocess wrapper for tox commands.
 
 The wrapper captures combined stdout+stderr, returns a tail of the log
 (capped to keep prompt sizes sane for the §6.7 retry feedback loop), and
 surfaces a structured TestResult instead of raising on non-zero exit.
+No per-env time limits are enforced — `tox -e <env>` runs until it
+finishes on its own.
 """
 from __future__ import annotations
 
@@ -23,12 +20,6 @@ from pathlib import Path
 from typing import List, Optional, Protocol
 
 log = logging.getLogger("bump-rock.tox")
-
-DEFAULT_TIMEOUTS: dict = {
-    "pack": 30 * 60,
-    "export-to-docker": 15 * 60,
-    "sanity": 15 * 60,
-}
 
 DEFAULT_SANITY_PIPELINE: List[str] = ["pack", "export-to-docker", "sanity"]
 
@@ -49,7 +40,7 @@ class TestResult:
 class ToxRunner(Protocol):
     """Anything that can run `tox -e <env>` inside a rock folder."""
 
-    def run(self, env: str, *, cwd: Path, timeout: int) -> TestResult: ...
+    def run(self, env: str, *, cwd: Path) -> TestResult: ...
 
 
 class SubprocessToxRunner:
@@ -61,8 +52,8 @@ class SubprocessToxRunner:
     inner LLM retry loop and for the workflow artifact).
     """
 
-    def run(self, env: str, *, cwd: Path, timeout: int) -> TestResult:
-        log.info("starting `tox -e %s` (cwd=%s, timeout=%ds)", env, cwd, timeout)
+    def run(self, env: str, *, cwd: Path) -> TestResult:
+        log.info("starting `tox -e %s` (cwd=%s)", env, cwd)
         t0 = time.monotonic()
         proc = subprocess.Popen(
             ["tox", "-e", env],
@@ -74,44 +65,33 @@ class SubprocessToxRunner:
         )
 
         tail: collections.deque = collections.deque(maxlen=LOG_TAIL_LINES)
-        timed_out = False
         prefix = f"[tox -e {env}] "
 
         assert proc.stdout is not None  # for type checkers
-        try:
-            for line in proc.stdout:
-                # Strip the trailing newline for the streamed prefix copy,
-                # but keep it for the ring buffer so reconstructing the
-                # tail preserves shape.
-                stripped = line.rstrip("\n")
-                sys.stderr.write(prefix + stripped + "\n")
-                sys.stderr.flush()
-                tail.append(stripped)
-                if time.monotonic() - t0 > timeout:
-                    proc.kill()
-                    timed_out = True
-                    break
-            proc.wait(timeout=max(1, timeout - int(time.monotonic() - t0)))
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            timed_out = True
+        for line in proc.stdout:
+            # Strip the trailing newline for the streamed prefix copy,
+            # but keep it for the ring buffer so reconstructing the
+            # tail preserves shape.
+            stripped = line.rstrip("\n")
+            sys.stderr.write(prefix + stripped + "\n")
+            sys.stderr.flush()
+            tail.append(stripped)
+        proc.wait()
 
         elapsed = time.monotonic() - t0
-        rc = proc.returncode if not timed_out else -1
-        ok = (not timed_out) and rc == 0
+        rc = proc.returncode
+        ok = rc == 0
         log.info(
-            "  -> `tox -e %s` finished rc=%d in %.1fs%s",
+            "  -> `tox -e %s` finished rc=%d in %.1fs",
             env,
             rc,
             elapsed,
-            " (timed out)" if timed_out else "",
         )
         return TestResult(
             env=env,
             ok=ok,
             returncode=rc,
             log_tail="\n".join(tail),
-            timed_out=timed_out,
         )
 
 
@@ -126,7 +106,6 @@ def run_sanity_pipeline(
     *,
     runner: Optional[ToxRunner] = None,
     envs: Optional[List[str]] = None,
-    timeouts: Optional[dict] = None,
 ) -> List[TestResult]:
     """Run the sanity-test pipeline against `rock_dir`.
 
@@ -135,11 +114,10 @@ def run_sanity_pipeline(
     """
     runner = runner or SubprocessToxRunner()
     envs = envs or DEFAULT_SANITY_PIPELINE
-    timeouts = timeouts or DEFAULT_TIMEOUTS
 
     results: List[TestResult] = []
     for env in envs:
-        result = runner.run(env, cwd=rock_dir, timeout=timeouts[env])
+        result = runner.run(env, cwd=rock_dir)
         results.append(result)
         if not result.ok:
             break

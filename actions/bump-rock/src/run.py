@@ -168,11 +168,14 @@ _IGNORE_GLOBS = (
 
 
 def _is_build_artifact(rel_path: Path) -> bool:
-    """True if `rel_path` is something tox / rockcraft / pytest produces."""
+    """True if `rel_path` is something tox / rockcraft / pytest produces.
+
+    Matches a known directory name anywhere along the path (not just the
+    root) so nested artefacts like `tests/__pycache__/foo.pyc` are caught.
+    """
     from fnmatch import fnmatch
 
-    s = str(rel_path)
-    if any(s == p or s.startswith(p + "/") for p in _IGNORE_PATH_PREFIXES):
+    if any(part in _IGNORE_PATH_PREFIXES for part in rel_path.parts):
         return True
     return any(fnmatch(rel_path.name, g) for g in _IGNORE_GLOBS)
 

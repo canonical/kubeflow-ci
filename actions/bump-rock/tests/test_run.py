@@ -218,3 +218,19 @@ def test_assert_only_rockcraft_changed_tolerates_rock_artifact(tmp_path):
     (work / "pmmlserver_0.18.0_amd64.rock").write_bytes(b"fake-oci-archive")
 
     run.assert_only_rockcraft_changed(src, work)
+
+
+def test_assert_only_rockcraft_changed_tolerates_nested_pycache(tmp_path):
+    """Regression: pytest leaves __pycache__ inside tests/, not at root."""
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "rockcraft.yaml").write_text("old")
+    (src / "tests").mkdir()
+    (src / "tests" / "test_rock.py").write_text("assert True")
+    work = tmp_path / "work"
+    run.prepare_work_dir(src, work)
+    pycache = work / "tests" / "__pycache__"
+    pycache.mkdir()
+    (pycache / "test_rock.cpython-312-pytest-9.0.3.pyc").write_bytes(b"\x00" * 16)
+
+    run.assert_only_rockcraft_changed(src, work)

@@ -19,7 +19,7 @@ import requests
 
 log = logging.getLogger("bump-rock.llm")
 
-DEFAULT_OPENROUTER_MODEL = "meta-llama/llama-4-maverick"
+DEFAULT_OPENROUTER_MODEL = "deepseek/deepseek-v4-pro"
 DEFAULT_MAX_TOKENS = 16_000
 DEFAULT_TIMEOUT = 300  # seconds; spec §7.3.
 

@@ -383,7 +383,18 @@ def _sanity_failure_summary(result: run_mod.RunResult) -> dict:
 
 
 def _write_attempt_artifacts(out_dir: Path, result: run_mod.RunResult) -> None:
-    """Persist a folder per attempt so failures can be inspected later."""
+    """Persist a folder per outer attempt so failures can be inspected later.
+
+    Each outer attempt writes:
+      attempts/attempt-N/rockcraft.yaml       — the final candidate
+      attempts/attempt-N/tox-<env>.log        — log tail per tox env run
+      attempts/attempt-N/inner-K/raw-response.txt
+      attempts/attempt-N/inner-K/validator-errors.txt  (only if non-empty)
+
+    The inner subfolders capture every LLM call inside the wrapped
+    `generate()` invocation, including ones that the validators rejected,
+    so it's visible *why* a multi-retry generate succeeded or gave up.
+    """
     attempts_dir = out_dir / "attempts"
     attempts_dir.mkdir(exist_ok=True)
     for outcome in result.attempts:
@@ -392,6 +403,19 @@ def _write_attempt_artifacts(out_dir: Path, result: run_mod.RunResult) -> None:
         (adir / "rockcraft.yaml").write_text(outcome.rockcraft_yaml)
         for tr in outcome.test_results:
             (adir / f"tox-{tr.env}.log").write_text(tr.log_tail)
+        for inner_idx, raw in enumerate(outcome.inner_raw_responses, start=1):
+            inner_dir = adir / f"inner-{inner_idx}"
+            inner_dir.mkdir(exist_ok=True)
+            (inner_dir / "raw-response.txt").write_text(raw)
+            errors = (
+                outcome.inner_validator_errors[inner_idx - 1]
+                if inner_idx - 1 < len(outcome.inner_validator_errors)
+                else []
+            )
+            if errors:
+                (inner_dir / "validator-errors.txt").write_text(
+                    "\n\n".join(errors)
+                )
 
 
 def cmd_open_pr(args: argparse.Namespace) -> int:

@@ -31,12 +31,20 @@ log = logging.getLogger("bump-rock.run")
 
 @dataclass
 class AttemptOutcome:
-    """One generate + sanity-test attempt."""
+    """One generate + sanity-test attempt.
+
+    `inner_raw_responses` and `inner_validator_errors` are parallel lists
+    capturing each LLM call inside the wrapped `generate()` invocation, so
+    the artifact-writer can persist every inner attempt (not just the
+    final candidate) for post-mortem inspection.
+    """
 
     attempt: int
     rockcraft_yaml: str
     test_results: List[tox_mod.TestResult] = field(default_factory=list)
     validator_errors: List[str] = field(default_factory=list)
+    inner_raw_responses: List[str] = field(default_factory=list)
+    inner_validator_errors: List[List[str]] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
@@ -105,6 +113,8 @@ def run(
                 attempt=attempt_no,
                 rockcraft_yaml=gen.rockcraft_yaml,
                 validator_errors=gen.validator_errors,
+                inner_raw_responses=gen.raw_responses,
+                inner_validator_errors=gen.per_attempt_errors,
             )
             attempts.append(outcome)
             return RunResult(
@@ -120,7 +130,12 @@ def run(
 
         if skip_tox:
             log.info("--skip-tox set; short-circuiting after first generate")
-            outcome = AttemptOutcome(attempt=attempt_no, rockcraft_yaml=gen.rockcraft_yaml)
+            outcome = AttemptOutcome(
+                attempt=attempt_no,
+                rockcraft_yaml=gen.rockcraft_yaml,
+                inner_raw_responses=gen.raw_responses,
+                inner_validator_errors=gen.per_attempt_errors,
+            )
             attempts.append(outcome)
             return RunResult(
                 ok=True, attempts=attempts, final_rockcraft_yaml=gen.rockcraft_yaml
@@ -132,6 +147,8 @@ def run(
             attempt=attempt_no,
             rockcraft_yaml=gen.rockcraft_yaml,
             test_results=results,
+            inner_raw_responses=gen.raw_responses,
+            inner_validator_errors=gen.per_attempt_errors,
         )
         attempts.append(outcome)
 

@@ -43,6 +43,22 @@ def _github_token_from_env() -> str | None:
     return os.environ.get("GITHUB_TOKEN") or os.environ.get("ROCKS_REPO_TOKEN")
 
 
+def _github_workflow_run_url() -> str | None:
+    """Return the canonical URL of the current GitHub Actions run, if any.
+
+    Built from the standard `GITHUB_SERVER_URL`, `GITHUB_REPOSITORY`, and
+    `GITHUB_RUN_ID` env vars that the runner sets for every Actions job.
+    Returns `None` outside of Actions (so local invocations don't add a
+    bogus link to the PR body).
+    """
+    server = os.environ.get("GITHUB_SERVER_URL")
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    if not (server and repo and run_id):
+        return None
+    return f"{server}/{repo}/actions/runs/{run_id}"
+
+
 def _print_json(payload) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -314,6 +330,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         skip_tox=args.skip_tox,
         sanity_ok=result.ok,
         sanity_failure=sanity_failure,
+        workflow_run_url=_github_workflow_run_url(),
     )
     (out_dir / "metadata.json").write_text(json.dumps(metadata, indent=2))
 

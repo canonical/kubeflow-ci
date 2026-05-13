@@ -337,20 +337,21 @@ needed for the run itself (`contents: read`).
 
 ### 7.3 Timeouts
 
-To make sure a runaway workflow can't sit forever consuming credits or LLM
-budget, every level has an explicit timeout:
+Time limits are intentionally minimal — only the LLM HTTP call carries
+one, because we want long-running `rockcraft pack`s and slow networks to
+finish on their own rather than be killed mid-build:
 
 | Level                          | Default | How it's enforced |
 |--------------------------------|---------|-------------------|
-| Whole workflow run             | 90 min  | `timeout-minutes` on the job in the workflow YAML. |
+| Whole workflow run             | none    | No `timeout-minutes` set on the job; relies on the GitHub runner's own 6h hard limit. |
 | Single LLM call                | 5 min   | HTTP client timeout in the calling script. |
-| `tox -e pack`                  | 30 min  | `timeout` wrapper around the tox invocation. |
-| `tox -e sanity` (+ export)     | 15 min  | Same. |
+| `tox -e pack` / `sanity` / `export-to-docker` | none | No wrapper timeout; tox runs until it exits on its own. |
 | ~~Target-repo CI polling (§6.9)~~ | n/a  | Removed in v1; the workflow returns as soon as the PR is opened. |
 
-These caps are conservative ceilings, not target durations. The whole-job
-timeout is the final backstop: even if a sub-step's wrapper misbehaves, the
-GitHub runner will terminate the job.
+A previous version of this spec listed 30/15-minute per-env caps and a
+90-minute whole-job ceiling; both were removed after they prematurely
+killed legitimate rockcraft builds. If a future change reintroduces them
+they should be opt-in via workflow inputs, not hard-coded.
 
 ## 8. Files Added in This Repo
 

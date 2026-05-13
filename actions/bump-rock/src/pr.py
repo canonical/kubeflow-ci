@@ -29,12 +29,15 @@ def build_metadata(
     skip_tox: bool,
     sanity_ok: bool = True,
     sanity_failure: Optional[dict] = None,
+    workflow_run_url: Optional[str] = None,
 ) -> dict:
     """Snapshot everything the open-pr step needs into a JSON-able dict.
 
     `sanity_ok=False` plus `sanity_failure` captures the structured failure
     detail so the open-pr step can surface it in the PR body and mark the
-    PR as a draft for human review.
+    PR as a draft for human review. `workflow_run_url`, when set, is the
+    canonical URL of the GitHub Actions run that produced this PR — it
+    will be linked from the PR body.
     """
     based_on = []
     for old_res, new_res in resolved_pairs:
@@ -61,6 +64,7 @@ def build_metadata(
         "skip_tox": skip_tox,
         "sanity_ok": sanity_ok,
         "sanity_failure": sanity_failure,
+        "workflow_run_url": workflow_run_url,
     }
 
 
@@ -104,6 +108,7 @@ def pr_body(metadata: dict) -> str:
     based_on = metadata["based_on"]
     sanity_ok = metadata.get("sanity_ok", True)
     sanity_failure = metadata.get("sanity_failure")
+    workflow_run_url = metadata.get("workflow_run_url")
 
     lines: List[str] = []
 
@@ -135,6 +140,8 @@ def pr_body(metadata: dict) -> str:
 
     lines.append("## What the workflow did")
     lines.append("")
+    if workflow_run_url:
+        lines.append(f"- Triggered by [GitHub Actions run]({workflow_run_url}).")
     lines.append(
         f"- Generated an updated `{rock}/rockcraft.yaml` using `{model}` via "
         f"OpenRouter, in {attempts} attempt(s)."
@@ -171,31 +178,22 @@ def pr_body(metadata: dict) -> str:
             validator_errors = entry.get("validator_errors") or []
             if failed_env:
                 timed_out = " (timed out)" if entry.get("timed_out") else ""
-                lines.append(
-                    f"### Attempt {entry['attempt']} — `tox -e {failed_env}` "
+                summary = (
+                    f"Attempt {entry['attempt']} — `tox -e {failed_env}` "
                     f"rc={entry.get('returncode')}{timed_out}"
                 )
-                lines.append("")
-                log_tail = entry.get("log_tail", "")
-                if log_tail:
-                    lines.append("```")
-                    lines.extend(log_tail.splitlines()[-40:])
-                    lines.append("```")
-                    lines.append("")
+                log_tail = entry.get("log_tail", "") or "(no captured output)"
+                lines.extend(_details_block(summary, log_tail))
             elif validator_errors:
-                lines.append(
-                    f"### Attempt {entry['attempt']} — validators rejected the "
+                summary = (
+                    f"Attempt {entry['attempt']} — validators rejected the "
                     "model's output"
                 )
-                lines.append("")
-                for err in validator_errors:
-                    # Each error can be multi-line (e.g. the diff-tightness
-                    # one with embedded diff hunks). Render as a quoted
-                    # block to keep markdown readable.
-                    lines.append("```")
-                    lines.extend(err.splitlines()[:60])
-                    lines.append("```")
-                    lines.append("")
+                # Each error can be multi-line (e.g. embedded diff hunks).
+                # Concatenate with blank-line separators and let the details
+                # block render the full content inside a single code fence.
+                content = "\n\n".join(validator_errors)
+                lines.extend(_details_block(summary, content))
 
     lines.append("---")
     lines.append("")
@@ -205,6 +203,26 @@ def pr_body(metadata: dict) -> str:
         "Please review carefully before merging."
     )
     return "\n".join(lines) + "\n"
+
+
+def _details_block(summary: str, content: str) -> List[str]:
+    """Render a collapsed GitHub `<details>` block wrapping a code fence.
+
+    Blank lines around the inner code fence are required for GitHub
+    Markdown to render the fence inside the HTML element. The fence is
+    closed with a bare ``` and the block ends with ``</details>``.
+    """
+    return [
+        "<details>",
+        f"<summary>{summary}</summary>",
+        "",
+        "```",
+        *content.splitlines(),
+        "```",
+        "",
+        "</details>",
+        "",
+    ]
 
 
 def _reviewer_follow_ups(based_on: List[dict]) -> List[str]:

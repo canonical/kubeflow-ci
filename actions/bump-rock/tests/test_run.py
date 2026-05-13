@@ -49,7 +49,7 @@ class _SequenceRunner:
         self.invocations = 0
         self.envs_seen = []
 
-    def run(self, env, *, cwd, timeout):
+    def run(self, env, *, cwd):
         self.envs_seen.append(env)
         ok = self.sequence.pop(0)
         self.invocations += 1

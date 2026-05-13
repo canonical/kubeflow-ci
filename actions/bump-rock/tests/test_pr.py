@@ -138,6 +138,11 @@ def test_pr_body_sanity_failure_shows_warning_and_log_tail():
     assert "tox -e pack" in body
     assert "boom!" in body
     assert "traceback line" in body
+    # The log lives inside a collapsed <details> block so the PR body
+    # isn't flooded by hundreds of log lines.
+    assert "<details>" in body
+    assert "<summary>" in body
+    assert "</details>" in body
 
 
 def test_pr_body_surfaces_validator_errors_when_generate_failed():
@@ -184,6 +189,35 @@ def test_build_metadata_records_sanity_failure_payload():
     )
     assert md["sanity_ok"] is False
     assert md["sanity_failure"] == failure
+
+
+def test_pr_body_links_workflow_run_when_set():
+    md = _happy_metadata(
+        workflow_run_url="https://github.com/canonical/kubeflow-ci/actions/runs/42"
+    )
+    body = pr.pr_body(md)
+    assert "GitHub Actions run" in body
+    assert "https://github.com/canonical/kubeflow-ci/actions/runs/42" in body
+
+
+def test_pr_body_omits_workflow_run_when_unset():
+    body = pr.pr_body(_happy_metadata())
+    assert "GitHub Actions run" not in body
+
+
+def test_build_metadata_records_workflow_run_url():
+    md = pr.build_metadata(
+        rock_name="pmml",
+        old_version="0.17.0",
+        target_version="v0.18.0",
+        resolved_pairs=[(_result(OLD_REF), _result(NEW_REF))],
+        model="x",
+        attempts=1,
+        sanity_envs_run=[],
+        skip_tox=True,
+        workflow_run_url="https://github.com/o/r/actions/runs/1",
+    )
+    assert md["workflow_run_url"] == "https://github.com/o/r/actions/runs/1"
 
 
 def test_pr_body_surfaces_repair_in_follow_ups():

@@ -14,11 +14,15 @@ This module implements spec §6.6:
 """
 from __future__ import annotations
 
+import difflib
+import logging
 import re
 from dataclasses import dataclass
 from typing import List, Tuple
 
 import yaml
+
+log = logging.getLogger("bump-rock.generate")
 
 from .errors import BumpRockError
 from .fetch import DockerfilePair
@@ -57,6 +61,18 @@ Rules — follow them all:
     and any project-specific patches.
   - Do not change `name`, `summary`, `description`, `license`, or `base`
     unless the Dockerfile diff makes it obviously necessary.
+
+CRITICAL — verbatim preservation of unchanged regions:
+  Every line you are not explicitly required to change MUST be byte-perfect
+  identical to the input. The output will be diffed against the original;
+  any unexplained change is treated as a transcription error and will be
+  rejected. Pay particular attention to:
+  - Shell variables in override-build scripts (e.g. `$CRAFT_PART_INSTALL`,
+    `$CRAFT_PROJECT_DIR`) — re-type them character-by-character.
+  - YAML keys (`plugin:`, `build-packages:`, `override-build:`) — no
+    duplicated words, no typos.
+  - Long bash one-liners — copy the entire line, do not paraphrase.
+  When in doubt, copy the original line verbatim and move on.
 """
 
 
@@ -168,7 +184,69 @@ def validate_output(
     except BumpRockError as exc:
         errors.append(str(exc))
 
+    diff_errors = validate_diff_minimal(new_yaml, original.raw_text)
+    errors.extend(diff_errors)
+
     return errors
+
+
+# Lines whose change is always allowed during a version bump. Anything else
+# must be justified by the upstream Dockerfile diff (and is otherwise treated
+# as a suspected transcription error — see spec §6.6).
+_SAFE_DIFF_PATTERNS = (
+    re.compile(r"^\s*version\s*:"),
+    re.compile(r"^\s*source-tag\s*:"),
+    re.compile(r"^\s*#\s*Based\s+on\s+"),
+)
+
+
+def _is_safe_change_line(line: str) -> bool:
+    """True iff a diff line (with leading +/-) matches a safe-to-change rule."""
+    body = line[1:] if line and line[0] in "+-" else line
+    return any(p.match(body) for p in _SAFE_DIFF_PATTERNS)
+
+
+def validate_diff_minimal(new_yaml: str, original_text: str) -> List[str]:
+    """Flag any line whose change is not a recognised version-bump pattern.
+
+    The model's job is to bump a small set of fields (`version:`,
+    `source-tag:`, `# Based on` URL refs). Anything else changing is either
+    a real Dockerfile-driven edit (rare for routine bumps) or — much more
+    commonly — a transcription typo introduced while regenerating the
+    file. Either way the model gets to see the offending hunks in the next
+    retry's prompt, so it can revert or justify them.
+
+    Returns one error per non-safe diff hunk, or an empty list if every
+    change is in the safe set.
+    """
+    diff = list(
+        difflib.unified_diff(
+            original_text.splitlines(keepends=False),
+            new_yaml.splitlines(keepends=False),
+            n=0,
+            lineterm="",
+        )
+    )
+    unexpected: List[str] = []
+    for line in diff:
+        if line.startswith(("---", "+++", "@@")) or not line:
+            continue
+        if line[0] not in "+-":
+            continue
+        if _is_safe_change_line(line):
+            continue
+        unexpected.append(line)
+
+    if not unexpected:
+        return []
+
+    return [
+        "output diverges from the original rockcraft.yaml in lines that "
+        "are not version / source-tag / # Based on changes. Each of these "
+        "must either be reverted (likely a typo) or be a deliberate edit "
+        "justified by the upstream Dockerfile diff:\n"
+        + "\n".join(f"  {line}" for line in unexpected)
+    ]
 
 
 def generate(
@@ -202,16 +280,28 @@ def generate(
     total_attempts = 1 + max_retries
     last_errors: List[str] = []
     for attempt in range(1, total_attempts + 1):
+        log.info(
+            "generate attempt %d/%d (additional_context=%s)",
+            attempt,
+            total_attempts,
+            "yes" if additional_context else "no",
+        )
         response = client.complete(SYSTEM_PROMPT, conversation)
         raw_responses.append(response)
         candidate = strip_fences(response)
         errors = validate_output(candidate, doc, target_version)
         if not errors:
+            log.info("  -> validators passed on attempt %d", attempt)
             return GenerateResult(
                 rockcraft_yaml=candidate,
                 attempts=attempt,
                 raw_responses=raw_responses,
             )
+
+        log.warning("  -> %d validator error(s) on attempt %d", len(errors), attempt)
+        for e in errors:
+            first_line = e.splitlines()[0] if e else e
+            log.warning("     - %s", first_line)
 
         last_errors = errors
         if attempt == total_attempts:

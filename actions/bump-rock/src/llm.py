@@ -9,13 +9,17 @@ backs the unit tests.
 """
 from __future__ import annotations
 
+import logging
 import os
+import time
 from dataclasses import dataclass, field
 from typing import List, Optional, Protocol
 
 import requests
 
-DEFAULT_OPENROUTER_MODEL = "moonshotai/kimi-k2"
+log = logging.getLogger("bump-rock.llm")
+
+DEFAULT_OPENROUTER_MODEL = "meta-llama/llama-4-maverick"
 DEFAULT_MAX_TOKENS = 16_000
 DEFAULT_TIMEOUT = 300  # seconds; spec §7.3.
 
@@ -56,6 +60,13 @@ class OpenRouterClient:
             raise RuntimeError(
                 "OPENROUTER_API_KEY is not set; required to call OpenRouter."
             )
+        prompt_chars = len(system) + sum(len(m.content) for m in messages)
+        log.info(
+            "calling OpenRouter (model=%s, turns=%d, prompt~%d chars)",
+            self.model,
+            len(messages),
+            prompt_chars,
+        )
         payload = {
             "model": self.model,
             "max_tokens": self.max_tokens,
@@ -64,6 +75,7 @@ class OpenRouterClient:
                 + [{"role": m.role, "content": m.content} for m in messages]
             ),
         }
+        t0 = time.monotonic()
         resp = requests.post(
             f"{self.base_url}/chat/completions",
             headers={
@@ -75,17 +87,28 @@ class OpenRouterClient:
             json=payload,
             timeout=self.timeout,
         )
+        elapsed = time.monotonic() - t0
         if resp.status_code != 200:
+            log.error(
+                "OpenRouter %d in %.1fs: %s",
+                resp.status_code,
+                elapsed,
+                resp.text[:200],
+            )
             raise RuntimeError(
                 f"OpenRouter API error {resp.status_code}: {resp.text[:500]}"
             )
         body = resp.json()
         try:
-            return body["choices"][0]["message"]["content"]
+            content = body["choices"][0]["message"]["content"]
         except (KeyError, IndexError) as exc:
             raise RuntimeError(
                 f"OpenRouter response missing expected fields: {body!r}"
             ) from exc
+        log.info(
+            "  -> %d response chars in %.1fs", len(content), elapsed
+        )
+        return content
 
 
 @dataclass

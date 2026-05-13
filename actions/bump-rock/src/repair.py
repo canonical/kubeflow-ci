@@ -12,6 +12,7 @@ re-validating it by HTTP fetch.
 """
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -22,6 +23,8 @@ from .urls import UpstreamRef
 
 GITHUB_API = "https://api.github.com"
 DEFAULT_TIMEOUT = 30  # seconds
+
+log = logging.getLogger("bump-rock.repair")
 
 
 @dataclass
@@ -111,14 +114,18 @@ def validate_or_repair(
     """
     sess = session or requests.Session()
 
+    log.info("validating upstream URL %s", ref.blob_url())
     if validate(ref, sess, timeout=timeout):
+        log.info("  -> OK")
         return ValidationResult(ref=ref, ok=True)
+    log.info("  -> 404, attempting bounded repair via tree listing")
 
     try:
         paths = list_repo_tree(
             ref.org, ref.repo, ref.ref, sess, timeout=timeout, token=token
         )
     except UpstreamRepairError as exc:
+        log.warning("  -> tree listing failed: %s", exc)
         return ValidationResult(ref=ref, ok=False, error=str(exc))
 
     matches = find_candidates(paths, ref.basename)
@@ -136,7 +143,9 @@ def validate_or_repair(
         candidate = UpstreamRef(
             org=ref.org, repo=ref.repo, ref=ref.ref, path=matches[0]
         )
+        log.info("  -> unique candidate %s, re-validating", candidate.blob_url())
         if validate(candidate, sess, timeout=timeout):
+            log.info("  -> repaired")
             return ValidationResult(ref=candidate, ok=True, repaired_from=ref)
         return ValidationResult(
             ref=ref,

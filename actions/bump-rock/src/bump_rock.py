@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -552,8 +553,19 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _configure_logging() -> None:
+    """Emit progress lines to stderr so GitHub Actions surfaces them live."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+        stream=sys.stderr,
+    )
+
+
 def main(argv: List[str] | None = None) -> int:
     """Console entry point."""
+    _configure_logging()
     parser = build_parser()
     args = parser.parse_args(argv)
     try:

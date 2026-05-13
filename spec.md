@@ -81,7 +81,7 @@ must fail fast with a clear diagnostic, not silently produce a broken PR.
 | `rocks_repo`     | yes      | `canonical/kserve-rocks`                      | `owner/repo` form. |
 | `rock_name`      | yes      | `pmmlserver`                                  | Folder name in that repo. |
 | `target_version` | yes      | `0.18.0`                                      | The new upstream version; what `version:` in `rockcraft.yaml` will become and what replaces `<ref>` in the upstream URL. |
-| `model`          | no       | `moonshotai/kimi-k2` (default)                | OpenRouter model id override. |
+| `model`          | no       | `meta-llama/llama-4-maverick` (default)       | OpenRouter model id override. |
 | `dry_run`        | no       | `false` (default)                             | If `true`, run everything but skip the final PR push. |
 
 PRs are always opened against `main` on the target rocks repo. The branch is

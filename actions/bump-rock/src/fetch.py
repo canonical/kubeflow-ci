@@ -3,6 +3,7 @@
 """Fetch old and new upstream Dockerfiles for a (ref, target_version) pair."""
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -13,6 +14,8 @@ from .errors import UpstreamFetchError
 from .urls import UpstreamRef
 
 DEFAULT_TIMEOUT = 30  # seconds
+
+log = logging.getLogger("bump-rock.fetch")
 
 
 @dataclass(frozen=True)
@@ -37,11 +40,13 @@ def fetch_text(
         UpstreamFetchError: on any non-200 response.
     """
     sess = session or requests
+    log.info("fetching %s", ref.raw_url())
     resp = sess.get(ref.raw_url(), timeout=timeout, allow_redirects=True)
     if resp.status_code != 200:
         raise UpstreamFetchError(
             f"failed to fetch {ref.raw_url()}: HTTP {resp.status_code}"
         )
+    log.info("  -> %d bytes", len(resp.text))
     return resp.text
 
 

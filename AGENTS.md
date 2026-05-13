@@ -86,7 +86,7 @@ See [spec.md](spec.md) for the full design. Quick map:
 - [src/fetch.py](actions/bump-rock/src/fetch.py) — download old/new
   Dockerfile pair.
 - [src/llm.py](actions/bump-rock/src/llm.py) — OpenRouter client + a
-  MockClient for tests. Default model is `moonshotai/kimi-k2`.
+  MockClient for tests. Default model is `meta-llama/llama-4-maverick`.
 - [src/generate.py](actions/bump-rock/src/generate.py) — prompt building,
   post-LLM validators, inner retry loop (spec §6.6).
 - [src/tox_runner.py](actions/bump-rock/src/tox_runner.py) — `tox -e <env>`
@@ -123,7 +123,7 @@ exposes the pipeline as a `workflow_dispatch` action with inputs:
 - `rocks_repo` (e.g. `canonical/kserve-rocks`)
 - `rock_name` (e.g. `pmmlserver`)
 - `target_version` (e.g. `v0.18.0`)
-- `model` (defaults to `moonshotai/kimi-k2`)
+- `model` (defaults to `meta-llama/llama-4-maverick`)
 - `dry_run` (boolean — prints the PR body preview without pushing)
 
 It needs two secrets configured on the repo:

@@ -24,8 +24,15 @@ def _make_pair():
 
 
 def _bumped_yaml(version="0.18.0", ref_in_url="v0.18.0", name="pmmlserver"):
+    """Mirror the happy fixture exactly, only swapping the bump fields.
+
+    Keeping byte-identity with the fixture is what lets the diff-tightness
+    validator (spec §6.6) succeed on the "good" path.
+    """
     return (
         f"# Based on https://github.com/kserve/kserve/blob/{ref_in_url}/python/pmml.Dockerfile\n"
+        "#\n"
+        "# See ../CONTRIBUTING.md for more details about the patterns used in this rock.\n"
         f"name: {name}\n"
         "summary: Pmml server for Kserve deployments\n"
         "description: \"Kserve Pmml server\"\n"
@@ -76,6 +83,101 @@ def test_validate_output_rejects_invalid_yaml():
     doc = rockcraft.load(FIXTURES / "happy")
     errors = generate.validate_output("not: valid: yaml:::", doc, "v0.18.0")
     assert len(errors) == 1
+
+
+# --- diff-tightness validator (spec §6.6 + CI typo regression) -------------
+
+
+_PMML_ORIGINAL_WITH_OVERRIDE = (
+    "# Based on https://github.com/kserve/kserve/blob/v0.17.0/python/pmml.Dockerfile\n"
+    "name: pmmlserver\n"
+    'version: "0.17.0"\n'
+    "base: ubuntu@24.04\n"
+    "platforms:\n"
+    "    amd64:\n"
+    "parts:\n"
+    "  python:\n"
+    "    plugin: nil\n"
+    "    source-tag: v0.17.0\n"
+    "    override-build: |\n"
+    "      mkdir -p $CRAFT_PART_INSTALL/usr/bin/\n"
+    "      ln -s /usr/bin/python3.12 $CRAFT_PART_INSTALL/usr/bin/python\n"
+)
+
+
+def _bump_pmml(*, version_field='"0.18.0"', ref="v0.18.0", overrides=""):
+    return (
+        f"# Based on https://github.com/kserve/kserve/blob/{ref}/python/pmml.Dockerfile\n"
+        "name: pmmlserver\n"
+        f"version: {version_field}\n"
+        "base: ubuntu@24.04\n"
+        "platforms:\n"
+        "    amd64:\n"
+        "parts:\n"
+        "  python:\n"
+        "    plugin: nil\n"
+        f"    source-tag: {ref}\n"
+        "    override-build: |\n"
+        + (
+            overrides
+            or "      mkdir -p $CRAFT_PART_INSTALL/usr/bin/\n"
+              "      ln -s /usr/bin/python3.12 $CRAFT_PART_INSTALL/usr/bin/python\n"
+        )
+    )
+
+
+def _doc_with(text):
+    return rockcraft.RockcraftDoc(
+        path=Path("/tmp/rockcraft.yaml"),
+        name="pmmlserver",
+        version="0.17.0",
+        based_on_urls=[
+            "https://github.com/kserve/kserve/blob/v0.17.0/python/pmml.Dockerfile"
+        ],
+        raw_text=text,
+    )
+
+
+def test_diff_validator_accepts_pure_version_bump():
+    doc = _doc_with(_PMML_ORIGINAL_WITH_OVERRIDE)
+    new = _bump_pmml()
+    assert generate.validate_output(new, doc, "v0.18.0") == []
+
+
+def test_diff_validator_catches_cra_part_install_typo():
+    """Regression: the exact typo seen in attempt-1 of the failed CI run."""
+    doc = _doc_with(_PMML_ORIGINAL_WITH_OVERRIDE)
+    typo_overrides = (
+        "      mkdir -p $CRA_PART_INSTALL/usr/bin/\n"
+        "      ln -s /usr/bin/python3.12 $CRAFT_PART_INSTALL/usr/bin/python\n"
+    )
+    new = _bump_pmml(overrides=typo_overrides)
+    errors = generate.validate_output(new, doc, "v0.18.0")
+    assert any("diverges from the original" in e for e in errors)
+    assert any("CRA_PART_INSTALL" in e for e in errors)
+
+
+def test_diff_validator_catches_duplicated_yaml_key():
+    """Regression: the `plugin plugin:` typo seen in attempt-3."""
+    doc = _doc_with(_PMML_ORIGINAL_WITH_OVERRIDE)
+    # Inject the typo by replacing `plugin:` in the bumped output.
+    new = _bump_pmml().replace("plugin: nil", "plugin plugin: nil")
+    errors = generate.validate_output(new, doc, "v0.18.0")
+    assert any("diverges from the original" in e for e in errors)
+
+
+def test_diff_validator_safe_change_lines_recognised():
+    safe_minus = "-version: \"0.17.0\""
+    safe_plus = "+version: \"0.18.0\""
+    assert generate._is_safe_change_line(safe_minus)
+    assert generate._is_safe_change_line(safe_plus)
+    assert generate._is_safe_change_line("-    source-tag: v0.17.0")
+    assert generate._is_safe_change_line(
+        "-# Based on https://github.com/k/k/blob/v0.17.0/d"
+    )
+    assert not generate._is_safe_change_line(
+        "-      mkdir -p $CRA_PART_INSTALL/usr/bin/"
+    )
 
 
 def test_generate_returns_first_good_response():

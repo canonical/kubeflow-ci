@@ -11,6 +11,7 @@ Spec §6.7 contract:
 """
 from __future__ import annotations
 
+import logging
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -24,6 +25,8 @@ from .llm import LLMClient
 from .rockcraft import RockcraftDoc
 
 MAX_SANITY_ATTEMPTS = 3
+
+log = logging.getLogger("bump-rock.run")
 
 
 @dataclass
@@ -76,6 +79,7 @@ def run(
     feedback: str = ""
 
     for attempt_no in range(1, max_sanity_attempts + 1):
+        log.info("=== sanity attempt %d/%d ===", attempt_no, max_sanity_attempts)
         gen = generate_mod.generate(
             client=client,
             doc=doc,
@@ -87,12 +91,14 @@ def run(
         (work_dir / "rockcraft.yaml").write_text(gen.rockcraft_yaml)
 
         if skip_tox:
+            log.info("--skip-tox set; short-circuiting after first generate")
             outcome = AttemptOutcome(attempt=attempt_no, rockcraft_yaml=gen.rockcraft_yaml)
             attempts.append(outcome)
             return RunResult(
                 ok=True, attempts=attempts, final_rockcraft_yaml=gen.rockcraft_yaml
             )
 
+        log.info("running tox sanity pipeline in %s", work_dir)
         results = tox_mod.run_sanity_pipeline(work_dir, runner=runner)
         outcome = AttemptOutcome(
             attempt=attempt_no,
@@ -102,12 +108,20 @@ def run(
         attempts.append(outcome)
 
         if outcome.ok:
+            log.info("sanity pipeline passed on attempt %d", attempt_no)
             return RunResult(
                 ok=True, attempts=attempts, final_rockcraft_yaml=gen.rockcraft_yaml
             )
 
         failed = tox_mod.first_failure(results)
         assert failed is not None  # ok=False implies at least one failure
+        log.warning(
+            "sanity attempt %d failed at `tox -e %s` (rc=%d, timeout=%s)",
+            attempt_no,
+            failed.env,
+            failed.returncode,
+            failed.timed_out,
+        )
         feedback = (
             f"tox -e {failed.env} failed"
             f"{' (timed out)' if failed.timed_out else f' with returncode {failed.returncode}'}"

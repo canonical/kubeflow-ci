@@ -19,8 +19,16 @@ PAIR = DockerfilePair(old_ref=OLD, new_ref=NEW, old_text="FROM old", new_text="F
 
 
 def _good_yaml(version="0.18.0", ref="v0.18.0"):
+    """Byte-match the happy fixture except for the bumped fields.
+
+    The diff-tightness validator (spec §6.6) rejects unrelated drift, so
+    helpers that don't mirror the fixture exactly will fail the inner
+    validation pass.
+    """
     return (
         f"# Based on https://github.com/kserve/kserve/blob/{ref}/python/pmml.Dockerfile\n"
+        "#\n"
+        "# See ../CONTRIBUTING.md for more details about the patterns used in this rock.\n"
         f"name: pmmlserver\n"
         f"summary: Pmml server for Kserve deployments\n"
         f"description: \"Kserve Pmml server\"\n"

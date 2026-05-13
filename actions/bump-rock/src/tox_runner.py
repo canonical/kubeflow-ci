@@ -13,10 +13,16 @@ surfaces a structured TestResult instead of raising on non-zero exit.
 """
 from __future__ import annotations
 
+import collections
+import logging
 import subprocess
+import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Protocol
+
+log = logging.getLogger("bump-rock.tox")
 
 DEFAULT_TIMEOUTS: dict = {
     "pack": 30 * 60,
@@ -47,32 +53,65 @@ class ToxRunner(Protocol):
 
 
 class SubprocessToxRunner:
-    """The real tox runner: shells out to `tox -e <env>`."""
+    """The real tox runner: shells out to `tox -e <env>`.
+
+    Streams each line of tox output to stderr the moment it arrives so the
+    GitHub Actions log shows live progress, while keeping a bounded ring
+    buffer of the most recent lines to surface as the log tail (for the
+    inner LLM retry loop and for the workflow artifact).
+    """
 
     def run(self, env: str, *, cwd: Path, timeout: int) -> TestResult:
+        log.info("starting `tox -e %s` (cwd=%s, timeout=%ds)", env, cwd, timeout)
+        t0 = time.monotonic()
+        proc = subprocess.Popen(
+            ["tox", "-e", env],
+            cwd=str(cwd),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+
+        tail: collections.deque = collections.deque(maxlen=LOG_TAIL_LINES)
+        timed_out = False
+        prefix = f"[tox -e {env}] "
+
+        assert proc.stdout is not None  # for type checkers
         try:
-            completed = subprocess.run(
-                ["tox", "-e", env],
-                cwd=str(cwd),
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-                check=False,
-            )
-        except subprocess.TimeoutExpired as exc:
-            tail = _tail_text(
-                (exc.stdout or b"").decode(errors="replace")
-                + (exc.stderr or b"").decode(errors="replace")
-            )
-            return TestResult(
-                env=env, ok=False, returncode=-1, log_tail=tail, timed_out=True
-            )
-        combined = (completed.stdout or "") + (completed.stderr or "")
+            for line in proc.stdout:
+                # Strip the trailing newline for the streamed prefix copy,
+                # but keep it for the ring buffer so reconstructing the
+                # tail preserves shape.
+                stripped = line.rstrip("\n")
+                sys.stderr.write(prefix + stripped + "\n")
+                sys.stderr.flush()
+                tail.append(stripped)
+                if time.monotonic() - t0 > timeout:
+                    proc.kill()
+                    timed_out = True
+                    break
+            proc.wait(timeout=max(1, timeout - int(time.monotonic() - t0)))
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            timed_out = True
+
+        elapsed = time.monotonic() - t0
+        rc = proc.returncode if not timed_out else -1
+        ok = (not timed_out) and rc == 0
+        log.info(
+            "  -> `tox -e %s` finished rc=%d in %.1fs%s",
+            env,
+            rc,
+            elapsed,
+            " (timed out)" if timed_out else "",
+        )
         return TestResult(
             env=env,
-            ok=completed.returncode == 0,
-            returncode=completed.returncode,
-            log_tail=_tail_text(combined),
+            ok=ok,
+            returncode=rc,
+            log_tail="\n".join(tail),
+            timed_out=timed_out,
         )
 
 

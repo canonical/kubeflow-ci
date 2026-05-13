@@ -114,9 +114,11 @@ def run(
             f". Last lines of output:\n{failed.log_tail}"
         )
 
+    last_failed = tox_mod.first_failure(attempts[-1].test_results)
+    last_env = last_failed.env if last_failed else "<unknown>"
     final_error = (
         f"sanity tests failed after {max_sanity_attempts} attempts; "
-        f"last failing env: {tox_mod.first_failure(attempts[-1].test_results).env}"
+        f"last failing env: {last_env}"
     )
     return RunResult(ok=False, attempts=attempts, final_error=final_error)
 
@@ -134,21 +136,47 @@ def prepare_work_dir(rock_dir: Path, work_dir: Path) -> Path:
     return work_dir
 
 
+_IGNORE_PATH_PREFIXES = (
+    ".tox",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    "venv",
+    # rockcraft build trees produced when not running in managed (LXD) mode.
+    "parts",
+    "stage",
+    "prime",
+)
+
+_IGNORE_GLOBS = (
+    "*.rock",  # rockcraft pack output (also gitignored upstream)
+)
+
+
+def _is_build_artifact(rel_path: Path) -> bool:
+    """True if `rel_path` is something tox / rockcraft / pytest produces."""
+    from fnmatch import fnmatch
+
+    s = str(rel_path)
+    if any(s == p or s.startswith(p + "/") for p in _IGNORE_PATH_PREFIXES):
+        return True
+    return any(fnmatch(rel_path.name, g) for g in _IGNORE_GLOBS)
+
+
 def assert_only_rockcraft_changed(rock_dir: Path, work_dir: Path) -> None:
     """Defence in depth for spec §6.6: no file other than rockcraft.yaml differs.
 
     Walks both trees and compares file bytes. Raises BumpRockError on any
-    drift outside rockcraft.yaml. Newly-created tox build artifacts under
-    common cache directories are tolerated.
+    drift outside rockcraft.yaml. Files produced by tox / rockcraft pack /
+    pytest (see `_IGNORE_PATH_PREFIXES` and `_IGNORE_GLOBS`) are tolerated.
     """
-    ignore_prefixes = (".tox", "__pycache__", ".pytest_cache")
 
     def relevant_files(root: Path):
         for path in root.rglob("*"):
             if not path.is_file():
                 continue
             rel = path.relative_to(root)
-            if any(str(rel).startswith(p) for p in ignore_prefixes):
+            if _is_build_artifact(rel):
                 continue
             yield rel
 

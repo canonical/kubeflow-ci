@@ -198,3 +198,15 @@ def test_assert_only_rockcraft_changed_tolerates_dot_tox(tmp_path):
     (work / ".tox" / "stuff").write_text("build artifact")
 
     run.assert_only_rockcraft_changed(src, work)
+
+
+def test_assert_only_rockcraft_changed_tolerates_rock_artifact(tmp_path):
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "rockcraft.yaml").write_text("old")
+    work = tmp_path / "work"
+    run.prepare_work_dir(src, work)
+    # Simulate `rockcraft pack` output.
+    (work / "pmmlserver_0.18.0_amd64.rock").write_bytes(b"fake-oci-archive")
+
+    run.assert_only_rockcraft_changed(src, work)

@@ -50,7 +50,7 @@ class UpstreamRef:
 
     @property
     def basename(self) -> str:
-        """The trailing filename component of `path` (e.g. `pmml.Dockerfile`)."""
+        """The trailing filename component of `path` (e.g. `Dockerfile`)."""
         return self.path.rsplit("/", 1)[-1]
 
 

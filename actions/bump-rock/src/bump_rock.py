@@ -2,15 +2,17 @@
 # See LICENSE file for licensing details.
 """Command-line entrypoint for the bump-rock workflow.
 
-Each stage from the spec (parse, validate-urls, fetch) is exposed as a
-sub-command so that it can be exercised independently while developing
-locally, without burning LLM tokens or touching GitHub.
+Each stage from the spec (parse, validate-urls, fetch, generate, run,
+open-pr) is exposed as a sub-command so that it can be exercised
+independently while developing locally, without burning LLM tokens or
+touching GitHub. The CLI is rock-agnostic: it works for any rock folder
+in any canonical/*-rocks repository that follows the conventional
+`# Based on <github-url>` + tox `pack` / `sanity` layout.
 
 Examples:
-    bump-rock parse ~/code/kserve-rocks/pmmlserver
-    bump-rock validate-urls ~/code/kserve-rocks/pmmlserver --target-version 0.18.0
-    bump-rock fetch ~/code/kserve-rocks/pmmlserver --target-version 0.18.0 \
-        --out tmp/
+    bump-rock parse <rock-folder>
+    bump-rock validate-urls <rock-folder> --target-version vX.Y.Z
+    bump-rock fetch <rock-folder> --target-version vX.Y.Z --out tmp/
 """
 from __future__ import annotations
 

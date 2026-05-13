@@ -280,13 +280,15 @@ Inside the rock folder, on the updated `rockcraft.yaml`:
 - Apply a label such as `ai-generated` if it exists on the target repo
   (best-effort, don't fail if the label is absent).
 
-### 6.9 Wait for Target Repo CI
+### 6.9 ~~Wait for Target Repo CI~~ (removed)
 
-- After opening the PR, poll the target repo's PR checks for up to a
-  configurable timeout (see §7.2).
-- If all checks succeed → workflow succeeds.
-- If any required check fails → workflow fails with a link to the PR; PR is
-  **not** closed (a human will pick it up).
+Initial design called for the workflow to poll the target repo's PR
+checks via `gh pr checks --watch` before declaring success. Removed in
+v1: keeping the dispatch run fast and decoupled from target-repo CI
+duration is more useful, since the target-repo CI status is visible on
+the PR itself and on whatever notification surface the maintainer
+already uses. If we ever want it back, it's a single `gh pr checks
+--watch --fail-fast <url>` step inside the same job's timeout.
 
 ## 7. Secrets, Permissions & Timeouts
 
@@ -339,7 +341,7 @@ budget, every level has an explicit timeout:
 | Single LLM call                | 5 min   | HTTP client timeout in the calling script. |
 | `tox -e pack`                  | 30 min  | `timeout` wrapper around the tox invocation. |
 | `tox -e sanity` (+ export)     | 15 min  | Same. |
-| Target-repo CI polling (§6.9)  | 45 min  | Poll loop with deadline; on deadline → fail with link to PR. |
+| ~~Target-repo CI polling (§6.9)~~ | n/a  | Removed in v1; the workflow returns as soon as the PR is opened. |
 
 These caps are conservative ceilings, not target durations. The whole-job
 timeout is the final backstop: even if a sub-step's wrapper misbehaves, the
@@ -397,10 +399,11 @@ dev `tox -e bump-rock` entry point (optional, decide during implementation).
 ## 10. Success Criteria for v1
 
 - A maintainer can go to the Actions tab of `kubeflow-ci`, click
-  *Run workflow* on **Bump Rock Version**, enter
-  `canonical/kserve-rocks`, `pmmlserver`, and a real new upstream version,
-  and within the 90-minute job ceiling get a PR on
-  `canonical/kserve-rocks` (against `main`) whose CI is green.
+  *Run workflow* on **Bump Rock Version**, enter any `canonical/*-rocks`
+  repo, any rock folder name in that repo, and a real new upstream
+  version, and within the 90-minute job ceiling get a PR opened on that
+  target repo against `main`. (The target repo's own CI is responsible
+  for verifying the PR is green; the bump workflow does not poll it.)
 - The PR diff contains exactly one changed file: the rock's
   `rockcraft.yaml`. Any suggested test changes appear in the PR body, not
   in the diff.

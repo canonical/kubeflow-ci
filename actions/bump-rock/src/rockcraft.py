@@ -46,7 +46,7 @@ def load(rock_dir: Path) -> RockcraftDoc:
         A RockcraftDoc with the parsed `# Based on` URLs and YAML fields.
 
     Raises:
-        RockcraftParseError: if the file is missing, unparseable, has no
+        RockcraftParseError: if the file is missing, unparsable, has no
             `# Based on` comment line, or is missing required YAML fields.
     """
     yaml_path = rock_dir / "rockcraft.yaml"

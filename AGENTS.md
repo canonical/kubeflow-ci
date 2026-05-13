@@ -125,6 +125,10 @@ exposes the pipeline as a `workflow_dispatch` action with inputs:
 - `target_version` (e.g. `v0.18.0`)
 - `model` (defaults to `meta-llama/llama-4-maverick`)
 - `dry_run` (boolean — prints the PR body preview without pushing)
+- `skip_sanity` (boolean — bypass `rockcraft pack` + sanity on the runner)
+- `max_sanity_attempts` (default `3` — outer loop: generate + tox)
+- `max_llm_retries` (default `2` — inner loop: extra LLM attempts when the
+  post-LLM validators reject the candidate; total inner attempts = `1 + this`)
 
 It needs two secrets configured on the repo:
 

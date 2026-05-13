@@ -77,7 +77,6 @@ def run(
     """
     runner = runner or tox_mod.SubprocessToxRunner()
     attempts: List[AttemptOutcome] = []
-    feedback: str = ""
 
     for attempt_no in range(1, max_sanity_attempts + 1):
         log.info("=== sanity attempt %d/%d ===", attempt_no, max_sanity_attempts)
@@ -87,7 +86,7 @@ def run(
             pairs=pairs,
             target_version=target_version,
             max_retries=max_llm_retries,
-            additional_context=feedback,
+            additional_context=_build_history_context(attempts),
         )
         (work_dir / "rockcraft.yaml").write_text(gen.rockcraft_yaml)
 
@@ -151,11 +150,6 @@ def run(
             failed.returncode,
             failed.timed_out,
         )
-        feedback = (
-            f"tox -e {failed.env} failed"
-            f"{' (timed out)' if failed.timed_out else f' with returncode {failed.returncode}'}"
-            f". Last lines of output:\n{failed.log_tail}"
-        )
 
     last_failed = tox_mod.first_failure(attempts[-1].test_results)
     last_env = last_failed.env if last_failed else "<unknown>"
@@ -172,6 +166,35 @@ def run(
         final_rockcraft_yaml=last_yaml,
         final_error=final_error,
     )
+
+
+def _build_history_context(attempts: List[AttemptOutcome]) -> str:
+    """Render prior sanity-test attempts as input for the next generate call.
+
+    Each prior attempt contributes its produced rockcraft.yaml plus the
+    first failing `tox -e <env>` (with returncode/timeout and log tail).
+    The model receives every prior attempt — not just the last — so it can
+    see the trajectory and avoid repeating fixes that already failed.
+    Attempts with no recorded test failure are skipped (they shouldn't reach
+    the outer-retry path anyway).
+    """
+    sections: List[str] = []
+    for outcome in attempts:
+        failed = tox_mod.first_failure(outcome.test_results)
+        if failed is None:
+            continue
+        descriptor = (
+            "timed out" if failed.timed_out else f"returncode {failed.returncode}"
+        )
+        sections.append(
+            f"--- attempt {outcome.attempt} — `tox -e {failed.env}` "
+            f"failed ({descriptor}) ---"
+        )
+        sections.append("rockcraft.yaml produced:")
+        sections.append(outcome.rockcraft_yaml)
+        sections.append("log tail:")
+        sections.append(failed.log_tail)
+    return "\n\n".join(sections)
 
 
 def prepare_work_dir(rock_dir: Path, work_dir: Path) -> Path:

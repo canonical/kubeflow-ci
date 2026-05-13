@@ -106,10 +106,13 @@ def test_run_retries_on_pack_failure_then_succeeds(tmp_path):
     assert result.ok is True
     assert len(result.attempts) == 2
 
-    # Second LLM call must include the failure log as additional context.
+    # Second LLM call must include the prior attempt's candidate yaml and
+    # the failure log as additional context.
     second_call = client.calls[1]["messages"][0].content
-    assert "previous attempt failed sanity tests" in second_call
-    assert "pack: fail" in second_call
+    assert "prior sanity-test attempts" in second_call
+    assert "`tox -e pack` failed" in second_call
+    assert "pack: fail" in second_call  # log_tail content
+    assert _good_yaml() in second_call  # previous candidate rockcraft.yaml
 
 
 def test_run_gives_up_after_max_attempts(tmp_path):
@@ -131,6 +134,11 @@ def test_run_gives_up_after_max_attempts(tmp_path):
     assert result.ok is False
     assert len(result.attempts) == 3
     assert "after 3 attempts" in result.final_error
+
+    # The third LLM call must carry the full history (attempts 1 and 2).
+    third_call = client.calls[2]["messages"][0].content
+    assert "attempt 1 — `tox -e pack`" in third_call
+    assert "attempt 2 — `tox -e pack`" in third_call
 
 
 def test_run_skip_tox_short_circuits(tmp_path):

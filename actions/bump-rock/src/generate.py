@@ -118,12 +118,14 @@ def build_user_prompt(
         sections.append(f"=== {new_label} — {pair.new_ref.blob_url()} ===")
         sections.append(pair.new_text)
     if additional_context:
-        sections.append("=== previous attempt failed sanity tests ===")
+        sections.append("=== prior sanity-test attempts ===")
         sections.append(additional_context)
         sections.append(
-            "Take the failure log above into account when producing the next "
-            "rockcraft.yaml. Do not change anything that is unrelated to the "
-            "reported failures."
+            "Each section above is a previous outer attempt: the "
+            "rockcraft.yaml you produced and how its `tox -e <env>` run "
+            "failed. Take the full history into account when producing the "
+            "next rockcraft.yaml — do not repeat fixes that already failed, "
+            "and only change lines needed to address the latest failure."
         )
     sections.append("Produce the updated rockcraft.yaml content.")
     return "\n\n".join(sections)

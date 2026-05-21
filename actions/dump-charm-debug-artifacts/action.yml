@@ -41,7 +41,7 @@ runs:
       run: |
         if [ -n "${{ inputs.artifact-prefix }}" ];
         then
-          echo "prefix=${{ github.job }}-${{ inputs.artifact-prefix }}" >> "$GITHUB_ENV"
+          echo "prefix=${{ inputs.artifact-prefix }}" >> "$GITHUB_ENV"
         else
           echo "prefix=${{ github.job }}" >> "$GITHUB_ENV"
         fi

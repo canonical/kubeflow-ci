@@ -26,15 +26,6 @@ runs:
       shell: bash
       run: sudo snap install juju-crashdump --classic
 
-    - name: 'Install ketall'
-      # https://github.com/corneliusweig/ketall
-      shell: bash
-      run: |
-        wget https://github.com/corneliusweig/ketall/releases/download/v1.3.8/get-all-amd64-linux.tar.gz
-        tar -xf get-all-amd64-linux.tar.gz
-        mkdir -p $HOME/.local/bin/
-        mv get-all-amd64-linux $HOME/.local/bin/ketall
-
     # Dump logs
 
     - name: Collect all logs
@@ -50,7 +41,7 @@ runs:
       run: |
         if [ -n "${{ inputs.artifact-prefix }}" ];
         then
-          echo "prefix=${{ github.job }}-${{ inputs.artifact-prefix }}" >> "$GITHUB_ENV"
+          echo "prefix=${{ inputs.artifact-prefix }}" >> "$GITHUB_ENV"
         else
           echo "prefix=${{ github.job }}" >> "$GITHUB_ENV"
         fi

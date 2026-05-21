@@ -7,6 +7,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
+
     - name: Check out repo
       uses: actions/checkout@v6
       with:
@@ -37,6 +38,7 @@ runs:
     # Save logs
 
     - name: Set artifact prefix env
+      if: always()
       shell: bash
       run: |
         if [ -n "${{ inputs.artifact-prefix }}" ];

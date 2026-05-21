@@ -19,7 +19,9 @@ jobs:
     # Only publish to charmhub if we are pushing to a special branch or running PRs from something named `branch/*`
     if: (github.event_name == 'push') ||  (startsWith( github.head_ref, 'branch/' ))
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       # TODO: Update to @main when https://github.com/canonical/charmhub-upload-action/pull/3 merged
       - uses: canonical/charmhub-upload-action@branch/upload-charm-revisions
         with:

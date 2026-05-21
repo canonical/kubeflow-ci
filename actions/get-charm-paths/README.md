@@ -19,8 +19,9 @@ jobs:
     outputs:
       charm_paths: ${{ steps.get-charm-paths.outputs.charm-paths }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: Get paths for all charms in this repo
         id: get-charm-paths

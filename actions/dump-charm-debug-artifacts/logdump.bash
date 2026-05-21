@@ -62,11 +62,11 @@ shopt -u nullglob
 # Juju
 
 # Collect juju-crashdump
-juju-crashdump -o "$OUTPUT_DIR"
 
 # Collect `juju show-status-log` for every model, unit, and application
 # Expand $model and $unit with a substitution that replaces '/' with '-'
 for model in $(juju list-models --format yaml | yq e '.models[].short-name'); do
+	juju-crashdump --model $model -o "$OUTPUT_DIR"
     juju show-status-log --model $model --days 1 --type model $model > "$OUTPUT_DIR/juju-status-logs-model-$model.txt"
 	for application in $(juju status --model=$model --format yaml | yq e '.applications | keys | .[]'); do
 		juju show-status-log --model $model --days 1 --type application $application > "$OUTPUT_DIR/juju-status-logs-application-$application.txt"

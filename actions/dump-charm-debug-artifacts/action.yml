@@ -54,4 +54,3 @@ runs:
       with:
         name: ${{ env.prefix }}-juju-kubernetes-charmcraft-logs
         path: ${{ steps.mkdir.outputs.log-dir }}
-        if-no-files-found: error

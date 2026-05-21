@@ -26,12 +26,6 @@ then
 	exit 1
 fi
 
-if ! command -v ketall &> /dev/null
-then
-	echo "error: required dependency ketall not found."
-	exit 1
-fi
-
 if ! snap list | grep juju-crashdump > /dev/null
 then
 	echo "error: required dependency juju-crashdump not found."
@@ -79,22 +73,17 @@ for model in `juju list-models --format yaml | yq e '.models[].name'`; do
 	for application in `juju status -m $model --format yaml | yq e '.applications | keys | .[]'`; do
 		echo juju show-status-log --days 1 --type application $application | tee "$OUTPUT_DIR/juju-status-logs-application-$application.txt"
 		juju show-status-log --days 1 --type application $application | tee "$OUTPUT_DIR/juju-status-logs-application-$application.txt"
+		pod=$(kubectl get pod -n kubeflow -l app.kubernetes.io/name=$application -o jsonpath='{.items[0].metadata.name}') || continue
+		containers=($(kubectl get pod -n $model $pod -o jsonpath='{.spec.containers[*].name}'))
+		for container in ${containers[@]}; do
+			kubectl logs -n $model $pod -c $container | tee "$OUTPUT_DIR/kubectl-logs-$application-$container.txt"
+		done
 	done
 	for unit in `juju status -m $model --format yaml | yq e '.applications[].units | keys | .[]'`; do
         echo juju show-status-log --days 1 --type unit $unit | tee "$OUTPUT_DIR/juju-status-logs-unit-${unit//\//-}.txt"
         juju show-status-log --days 1 --type unit $unit | tee "$OUTPUT_DIR/juju-status-logs-unit-${unit//\//-}.txt"
 	done
 done	
-
-
-############
-# Kubernetes
-
-kubectl cluster-info dump | tee "$OUTPUT_DIR/kubectl-cluster-info-dump.txt"
-
-# Deeper resource details and logs
-ketall | tee "$OUTPUT_DIR/kubernetes-ketall.txt"
-ketall -o yaml | tee "$OUTPUT_DIR/kubernetes-ketall-detailed.yaml"
 
 # exit with an error code if we hit any errors
 exit "$result"

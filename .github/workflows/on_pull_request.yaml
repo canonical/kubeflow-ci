@@ -57,14 +57,12 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup operator environment
-      uses: charmed-kubernetes/actions-operator@main
-      with:
-        provider: microk8s
-        channel: 1.32-strict/stable
-        juju-channel: 3.6/stable
-        charmcraft-channel: 3.x/stable
-        microk8s-addons: "dns storage rbac metallb:10.64.140.43-10.64.140.49"
+    - name: Setup environment
+      run: |
+        sudo apt-get remove -y docker-ce docker-ce-cli containerd.io
+        sudo rm -rf /run/containerd
+        sudo snap install concierge --classic
+        sudo concierge prepare --trace
 
     - name: Add model
       run: |

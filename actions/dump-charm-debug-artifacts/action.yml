@@ -37,6 +37,7 @@ runs:
     # Save logs
 
     - name: Set artifact prefix env
+      if: always()
       shell: bash
       run: |
         if [ -n "${{ inputs.artifact-prefix }}" ];
@@ -52,4 +53,3 @@ runs:
       with:
         name: ${{ env.prefix }}-juju-kubernetes-charmcraft-logs
         path: ${{ steps.mkdir.outputs.log-dir }}
-        if-no-files-found: error

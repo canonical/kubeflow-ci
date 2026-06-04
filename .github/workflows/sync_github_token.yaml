@@ -46,6 +46,7 @@ jobs:
             ^canonical/kubeflow-roles-operator$
             ^canonical/kubeflow-tensorboards-operator$
             ^canonical/kubeflow-trainer-operator$
+            ^canonical/kubeflow-trainer-rocks$
             ^canonical/kubeflow-volumes-operator$
             ^canonical/metacontroller-operator$
             ^canonical/minio-operator$
@@ -57,6 +58,7 @@ jobs:
             ^canonical/request-authentication-integrator$
             ^canonical/resource-dispatcher$
             ^canonical/training-operator$
+            ^canonical/training-operator-rocks$
           dry_run: ${{ github.event.inputs.DRY_RUN }}
           github_token: ${{ secrets.GH_TOKEN }}
           concurrency: 10

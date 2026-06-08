@@ -50,6 +50,7 @@ jobs:
             ^canonical/kubeflow-volumes-operator$
             ^canonical/metacontroller-operator$
             ^canonical/minio-operator$
+            ^canonical/minio-rock$
             ^canonical/mlflow-operator$
             ^canonical/mlmd-operator$
             ^canonical/notebook-operators$

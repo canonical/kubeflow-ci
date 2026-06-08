@@ -56,7 +56,7 @@ jobs:
             ^canonical/notebook-operators$
             ^canonical/oidc-gatekeeper-operator$
             ^canonical/pvcviewer-operator$
-            ^canonical/request-authentication-integrator$
+            ^canonical/request-authentication-configurator$
             ^canonical/resource-dispatcher$
             ^canonical/training-operator$
             ^canonical/training-operator-rocks$

@@ -20,7 +20,8 @@ jobs:
             ^canonical/kserve-rocks
             ^canonical/resource-dispatcher-rock
             ^canonical/feast-rocks
-            ^canonical/kubeflow-rocks
+            ^canonical/kubeflow-dashboard-rocks
+            ^canonical/kubeflow-notebook-rocks
             ^canonical/knative-rocks
             ^canonical/metacontroller-rock
             ^canonical/filebrowser-rock

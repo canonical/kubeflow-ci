@@ -1,4 +1,4 @@
-name: Sync Github token to repos
+name: Sync Github credentials to repos
 on:
   workflow_dispatch:
     inputs:
@@ -14,6 +14,7 @@ jobs:
         with:
           secrets: |
             ^GH_TOKEN$
+            ^GH_USER_EMAIL$
           repositories: |
             ^canonical/katib-rocks
             ^canonical/pipelines-rocks
@@ -68,3 +69,4 @@ jobs:
           concurrency: 10
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_USER_EMAIL: ${{ secrets.GH_USER_EMAIL }}

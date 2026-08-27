@@ -31,7 +31,7 @@ jobs:
             ^canonical/tensorflow-rock
             ^canonical/training-operator-rock
             ^canonical/dex-auth-rocks
-            ^canonical/base-mlflow
+            ^canonical/mlflow-rocks
             ^canonical/admission-webhook-operator$
             ^canonical/argo-operators$
             ^canonical/dex-auth-operator$

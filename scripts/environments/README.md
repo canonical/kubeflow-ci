@@ -38,13 +38,15 @@ The GitHub token is passed with `--github-token` and needs administrator access 
 ### Command
 Run the command while specifying the path to the `--repositories-file`, the environment to operate on, the secret to create, the value of the secret, and the GitHub token to use for all operations.
 ```bash
-python3 update-edge-pr-environment \
+python3 update-edge-pr-environment.py \
     --repositories-file <path-to-repositories-file> \
     --environment <repository-environment> \
     --secret-name <secret-inside-environment> \
     --secret-value <secret-value> \
     --github-token <github-token>
 ```
+
+The value passed to `--secret-name` is the name of the environment secret, which is also the name of the environment variable the secret is made available through in workflows, e.g. `${{ secrets.CHARMHUB_TOKEN_EDGE_PR }}`.
 
 It is recommended to first run with `--dry-run`, which logs the changes that would be made without applying them.
 
@@ -53,7 +55,7 @@ This script was created to update the environment secrets for the [data-platform
 
 For `release_charm_pr`, run:
 ```bash
-python3 update-edge-pr-environment \
+python3 update-edge-pr-environment.py \
     --repositories-file <path-to-repositories-file> \
     --environment edge-pr \
     --secret-name CHARMHUB_TOKEN_EDGE_PR \
@@ -63,7 +65,7 @@ python3 update-edge-pr-environment \
 
 For `release_charm_edge`, run:
 ```bash
-python3 update-edge-pr-environment \
+python3 update-edge-pr-environment.py \
     --repositories-file <path-to-repositories-file> \
     --environment edge \
     --secret-name CHARMHUB_TOKEN_EDGE \

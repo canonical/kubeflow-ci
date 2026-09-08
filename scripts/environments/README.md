@@ -1,6 +1,6 @@
 # Update environment secrets of charm repositories
 
-The script in this directory creates an environment in a list of charm repositories and creates/updates a secret within that environment.
+The script in this directory creates a [GitHub deployment environment](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments) in a list of charm repositories and creates/updates an [environment secret](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets#creating-secrets-for-an-environment) within that environment.
 
 ## Requirements
 ```bash

@@ -49,7 +49,14 @@ def update_repository(
     repository = github.get_repo(full_name)
     environment = repository.create_environment(environment_name)
     environment.create_secret(secret_name, secret_value)
-    logger.info(f"Set `{secret_name}` in environment `{environment_name}` of `{full_name}`")
+
+    # Read the secret back from the API to confirm the write landed.
+    # We cannot/shouldn't get the value, but the name and time of update should be enough
+    secret = repository.get_environment(environment_name).get_secret(secret_name)
+    logger.info(
+        f"Set `{secret.name}` in environment `{environment_name}` of `{full_name}` "
+        f"(updated_at: {secret.updated_at})"
+    )
 
 
 def main() -> None:

@@ -1,0 +1,11 @@
+# Based on https://github.com/kserve/kserve/blob/v0.17.0/python/pmml.Dockerfile
+#
+# See ../CONTRIBUTING.md for more details about the patterns used in this rock.
+name: pmmlserver
+summary: Pmml server for Kserve deployments
+description: "Kserve Pmml server"
+version: "0.17.0"
+license: Apache-2.0
+base: ubuntu@24.04
+platforms:
+    amd64:

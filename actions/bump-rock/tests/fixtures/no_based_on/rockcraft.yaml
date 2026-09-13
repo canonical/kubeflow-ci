@@ -1,0 +1,8 @@
+name: noupstream
+summary: A rock without any # Based on comment.
+description: "."
+version: "1.0.0"
+license: Apache-2.0
+base: ubuntu@24.04
+platforms:
+    amd64:

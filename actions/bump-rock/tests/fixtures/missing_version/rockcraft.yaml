@@ -1,0 +1,6 @@
+# Based on https://github.com/kserve/kserve/blob/v0.17.0/python/pmml.Dockerfile
+name: pmmlserver
+summary: Pmml server for Kserve deployments
+base: ubuntu@24.04
+platforms:
+    amd64:

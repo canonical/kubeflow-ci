@@ -1,0 +1,10 @@
+# Based on https://github.com/kserve/kserve/blob/v0.17.0/python/hf.Dockerfile
+# Based on https://github.com/kserve/kserve/blob/v0.17.0/python/hf-cpu.Dockerfile
+name: huggingfaceserver
+summary: HuggingFace server for Kserve deployments
+description: "Kserve HuggingFace server"
+version: "0.17.0"
+license: Apache-2.0
+base: ubuntu@24.04
+platforms:
+    amd64:

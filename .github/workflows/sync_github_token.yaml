@@ -19,6 +19,7 @@ jobs:
             ^canonical/katib-rocks
             ^canonical/pipelines-rocks
             ^canonical/kserve-rocks
+            ^canonical/lws-rocks
             ^canonical/resource-dispatcher-rock
             ^canonical/feast-rocks
             ^canonical/kubeflow-dashboard-rocks
@@ -50,6 +51,7 @@ jobs:
             ^canonical/kubeflow-trainer-operator$
             ^canonical/kubeflow-trainer-rocks$
             ^canonical/kubeflow-volumes-operator$
+            ^canonical/lws-controller-operator$
             ^canonical/metacontroller-operator$
             ^canonical/minio-operator$
             ^canonical/minio-rock$

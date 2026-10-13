@@ -34,6 +34,8 @@ jobs:
             ^canonical/training-operator-rock
             ^canonical/dex-auth-rocks
             ^canonical/mlflow-rocks
+            ^canonical/llm-d-rocks
+            ^canonical/vllm-rocks
             ^canonical/admission-webhook-operator$
             ^canonical/argo-operators$
             ^canonical/dex-auth-operator$
@@ -42,6 +44,7 @@ jobs:
             ^canonical/github-profiles-automator$
             ^canonical/istio-operators$
             ^canonical/katib-operators$
+            ^canonical/keda-controller-operator$
             ^canonical/kfp-operators$
             ^canonical/knative-operators$
             ^canonical/kserve-operators$

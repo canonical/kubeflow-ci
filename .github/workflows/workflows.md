@@ -23,16 +23,17 @@ charmcraft login --export --ttl 15000000 /tmp/charmcraft.credentials && echo "Co
 
 # sync_github_token.yaml
 
-This workflow syncs the GitHub credentials used by the charm and rock CI workflows to all repos listed in `sync_github_token.yaml`.
+This workflow syncs the GitHub credentials used by the charm and rock CI workflows to the repos listed in `sync_github_token.yaml`.
 
 The secrets synced are:
 
-* `GH_TOKEN` - a Github PAT used by the CI workflows to open PRs and push branches.
-* `GH_USER_EMAIL` - the email address of the account owning `GH_TOKEN`, used as the git committer email when signing commits (see [integrate-rock.yaml](https://github.com/canonical/charmed-kubeflow-workflows/blob/main/.github/workflows/integrate-rock.yaml)).
+* `GH_TOKEN` - a Github PAT used by the CI workflows to open PRs and push branches. Synced by the `sync_github_token` job to all repos listed in that job.
+* `GH_USER_EMAIL` - the email address of the account owning `GH_TOKEN`, used as the git committer email when signing commits (see [integrate-rock.yaml](https://github.com/canonical/charmed-kubeflow-workflows/blob/main/.github/workflows/integrate-rock.yaml)). Synced by the `sync_github_token` job to all repos listed in that job.
+* `GHCR_TOKEN` - a token used to authenticate against the GitHub Container Registry (GHCR). Synced by the separate `sync_github_container_registry_token` job to only the repos that need it, and its value is taken from this repo's `GH_TOKEN` secret.
 
-Both secrets must exist in this repo before running the workflow, otherwise they cannot be pushed downstream.
+`GH_TOKEN` and `GH_USER_EMAIL` must exist in this repo before running the workflow, otherwise they cannot be pushed downstream (`GHCR_TOKEN` reuses the value of `GH_TOKEN`).
 
-To add a new secret to the sync, add it both to the `secrets` list (as a regex, e.g. `^GH_TOKEN$`) and to the step's `env` block.
+To add a new secret to the sync, add it both to the `secrets` list (as a regex, e.g. `^GH_TOKEN$`) and to the `env` block of the relevant job.
 
 Run the workflow via Actions->Sync Github credentials to repos->Run workflow. Leave `DRY_RUN=true` to preview the changes, set it to `false` to actually push the secrets.
 

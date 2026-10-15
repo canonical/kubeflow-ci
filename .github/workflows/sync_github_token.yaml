@@ -8,6 +8,7 @@ on:
         default: 'true'
 jobs:
   sync_github_token:
+    name: Sync GitHub credentials
     runs-on: ubuntu-24.04
     steps:
       - uses: jpoehnelt/secrets-sync-action@7840777f242539d96b60477b66aa1c179e7644ea
@@ -33,6 +34,8 @@ jobs:
             ^canonical/training-operator-rock
             ^canonical/dex-auth-rocks
             ^canonical/mlflow-rocks
+            ^canonical/llm-d-rocks
+            ^canonical/vllm-rocks
             ^canonical/admission-webhook-operator$
             ^canonical/argo-operators$
             ^canonical/dex-auth-operator$
@@ -41,6 +44,7 @@ jobs:
             ^canonical/github-profiles-automator$
             ^canonical/istio-operators$
             ^canonical/katib-operators$
+            ^canonical/keda-controller-operator$
             ^canonical/kfp-operators$
             ^canonical/knative-operators$
             ^canonical/kserve-operators$
@@ -72,3 +76,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_USER_EMAIL: ${{ secrets.GH_USER_EMAIL }}
+
+  sync_github_container_registry_token:
+    name: Sync GitHub Container Registry credentials
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: jpoehnelt/secrets-sync-action@7840777f242539d96b60477b66aa1c179e7644ea
+        with:
+          secrets: |
+            ^GHCR_TOKEN$
+          repositories: |
+            ^canonical/kubeflow-notebook-rocks$
+            ^canonical/kserve-rocks$
+          dry_run: ${{ github.event.inputs.DRY_RUN }}
+          github_token: ${{ secrets.GH_TOKEN }}
+          concurrency: 10
+        env:
+          GHCR_TOKEN: ${{ secrets.GH_TOKEN }}

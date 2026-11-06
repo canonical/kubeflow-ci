@@ -6,17 +6,21 @@ This module implements spec §6.6:
     * Build a prompt from the current rockcraft.yaml + old/new upstream
       Dockerfile pairs + target version.
     * Call the configured LLM.
-    * Strip any code fences from the response.
+    * Split the response into its <change> blocks, reviewer notes, and the
+      <rockcraft_yaml> body.
     * Validate the output (valid YAML, name unchanged, version matches,
-      `# Based on` URLs reference the new version).
+      `# Based on` URLs reference the new version, every changed line is
+      listed in a <change> block).
     * On validation failure, append the error to the conversation and ask
       the model to fix it, up to MAX_LLM_RETRIES additional times.
 """
 from __future__ import annotations
 
+import difflib
 import logging
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List, Tuple
 
 import yaml
@@ -31,62 +35,36 @@ from .urls import UpstreamRef, parse_all
 
 MAX_LLM_RETRIES = 2  # additional attempts after the first; total = 3.
 
-SYSTEM_PROMPT = """\
-You update Canonical Charmed Kubeflow "rock" recipes (rockcraft.yaml files).
+SYSTEM_PROMPT = Path(__file__).with_name("system_prompt.md").read_text(encoding="utf-8")
 
-A rock mirrors one or more upstream Dockerfiles. When the upstream version
-changes, the rockcraft.yaml must be updated to match. You will receive:
+NOTE_KINDS = ("dropped_deviation", "skipped_upstream_change", "test_suggestion", "other")
 
-  1. The current rockcraft.yaml.
-  2. One or more upstream Dockerfile pairs (old vs new).
-  3. The target version string.
 
-Rules — follow them all:
-  - Output ONLY the updated rockcraft.yaml content. No markdown fences, no
-    commentary, no explanations, no leading or trailing whitespace beyond
-    what belongs in the file.
-  - Update the leading `# Based on <url>` comments so the <ref> segment of
-    each URL matches the target version.
-  - Update the `version:` field to the target version. The version field
-    usually omits a leading `v` even when the upstream tag has one (e.g.
-    tag `v0.18.0` -> `version: "0.18.0"`). Preserve the original quoting
-    style.
-  - Update `source-tag:` entries under `parts:` so they reference the
-    target version where they currently reference the old version.
-  - Update package versions, base image versions, or other pinned values
-    inside `override-build` / `override-pull` scripts ONLY when the
-    Dockerfile diff explicitly changes them. Do not speculate.
-  - Preserve every other comment, the YAML structure, indentation style,
-    and any project-specific patches.
-  - Update the `base:` field when the upstream Dockerfile's `FROM` image
-    indicates a different OS release than the current `base:` can
-    support. The dominant trigger is a Python-version bump: a given
-    `python3.X` is only available in apt for specific Ubuntu releases.
-      - `python3.10` is the default in `ubuntu@22.04` (jammy)
-      - `python3.12` is the default in `ubuntu@24.04` (noble)
-    If the new Dockerfile's `FROM` line carries a release codename
-    (`bookworm`, `jammy`, `noble`, ...) or references a `python3.X`
-    not packaged in the current `base:`, you MUST bump `base:` to the
-    matching Ubuntu release (e.g. `ubuntu@22.04` -> `ubuntu@24.04` when
-    upstream moves from `bookworm`/`jammy` to `noble`, or from
-    `python3.11` to `python3.12`). Failing to bump `base:` will cause
-    `rockcraft pack` to fail with "Cannot find package listed in
-    'build-packages': python3.X".
-  - Do not change `name`, `summary`, `description`, or `license` unless
-    the Dockerfile diff makes it obviously necessary.
+@dataclass
+class Change:
+    """One <change> block: why, plus the stripped lines it removes and adds."""
 
-CRITICAL — verbatim preservation of unchanged regions:
-  Every line you are not explicitly required to change MUST be byte-perfect
-  identical to the input. The output will be diffed against the original;
-  any unexplained change is treated as a transcription error and will be
-  rejected. Pay particular attention to:
-  - Shell variables in override-build scripts (e.g. `$CRAFT_PART_INSTALL`,
-    `$CRAFT_PROJECT_DIR`) — re-type them character-by-character.
-  - YAML keys (`plugin:`, `build-packages:`, `override-build:`) — no
-    duplicated words, no typos.
-  - Long bash one-liners — copy the entire line, do not paraphrase.
-  When in doubt, copy the original line verbatim and move on.
-"""
+    reason: str
+    removed: List[str] = field(default_factory=list)
+    added: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ReviewerNote:
+    """One <reviewer_note>; `kind` is one of NOTE_KINDS."""
+
+    kind: str
+    detail: str
+
+
+@dataclass
+class ParsedResponse:
+    """An LLM response split into its parts; `errors` lists format problems."""
+
+    rockcraft_yaml: str
+    changes: List[Change] = field(default_factory=list)
+    reviewer_notes: List[ReviewerNote] = field(default_factory=list)
+    errors: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -110,6 +88,8 @@ class GenerateResult:
     ok: bool = True
     validator_errors: List[str] = field(default_factory=list)
     per_attempt_errors: List[List[str]] = field(default_factory=list)
+    changes: List[Change] = field(default_factory=list)
+    reviewer_notes: List[ReviewerNote] = field(default_factory=list)
 
 
 def build_user_prompt(
@@ -135,6 +115,17 @@ def build_user_prompt(
         sections.append(pair.old_text)
         sections.append(f"=== {new_label} — {pair.new_ref.blob_url()} ===")
         sections.append(pair.new_text)
+        diff = "\n".join(
+            difflib.unified_diff(
+                pair.old_text.splitlines(),
+                pair.new_text.splitlines(),
+                fromfile=pair.old_ref.ref,
+                tofile=pair.new_ref.ref,
+                lineterm="",
+            )
+        )
+        sections.append(f"=== upstream Dockerfile {i} diff (old -> new) ===")
+        sections.append(diff or "(no changes)")
     if additional_context:
         sections.append("=== prior sanity-test attempts ===")
         sections.append(additional_context)
@@ -145,27 +136,109 @@ def build_user_prompt(
             "next rockcraft.yaml — do not repeat fixes that already failed, "
             "and only change lines needed to address the latest failure."
         )
-    sections.append("Produce the updated rockcraft.yaml content.")
+    sections.append("Produce the response in the required output format.")
     return "\n\n".join(sections)
 
 
 _FENCE_RE = re.compile(r"^```(?:ya?ml)?\s*\n(?P<body>.*?)\n```\s*$", re.DOTALL)
+_YAML_BLOCK_RE = re.compile(r"<rockcraft_yaml>[ \t]*\n?(?P<body>.*?)</rockcraft_yaml>", re.DOTALL)
+_CHANGE_RE = re.compile(r"<change>(?P<body>.*?)</change>", re.DOTALL)
+_NOTE_RE = re.compile(
+    r'<reviewer_note\s+kind="(?P<kind>[^"]*)"\s*>(?P<detail>.*?)</reviewer_note>', re.DOTALL
+)
+
+
+def parse_response(text: str) -> ParsedResponse:
+    """Split a response into <change> blocks, reviewer notes and the YAML.
+
+    Changes and notes are only read before <rockcraft_yaml>, so the file
+    body can never be mistaken for them.
+    """
+    match = _YAML_BLOCK_RE.search(text)
+    if not match:
+        return ParsedResponse(
+            rockcraft_yaml=strip_fences(text),
+            errors=["response has no <rockcraft_yaml>...</rockcraft_yaml> section"],
+        )
+    parsed = ParsedResponse(rockcraft_yaml=strip_fences(match.group("body")))
+    preamble = text[: match.start()]
+    for block in _CHANGE_RE.finditer(preamble):
+        change = Change(reason="")
+        for line in block.group("body").splitlines():
+            line = line.lstrip()
+            if line.startswith("reason:"):
+                change.reason = line[len("reason:") :].strip()
+            elif line.startswith("-"):
+                change.removed.append(line[1:].strip())
+            elif line.startswith("+"):
+                change.added.append(line[1:].strip())
+        if not change.reason:
+            parsed.errors.append("a <change> block has no `reason:` line")
+        parsed.changes.append(change)
+    for note in _NOTE_RE.finditer(preamble):
+        kind, detail = note.group("kind"), note.group("detail").strip()
+        if kind not in NOTE_KINDS:
+            parsed.errors.append(
+                f"unknown reviewer_note kind {kind!r}; use one of {', '.join(NOTE_KINDS)}"
+            )
+        parsed.reviewer_notes.append(ReviewerNote(kind=kind, detail=detail))
+    return parsed
+
+
+def _changed_lines(old: str, new: str) -> Tuple[List[str], List[str]]:
+    """Return the (removed, added) non-blank lines between two texts, stripped."""
+    old_lines, new_lines = old.splitlines(), new.splitlines()
+    removed: List[str] = []
+    added: List[str] = []
+    matcher = difflib.SequenceMatcher(a=old_lines, b=new_lines, autojunk=False)
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        removed += [line.strip() for line in old_lines[i1:i2] if line.strip()]
+        added += [line.strip() for line in new_lines[j1:j2] if line.strip()]
+    return removed, added
+
+
+def validate_changes(original: str, new_yaml: str, changes: List[Change]) -> List[str]:
+    """Check that the <change> blocks account for exactly the lines that changed."""
+    errors: List[str] = []
+    removed, added = _changed_lines(original, new_yaml)
+    listed_removed = {line for c in changes for line in c.removed}
+    listed_added = {line for c in changes for line in c.added}
+
+    unlisted = [f"- {line}" for line in removed if line not in listed_removed]
+    unlisted += [f"+ {line}" for line in added if line not in listed_added]
+    if unlisted:
+        errors.append(
+            "these lines changed in rockcraft.yaml but are not listed in any "
+            "<change> block; list them with a reason, or revert them if the "
+            "change was unintended:\n" + "\n".join(unlisted)
+        )
+
+    original_lines = {line.strip() for line in original.splitlines()}
+    new_lines = {line.strip() for line in new_yaml.splitlines()}
+    phantom = [f"- {line}" for line in sorted(listed_removed - original_lines)]
+    phantom += [f"+ {line}" for line in sorted(listed_added - new_lines)]
+    if phantom:
+        errors.append(
+            "these <change> lines do not match the files (a `-` line must exist "
+            "in the current rockcraft.yaml, a `+` line in your updated one); fix "
+            "the typo, or apply the change you described:\n" + "\n".join(phantom)
+        )
+    return errors
 
 
 def strip_fences(text: str) -> str:
     """Remove ```yaml fences if the model wrapped its output in them.
 
-    When no fences are present, the input is returned unchanged so a
-    canonical trailing newline (rockcraft.yaml files end with one) is
-    preserved on the path to disk.
+    The result always ends with a newline, as rockcraft.yaml files do;
+    models tend to drop it.
     """
     match = _FENCE_RE.match(text.strip())
-    if match:
-        body = match.group("body")
-        if not body.endswith("\n"):
-            body += "\n"
-        return body
-    return text
+    body = match.group("body") if match else text
+    if not body.endswith("\n"):
+        body += "\n"
+    return body
 
 
 def validate_output(
@@ -197,7 +270,7 @@ def validate_output(
 
     new_urls = _extract_based_on_urls(new_yaml)
     if not new_urls:
-        errors.append("no `# Based on` comment present in updated file")
+        errors.append("no `# Based on` / `# Dockerfile:` header comment in updated file")
     else:
         for url in new_urls:
             if not BASED_ON_RE.search(f"# Based on {url}"):  # defensive
@@ -247,7 +320,7 @@ def generate(
 
     total_attempts = 1 + max_retries
     last_errors: List[str] = []
-    last_candidate = ""
+    last_parsed = ParsedResponse(rockcraft_yaml="")
     for attempt in range(1, total_attempts + 1):
         log.info(
             "generate attempt %d/%d (additional_context=%s)",
@@ -257,9 +330,13 @@ def generate(
         )
         response = client.complete(SYSTEM_PROMPT, conversation)
         raw_responses.append(response)
-        candidate = strip_fences(response)
-        last_candidate = candidate
-        errors = validate_output(candidate, doc, target_version)
+        parsed = parse_response(response)
+        candidate = parsed.rockcraft_yaml
+        last_parsed = parsed
+        errors = parsed.errors or (
+            validate_output(candidate, doc, target_version)
+            + validate_changes(doc.raw_text, candidate, parsed.changes)
+        )
         per_attempt_errors.append(errors)
         if not errors:
             log.info("  -> validators passed on attempt %d", attempt)
@@ -268,6 +345,8 @@ def generate(
                 attempts=attempt,
                 raw_responses=raw_responses,
                 per_attempt_errors=per_attempt_errors,
+                changes=parsed.changes,
+                reviewer_notes=parsed.reviewer_notes,
             )
 
         log.warning("  -> %d validator error(s) on attempt %d", len(errors), attempt)
@@ -286,8 +365,8 @@ def generate(
                 content=(
                     "The previous output failed validation:\n"
                     + "\n".join(f"  - {e}" for e in errors)
-                    + "\n\nReturn the corrected rockcraft.yaml, "
-                    "following the rules in the system prompt."
+                    + "\n\nReturn the corrected response in the required output "
+                    "format, following the rules in the system prompt."
                 ),
             )
         )
@@ -299,12 +378,14 @@ def generate(
         total_attempts,
     )
     return GenerateResult(
-        rockcraft_yaml=last_candidate,
+        rockcraft_yaml=last_parsed.rockcraft_yaml,
         attempts=total_attempts,
         raw_responses=raw_responses,
         ok=False,
         validator_errors=last_errors,
         per_attempt_errors=per_attempt_errors,
+        changes=last_parsed.changes,
+        reviewer_notes=last_parsed.reviewer_notes,
     )
 
 

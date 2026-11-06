@@ -20,6 +20,18 @@ def _make_pair():
     )
 
 
+def _respond(new_yaml, notes=""):
+    """Wrap `new_yaml` in the tagged response format, listing every changed line."""
+    old = (FIXTURES / "happy" / "rockcraft.yaml").read_text().splitlines()
+    new = new_yaml.splitlines()
+    diff = [f"- {line}" for line in old if line not in new]
+    diff += [f"+ {line}" for line in new if line not in old]
+    return (
+        "<change>\nreason: bump\n" + "\n".join(diff) + "\n</change>\n"
+        f"{notes}<rockcraft_yaml>\n{new_yaml}</rockcraft_yaml>\n"
+    )
+
+
 def _bumped_yaml(version="0.18.0", ref_in_url="v0.18.0", name="pmmlserver"):
     """Build a bumped rockcraft.yaml that mirrors the happy fixture."""
     return (
@@ -44,6 +56,10 @@ def test_strip_fences_removes_yaml_block():
 
 def test_strip_fences_passes_through_plain_text():
     assert generate.strip_fences("name: foo\n") == "name: foo\n"
+
+
+def test_strip_fences_restores_trailing_newline():
+    assert generate.strip_fences("name: foo") == "name: foo\n"
 
 
 def test_validate_output_happy():
@@ -80,18 +96,23 @@ def test_validate_output_rejects_invalid_yaml():
 
 def test_generate_returns_first_good_response():
     doc = rockcraft.load(FIXTURES / "happy")
-    client = MockClient(responses=[_bumped_yaml()])
+    note = '<reviewer_note kind="test_suggestion">\ncheck the new binary\n</reviewer_note>\n'
+    client = MockClient(responses=[_respond(_bumped_yaml(), notes=note)])
     result = generate.generate(
         client=client, doc=doc, pairs=[_make_pair()], target_version="v0.18.0"
     )
     assert result.attempts == 1
-    assert "version: \"0.18.0\"" in result.rockcraft_yaml
+    assert result.rockcraft_yaml == _bumped_yaml()
+    assert result.changes[0].reason == "bump"
+    assert result.reviewer_notes == [
+        generate.ReviewerNote(kind="test_suggestion", detail="check the new binary")
+    ]
 
 
 def test_generate_retries_with_validation_errors():
     doc = rockcraft.load(FIXTURES / "happy")
-    bad = _bumped_yaml(version="0.17.0", ref_in_url="v0.17.0")
-    good = _bumped_yaml()
+    bad = _respond(_bumped_yaml(version="0.17.0", ref_in_url="v0.17.0"))
+    good = _respond(_bumped_yaml())
     client = MockClient(responses=[bad, good])
     result = generate.generate(
         client=client, doc=doc, pairs=[_make_pair()], target_version="v0.18.0"
@@ -109,7 +130,7 @@ def test_generate_returns_invalid_result_after_retry_cap():
     """Spec §6.6 ladder: after total_attempts the call returns ok=False
     with the last candidate so callers can publish a best-effort PR."""
     doc = rockcraft.load(FIXTURES / "happy")
-    bad = _bumped_yaml(version="0.17.0", ref_in_url="v0.17.0")
+    bad = _respond(_bumped_yaml(version="0.17.0", ref_in_url="v0.17.0"))
     client = MockClient(responses=[bad, bad, bad])
     result = generate.generate(
         client=client,
@@ -134,3 +155,82 @@ def test_build_user_prompt_includes_all_inputs():
     assert "FROM new" in prompt
     assert PMML_OLD.blob_url() in prompt
     assert PMML_NEW.blob_url() in prompt
+    assert "upstream Dockerfile 1 diff (old -> new)" in prompt
+    assert "-FROM old\n+FROM new" in prompt
+
+
+def test_parse_response_splits_sections():
+    text = (
+        "<change>\n"
+        "reason: port the new build flag\n"
+        "-   - cmake\n"
+        "+   go build -trimpath\n"
+        "</change>\n"
+        '<reviewer_note kind="dropped_deviation">\n'
+        "- ARGO_VERSION: v3.7.17\n"
+        "</reviewer_note>\n"
+        "<rockcraft_yaml>\n"
+        "name: x\n"
+        "# <change> inside the file is not a change block\n"
+        "</rockcraft_yaml>\n"
+    )
+    parsed = generate.parse_response(text)
+    assert parsed.errors == []
+    assert parsed.rockcraft_yaml == "name: x\n# <change> inside the file is not a change block\n"
+    assert parsed.changes == [
+        generate.Change(
+            reason="port the new build flag", removed=["- cmake"], added=["go build -trimpath"]
+        )
+    ]
+    assert parsed.reviewer_notes == [
+        generate.ReviewerNote(kind="dropped_deviation", detail="- ARGO_VERSION: v3.7.17")
+    ]
+
+
+def test_parse_response_requires_yaml_section():
+    parsed = generate.parse_response("name: x\n")
+    assert any("<rockcraft_yaml>" in e for e in parsed.errors)
+
+
+def test_parse_response_rejects_bad_kind_and_missing_reason():
+    text = (
+        "<change>\n+ a\n</change>\n"
+        '<reviewer_note kind="fyi">x</reviewer_note>\n'
+        "<rockcraft_yaml>\na\n</rockcraft_yaml>"
+    )
+    errors = generate.parse_response(text).errors
+    assert any("reason" in e for e in errors)
+    assert any("'fyi'" in e for e in errors)
+
+
+def test_validate_changes_accepts_fully_listed_diff():
+    changes = [generate.Change(reason="r", removed=["version: 1"], added=["version: 2"])]
+    assert generate.validate_changes("a\nversion: 1\n", "a\nversion: 2\n", changes) == []
+
+
+def test_validate_changes_flags_unlisted_and_indentation_edits():
+    errors = generate.validate_changes("a:\n  b: 1\nc: 1\n", "a:\n   b: 1\nc: 2\n", [])
+    assert len(errors) == 1
+    assert "not listed" in errors[0]
+    for line in ("- b: 1", "+ b: 1", "- c: 1", "+ c: 2"):
+        assert line in errors[0]
+
+
+def test_validate_changes_flags_phantom_lines():
+    changes = [generate.Change(reason="r", removed=["c: 1"], added=["c: 2", "d: 9"])]
+    errors = generate.validate_changes("c: 1\n", "c: 2\n", changes)
+    assert len(errors) == 1
+    assert "+ d: 9" in errors[0]
+
+
+def test_generate_retries_when_change_is_unlisted():
+    doc = rockcraft.load(FIXTURES / "happy")
+    sneaky = _respond(_bumped_yaml()).replace("license: Apache-2.0", "license: MIT")
+    client = MockClient(responses=[sneaky, _respond(_bumped_yaml())])
+    result = generate.generate(
+        client=client, doc=doc, pairs=[_make_pair()], target_version="v0.18.0"
+    )
+    assert result.attempts == 2
+    feedback = client.calls[1]["messages"][-1].content
+    assert "not listed in any <change> block" in feedback
+    assert "+ license: MIT" in feedback

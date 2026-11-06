@@ -205,6 +205,27 @@ def test_pr_body_omits_workflow_run_when_unset():
     assert "GitHub Actions run" not in body
 
 
+def test_pr_body_renders_model_changes_and_notes():
+    md = _happy_metadata(
+        changes=[{"reason": "Derive ARGO_VERSION from go.mod", "removed": [], "added": []}],
+        reviewer_notes=[
+            {"kind": "dropped_deviation", "detail": "- ARGO_VERSION: v3.7.17\nsee issue 58"},
+            {"kind": "test_suggestion", "detail": "check /bin/argo"},
+        ],
+    )
+    body = pr.pr_body(md)
+    assert "## Changes (as explained by the model)" in body
+    assert "- Derive ARGO_VERSION from go.mod" in body
+    assert "Reviewer follow-ups" in body
+    assert "**Dropped local deviation from upstream:**\n  - ARGO_VERSION: v3.7.17\n  see issue 58" in body
+    assert "**Suggested test / tox change (not applied):**\n  check /bin/argo" in body
+
+
+def test_pr_body_happy_path_omits_model_sections():
+    body = pr.pr_body(_happy_metadata())
+    assert "## Changes" not in body
+
+
 def test_build_metadata_records_workflow_run_url():
     md = pr.build_metadata(
         rock_name="pmml",

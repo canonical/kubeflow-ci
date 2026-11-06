@@ -34,9 +34,11 @@ that explain at which stage the bump went wrong.
 - Validate AI output **before** opening a PR using the rock's pre-existing
   `tox -e sanity` (and pack) tests, so reviewers never see PRs that fail the
   obvious checks.
-- Be model-agnostic via a thin abstraction; the live backend is OpenRouter
-  (OpenAI-compatible chat-completions API), which lets us choose any
-  Anthropic / non-Anthropic model behind one key.
+- Be model-agnostic via a thin abstraction selected by a `provider/model`
+  spec. The default live backend is the GitHub Copilot chat-completions API
+  (`copilot/claude-opus-5.5`), authenticated with a Copilot-entitled GitHub
+  token; OpenRouter (`openrouter/<vendor>/<model>`) remains available as an
+  alternative. Both expose OpenAI-compatible chat-completions APIs.
 
 ### Non-Goals
 
@@ -59,11 +61,13 @@ These assumptions hold for repos like
   `sklearnserver/`, …).
 - Each rock folder contains:
   - `rockcraft.yaml` whose first non-empty comment lines reference the
-    upstream Dockerfile(s), in the form:
+    upstream Dockerfile(s), in either form:
     ```
     # Based on https://github.com/<org>/<repo>/blob/<ref>/<path>/<name>.Dockerfile
+    # Dockerfile: https://github.com/<org>/<repo>/blob/<ref>/<path>/<name>.Dockerfile
     ```
     where `<ref>` is a git tag/branch/SHA that encodes the current version.
+    The bump keeps whichever form the rock uses.
   - `tox.ini` with at least `pack`, `export-to-docker`, and `sanity`
     environments (see [pmmlserver/tox.ini](../kserve-rocks/pmmlserver/tox.ini)).
   - A `tests/` directory used by `tox -e sanity`.
@@ -81,7 +85,7 @@ must fail fast with a clear diagnostic, not silently produce a broken PR.
 | `rocks_repo`     | yes      | `canonical/kserve-rocks`                      | `owner/repo` form. |
 | `rock_name`      | yes      | `pmmlserver`                                  | Folder name in that repo. |
 | `target_version` | yes      | `0.18.0`                                      | The new upstream version; what `version:` in `rockcraft.yaml` will become and what replaces `<ref>` in the upstream URL. |
-| `model`          | no       | `deepseek/deepseek-v4-pro` (default)          | OpenRouter model id override. |
+| `llm`            | no       | `copilot/claude-opus-5.5` (default)           | LLM as `provider/model`: `copilot/<model>` or `openrouter/<vendor>/<model>`. |
 | `dry_run`        | no       | `false` (default)                             | If `true`, run everything but skip the final PR push. |
 
 PRs are always opened against `main` on the target rocks repo. The branch is
@@ -205,31 +209,58 @@ Validation always happens for both the old `<ref>` and the new
 
 ### 6.6 Generate Updated `rockcraft.yaml` via LLM
 
+The LLM is selected by the `llm` input. `copilot/<model>` POSTs to the
+GitHub Copilot chat-completions API
+(`https://api.githubcopilot.com/chat/completions`), sending the GitHub
+token from §7.1 directly as the bearer token (no Copilot token exchange).
+`openrouter/<vendor>/<model>` POSTs to OpenRouter's equivalent endpoint.
+Copilot calls stream the response (SSE) with model thinking enabled
+(`reasoning_effort`, default `high`, CLI `--reasoning-effort`); streaming
+is required because Copilot caps non-streamed output at 16k tokens and
+thinking counts towards it.
+
 Inputs to the prompt:
 
 - Current `rockcraft.yaml` (verbatim).
-- For each Dockerfile pair, the **unified diff** between old and new
-  (sending full files only when the diff is large enough that context would
-  be lost — to be tuned).
+- For each Dockerfile pair, the old and new files in full plus the
+  **unified diff** between them.
 - The desired `target_version`.
-- A short instruction block describing the conventions (e.g. update the
-  `# Based on` URLs to point at the new ref, update `version:`, update
-  `source-tag:` in parts, update package versions referenced in
-  `override-build` only when the Dockerfile diff shows them changing, do not
-  reorganize unrelated sections, preserve comments).
+- The system prompt in
+  [actions/bump-rock/src/system_prompt.md](actions/bump-rock/src/system_prompt.md):
+  how Dockerfile constructs map to rockcraft (stages → parts, runtime
+  stage → `services`, Debian → Ubuntu package names, architectures), the
+  `base:` rule (the Ubuntu LTS matching the Debian release of upstream's
+  final stage: bullseye → 20.04, bookworm → 22.04, trixie → 24.04, next
+  LTS if a needed package is missing), and how to treat local deviations
+  from upstream.
 
-Output contract: the LLM must return **only** the new `rockcraft.yaml`
-content. The workflow validates:
+Output contract: the LLM returns three tagged sections:
 
+- `<change>` blocks, one per logical change: a one-line `reason:` plus the
+  `-` removed / `+` added `rockcraft.yaml` lines.
+- `<reviewer_note kind="…">` blocks, where `kind` is `dropped_deviation`,
+  `skipped_upstream_change`, `test_suggestion`, or `other`.
+- `<rockcraft_yaml>` with the complete new file, raw.
+
+Tagged text rather than JSON keeps the YAML free of escaping (Copilot's
+Claude models also ignore `response_format` JSON schemas). The workflow
+validates:
+
+- All three sections parse; every reviewer note has a known `kind`.
 - It is valid YAML.
 - `name` is unchanged.
 - `version` equals `target_version`.
-- The `# Based on` URLs now reference `target_version`.
+- The header URLs now reference `target_version`.
+- **Every changed line is accounted for**: each non-blank line that differs
+  between the old and new `rockcraft.yaml` appears in some `<change>`
+  block, and each listed line really exists in the respective file. This
+  catches transcription errors and changes the model applied silently or
+  described but forgot to apply.
 - **Only `rockcraft.yaml` was modified.** Files under `tests/`, `tox.ini`,
   `rock-ci-metadata.yaml`, and anything else in the rock folder MUST remain
-  byte-identical to what was checked out from `main`. If the LLM returns a
-  patch that touches any other file, that change is discarded and the
-  workflow records the LLM's suggestion for the PR body (see §6.8).
+  byte-identical to what was checked out from `main`. Changes the model
+  thinks those files need come back as `test_suggestion` notes for the PR
+  body (see §6.8).
 
 If validation fails, retry up to **`MAX_LLM_RETRIES` = 2** times (i.e. 3
 total attempts) with the validation error appended to the prompt. After
@@ -275,13 +306,16 @@ Inside the rock folder, on the updated `rockcraft.yaml`:
 - PR title: `chore(<rock_name>): bump to <target_version>`.
 - PR body (templated): summarises old → new version, links to upstream
   Dockerfiles old/new, lists which sanity tests ran on the CI worker, notes
-  that the change was AI-generated and requires human review, and includes a
-  **"Reviewer follow-ups"** section that may contain:
+  that the change was AI-generated and requires human review, lists the
+  model's one-line reason for each `<change>` block under **"Changes (as
+  explained by the model)"**, and includes a **"Reviewer follow-ups"**
+  section that may contain:
   - Any `# Based on` URL that had to be repaired (§6.4) — old URL, new URL,
     and how it was discovered.
-  - Any test/tox changes the model suggested but the workflow refused to
-    apply (§6.6), reproduced verbatim, so the reviewer can decide whether to
-    incorporate them in a follow-up commit on the PR branch.
+  - The model's reviewer notes (§6.6): dropped local deviations (quoted, so
+    the reason they existed can be re-checked), upstream changes it chose
+    not to port, and test/tox changes it suggests but was not allowed to
+    apply.
 - Apply a label such as `ai-generated` if it exists on the target repo
   (best-effort, don't fail if the label is absent).
 
@@ -301,12 +335,20 @@ already uses. If we ever want it back, it's a single `gh pr checks
 
 Stored as repository or organization secrets in `kubeflow-ci`:
 
-| Secret              | Purpose |
-|---------------------|---------|
-| `OPENROUTER_API_KEY`| Required for every run. Used to call OpenRouter's chat-completions API for the LLM generation step (§6.6). |
-| `ROCKS_REPO_TOKEN`  | Token used for all GitHub operations against the target rocks repo (clone, push branch, open PR, read PR checks). |
+| Secret                 | Purpose |
+|------------------------|---------|
+| `COPILOT_GITHUB_TOKEN` | Required for `copilot/*` LLMs (the default). GitHub token of a user with a Copilot seat, used to call the Copilot chat-completions API for the LLM generation step (§6.6). Requests count against that user's Copilot premium-request allowance. |
+| `OPENROUTER_API_KEY`   | Required only for `openrouter/*` LLMs. Used to call OpenRouter's chat-completions API instead. |
+| `ROCKS_REPO_TOKEN`     | Token used for all GitHub operations against the target rocks repo (clone, push branch, open PR, read PR checks). |
 
-The workflow MUST refuse to run if `OPENROUTER_API_KEY` is missing.
+The workflow MUST refuse to run if the credential for the selected LLM
+provider is missing.
+
+Outside CI, `copilot/*` falls back to the `gh` CLI login when
+`COPILOT_GITHUB_TOKEN` is unset (equivalent to
+`env -u GITHUB_TOKEN -u GH_TOKEN gh auth token`). `GITHUB_TOKEN` and
+`GH_TOKEN` are deliberately ignored: they usually hold tokens without
+Copilot access (e.g. the Actions token) and would shadow that login.
 
 ### 7.2 Token permissions (principle of least privilege)
 
@@ -330,6 +372,10 @@ Explicitly **NOT** granted (must remain unchecked):
   (write), Packages, Deployments, Pages, Issues (write), Discussions,
   Branch protection rules.
 
+`COPILOT_GITHUB_TOKEN` should be a fine-grained PAT owned by a user with a
+Copilot seat, carrying **only** the *Copilot Requests* permission. It is
+never used for git or REST operations, so it needs no repository access.
+
 The `GITHUB_TOKEN` provided by Actions for `kubeflow-ci` itself is **not**
 used to touch the target rocks repo — it can't, by design, reach other
 repos. Its permissions in the workflow file should be set to the minimum
@@ -344,7 +390,7 @@ finish on their own rather than be killed mid-build:
 | Level                          | Default | How it's enforced |
 |--------------------------------|---------|-------------------|
 | Whole workflow run             | none    | No `timeout-minutes` set on the job; relies on the GitHub runner's own 6h hard limit. |
-| Single LLM call                | 5 min   | HTTP client timeout in the calling script. |
+| Single LLM call                | 5 min   | HTTP client timeout in the calling script; for streamed Copilot calls it bounds the gap between chunks, not the whole call. |
 | `tox -e pack` / `sanity` / `export-to-docker` | none | No wrapper timeout; tox runs until it exits on its own. |
 | ~~Target-repo CI polling (§6.9)~~ | n/a  | Removed in v1; the workflow returns as soon as the PR is opened. |
 
@@ -418,7 +464,8 @@ dev `tox -e bump-rock` entry point (optional, decide during implementation).
   and **no PR**.
 - The workflow never runs longer than 90 minutes end-to-end thanks to the
   layered timeouts in §7.3.
-- The `ROCKS_REPO_TOKEN` carries only the permissions listed in §7.2.
+- `ROCKS_REPO_TOKEN` and `COPILOT_GITHUB_TOKEN` carry only the permissions
+  listed in §7.2.
 - No secrets are leaked into PR descriptions, commit messages, or logs.
 
 ## 11. Out of Scope (Future Work)

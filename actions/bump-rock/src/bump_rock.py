@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from typing import List, Tuple
 
@@ -61,6 +62,20 @@ def _github_workflow_run_url() -> str | None:
 
 def _print_json(payload) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
+
+
+def _llm_spec(value: str) -> str:
+    """argparse type for `--llm`: fail fast on bad specs, fill in the default model."""
+    try:
+        provider, model = llm_mod.parse_llm_spec(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+    return f"{provider}/{model}" if model else provider
+
+
+def _build_client(args: argparse.Namespace) -> llm_mod.LLMClient:
+    effort = None if args.reasoning_effort == "none" else args.reasoning_effort
+    return llm_mod.build_client(args.llm, reasoning_effort=effort)
 
 
 def cmd_parse(args: argparse.Namespace) -> int:
@@ -222,7 +237,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
         fetch_mod.write_pair_to_disk(pair, out_dir)
         fetched.append(pair)
 
-    client = llm_mod.build_client(args.llm, args.model)
+    client = _build_client(args)
     result = generate_mod.generate(
         client=client,
         doc=doc,
@@ -243,8 +258,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
         {
             "rockcraft_yaml_new": str(out_path),
             "attempts": result.attempts,
-            "model": args.model or llm_mod.DEFAULT_OPENROUTER_MODEL,
-            "llm_provider": args.llm,
+            "llm": args.llm,
             "raw_responses_log": str(debug_path),
         }
     )
@@ -280,7 +294,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     work_dir = out_dir / "work"
     run_mod.prepare_work_dir(rock_dir, work_dir)
 
-    client = llm_mod.build_client(args.llm, args.model)
+    client = _build_client(args)
     result = run_mod.run(
         client=client,
         doc=doc,
@@ -324,13 +338,15 @@ def cmd_run(args: argparse.Namespace) -> int:
         old_version=doc.version,
         target_version=args.target_version,
         resolved_pairs=resolved_pairs,
-        model=args.model or llm_mod.DEFAULT_OPENROUTER_MODEL,
+        model=args.llm,
         attempts=len(result.attempts),
         sanity_envs_run=sanity_envs,
         skip_tox=args.skip_tox,
         sanity_ok=result.ok,
         sanity_failure=sanity_failure,
         workflow_run_url=_github_workflow_run_url(),
+        changes=[asdict(c) for c in result.attempts[-1].changes],
+        reviewer_notes=[asdict(n) for n in result.attempts[-1].reviewer_notes],
     )
     (out_dir / "metadata.json").write_text(json.dumps(metadata, indent=2))
 
@@ -509,6 +525,7 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
     )
     pr_url = git_ops_mod.create_pr(
         target_repo,
+        head=branch,
         title=title,
         body=body,
         label=pr_mod.LABEL_AI_GENERATED,
@@ -568,14 +585,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_gen.add_argument("--out", required=True, help="Output directory.")
     p_gen.add_argument(
         "--llm",
-        default="openrouter",
-        choices=["openrouter", "mock"],
-        help="LLM provider (default: openrouter).",
+        type=_llm_spec,
+        default=llm_mod.DEFAULT_LLM,
+        help="LLM as provider[/model]: copilot/<model>, openrouter/<vendor>/<model> "
+        f"or mock (default: {llm_mod.DEFAULT_LLM}).",
     )
     p_gen.add_argument(
-        "--model",
-        default=None,
-        help="Model id override (default: provider-specific).",
+        "--reasoning-effort",
+        choices=[*llm_mod.REASONING_EFFORTS, "none"],
+        default=llm_mod.DEFAULT_REASONING_EFFORT,
+        help="Model thinking effort, Copilot only (default: %(default)s).",
     )
     p_gen.add_argument(
         "--max-retries",
@@ -595,11 +614,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("--out", required=True, help="Output directory.")
     p_run.add_argument(
         "--llm",
-        default="openrouter",
-        choices=["openrouter", "mock"],
-        help="LLM provider (default: openrouter).",
+        type=_llm_spec,
+        default=llm_mod.DEFAULT_LLM,
+        help="LLM as provider[/model]: copilot/<model>, openrouter/<vendor>/<model> "
+        f"or mock (default: {llm_mod.DEFAULT_LLM}).",
     )
-    p_run.add_argument("--model", default=None, help="Model id override.")
+    p_run.add_argument(
+        "--reasoning-effort",
+        choices=[*llm_mod.REASONING_EFFORTS, "none"],
+        default=llm_mod.DEFAULT_REASONING_EFFORT,
+        help="Model thinking effort, Copilot only (default: %(default)s).",
+    )
     p_run.add_argument(
         "--max-retries",
         type=int,

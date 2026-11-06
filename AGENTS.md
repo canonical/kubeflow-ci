@@ -85,10 +85,16 @@ See [spec.md](spec.md) for the full design. Quick map:
   repair on 404 via one GitHub tree listing.
 - [src/fetch.py](actions/bump-rock/src/fetch.py) — download old/new
   Dockerfile pair.
-- [src/llm.py](actions/bump-rock/src/llm.py) — OpenRouter client + a
-  MockClient for tests. Default model is `deepseek/deepseek-v4-pro`.
+- [src/llm.py](actions/bump-rock/src/llm.py) — Copilot + OpenRouter
+  chat-completions clients and a MockClient for tests, picked by
+  `--llm provider/model` (default `copilot/claude-opus-5.5`). Copilot calls
+  stream with thinking on (`--reasoning-effort`, default `high`).
 - [src/generate.py](actions/bump-rock/src/generate.py) — prompt building,
-  post-LLM validators, inner retry loop (spec §6.6).
+  response parsing (`<change>` / `<reviewer_note>` / `<rockcraft_yaml>`),
+  post-LLM validators incl. "every changed line is listed", inner retry
+  loop (spec §6.6).
+- [src/system_prompt.md](actions/bump-rock/src/system_prompt.md) — the LLM
+  system prompt, loaded verbatim by `generate.py`.
 - [src/tox_runner.py](actions/bump-rock/src/tox_runner.py) — `tox -e <env>`
   subprocess wrapper with per-env timeouts and log-tail capture.
 - [src/run.py](actions/bump-rock/src/run.py) — outer sanity loop
@@ -106,14 +112,20 @@ pyenv exec python -m src.bump_rock parse ~/path/to/rocks-repo/<rock>
 pyenv exec python -m src.bump_rock validate-urls <rock-dir> --target-version vX.Y.Z
 pyenv exec python -m src.bump_rock fetch <rock-dir> --target-version vX.Y.Z --out /tmp/x
 
-# generate / run need OPENROUTER_API_KEY.
-export OPENROUTER_API_KEY=sk-or-...
+# generate / run default to --llm copilot/claude-opus-5.5. The token comes
+# from COPILOT_GITHUB_TOKEN, else `gh auth token` (GITHUB_TOKEN / GH_TOKEN
+# are ignored since they usually lack Copilot access).
 pyenv exec python -m src.bump_rock run <rock-dir> --target-version vX.Y.Z \
     --out /tmp/bump-rock-run --skip-tox      # fast path; no rockcraft pack
+
+# OpenRouter instead needs OPENROUTER_API_KEY.
+export OPENROUTER_API_KEY=sk-or-...
+pyenv exec python -m src.bump_rock run <rock-dir> --target-version vX.Y.Z \
+    --out /tmp/bump-rock-run --skip-tox --llm openrouter/deepseek/deepseek-v4-pro
 ```
 
 `--skip-tox` exists for prompt iteration. Drop it once you have an
-OpenRouter response you trust and want to actually pack the rock.
+LLM response you trust and want to actually pack the rock.
 
 ## The workflow itself
 
@@ -123,16 +135,19 @@ exposes the pipeline as a `workflow_dispatch` action with inputs:
 - `rocks_repo` (e.g. `canonical/kserve-rocks`)
 - `rock_name` (e.g. `pmmlserver`)
 - `target_version` (e.g. `v0.18.0`)
-- `model` (defaults to `deepseek/deepseek-v4-pro`)
+- `llm` (defaults to `copilot/claude-opus-5.5`; `openrouter/<vendor>/<model>`
+  also works)
 - `dry_run` (boolean — prints the PR body preview without pushing)
 - `skip_sanity` (boolean — bypass `rockcraft pack` + sanity on the runner)
 - `max_sanity_attempts` (default `3` — outer loop: generate + tox)
 - `max_llm_retries` (default `2` — inner loop: extra LLM attempts when the
   post-LLM validators reject the candidate; total inner attempts = `1 + this`)
 
-It needs two secrets configured on the repo:
+It needs these secrets configured on the repo:
 
-- `OPENROUTER_API_KEY` — for the LLM call.
+- `COPILOT_GITHUB_TOKEN` — fine-grained PAT of a Copilot-seat user with
+  only the *Copilot Requests* permission; used by `copilot/*` LLMs.
+- `OPENROUTER_API_KEY` — only needed for `openrouter/*` LLMs.
 - `ROCKS_REPO_TOKEN` — fine-grained PAT with `contents:write` +
   `pull_requests:write` on the target rocks repo(s). See spec §7.2 for the
   full least-privilege table.

@@ -21,11 +21,11 @@ on:
         description: "New upstream version to bump to (e.g. v0.18.0)."
         required: true
         type: string
-      model:
-        description: "OpenRouter model id (default: deepseek/deepseek-v4-pro)."
+      llm:
+        description: "LLM as provider/model: copilot/<model> or openrouter/<vendor>/<model>."
         required: false
         type: string
-        default: "deepseek/deepseek-v4-pro"
+        default: "copilot/claude-opus-5.5"
       dry_run:
         description: "Generate the file and preview the PR, but don't push or open."
         required: false
@@ -117,6 +117,9 @@ jobs:
       - name: Run bump-rock (generate + sanity)
         working-directory: kubeflow-ci/actions/bump-rock
         env:
+          # Fine-grained PAT with the "Copilot Requests" permission; used by copilot/* LLMs.
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          # Only used by openrouter/* LLMs.
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           # Used by the bounded-repair tree-listing call; workflow's own
           # token is sufficient for read-only public lookups.
@@ -141,7 +144,7 @@ jobs:
                 "${TARGET_REPO}/${{ inputs.rock_name }}" \
                 --target-version "${{ inputs.target_version }}" \
                 --out "${OUT_DIR}" \
-                --model "${{ inputs.model }}" \
+                --llm "${{ inputs.llm }}" \
                 --max-sanity-attempts "${{ inputs.max_sanity_attempts }}" \
                 --max-retries "${{ inputs.max_llm_retries }}" \
                 --allow-sanity-failure \
@@ -191,7 +194,7 @@ jobs:
             echo "- repo: \`${{ inputs.rocks_repo }}\`"
             echo "- rock: \`${{ inputs.rock_name }}\`"
             echo "- target version: \`${{ inputs.target_version }}\`"
-            echo "- model: \`${{ inputs.model }}\`"
+            echo "- llm: \`${{ inputs.llm }}\`"
             echo "- dry run: \`${{ inputs.dry_run }}\`"
             echo "- skip sanity: \`${{ inputs.skip_sanity }}\`"
             echo "- max sanity attempts: \`${{ inputs.max_sanity_attempts }}\`"

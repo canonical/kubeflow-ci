@@ -45,6 +45,8 @@ class AttemptOutcome:
     validator_errors: List[str] = field(default_factory=list)
     inner_raw_responses: List[str] = field(default_factory=list)
     inner_validator_errors: List[List[str]] = field(default_factory=list)
+    changes: List[generate_mod.Change] = field(default_factory=list)
+    reviewer_notes: List[generate_mod.ReviewerNote] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
@@ -115,6 +117,8 @@ def run(
                 validator_errors=gen.validator_errors,
                 inner_raw_responses=gen.raw_responses,
                 inner_validator_errors=gen.per_attempt_errors,
+                changes=gen.changes,
+                reviewer_notes=gen.reviewer_notes,
             )
             attempts.append(outcome)
             return RunResult(
@@ -135,6 +139,8 @@ def run(
                 rockcraft_yaml=gen.rockcraft_yaml,
                 inner_raw_responses=gen.raw_responses,
                 inner_validator_errors=gen.per_attempt_errors,
+                changes=gen.changes,
+                reviewer_notes=gen.reviewer_notes,
             )
             attempts.append(outcome)
             return RunResult(
@@ -149,6 +155,8 @@ def run(
             test_results=results,
             inner_raw_responses=gen.raw_responses,
             inner_validator_errors=gen.per_attempt_errors,
+            changes=gen.changes,
+            reviewer_notes=gen.reviewer_notes,
         )
         attempts.append(outcome)
 

@@ -35,6 +35,18 @@ def _good_yaml(version="0.18.0", ref="v0.18.0"):
     )
 
 
+def _respond(new_yaml):
+    """Wrap `new_yaml` in the tagged response format, listing every changed line."""
+    old = (FIXTURES / "happy" / "rockcraft.yaml").read_text().splitlines()
+    new = new_yaml.splitlines()
+    diff = [f"- {line}" for line in old if line not in new]
+    diff += [f"+ {line}" for line in new if line not in old]
+    return (
+        "<change>\nreason: bump\n" + "\n".join(diff) + "\n</change>\n"
+        f"<rockcraft_yaml>\n{new_yaml}</rockcraft_yaml>\n"
+    )
+
+
 class _SequenceRunner:
     """Stub ToxRunner that consumes a flat queue of per-invocation outcomes.
 
@@ -63,7 +75,7 @@ class _SequenceRunner:
 
 def test_run_succeeds_on_first_attempt(tmp_path):
     doc = rockcraft.load(FIXTURES / "happy")
-    client = MockClient(responses=[_good_yaml()])
+    client = MockClient(responses=[_respond(_good_yaml())])
     work_dir = tmp_path / "work"
     work_dir.mkdir()
     stub = _SequenceRunner(sequence=[True, True, True])
@@ -84,7 +96,7 @@ def test_run_succeeds_on_first_attempt(tmp_path):
 def test_run_retries_on_pack_failure_then_succeeds(tmp_path):
     doc = rockcraft.load(FIXTURES / "happy")
     # attempt 1 fails at pack; attempt 2 passes everything.
-    client = MockClient(responses=[_good_yaml(), _good_yaml()])
+    client = MockClient(responses=[_respond(_good_yaml()), _respond(_good_yaml())])
     work_dir = tmp_path / "work"
     work_dir.mkdir()
     # attempt 1: pack fails (pipeline stops). attempt 2: all three pass.
@@ -112,7 +124,7 @@ def test_run_retries_on_pack_failure_then_succeeds(tmp_path):
 
 def test_run_gives_up_after_max_attempts(tmp_path):
     doc = rockcraft.load(FIXTURES / "happy")
-    client = MockClient(responses=[_good_yaml(), _good_yaml(), _good_yaml()])
+    client = MockClient(responses=[_respond(_good_yaml())] * 3)
     work_dir = tmp_path / "work"
     work_dir.mkdir()
     # each attempt fails at pack -> 3 calls total before giving up.
@@ -138,7 +150,7 @@ def test_run_gives_up_after_max_attempts(tmp_path):
 
 def test_run_skip_tox_short_circuits(tmp_path):
     doc = rockcraft.load(FIXTURES / "happy")
-    client = MockClient(responses=[_good_yaml()])
+    client = MockClient(responses=[_respond(_good_yaml())])
     work_dir = tmp_path / "work"
     work_dir.mkdir()
     stub = _SequenceRunner(sequence=[])  # should never be consulted
@@ -154,6 +166,7 @@ def test_run_skip_tox_short_circuits(tmp_path):
     )
     assert result.ok is True
     assert stub.invocations == 0
+    assert result.attempts[0].changes[0].reason == "bump"
 
 
 def test_prepare_work_dir_copies_and_overwrites(tmp_path):

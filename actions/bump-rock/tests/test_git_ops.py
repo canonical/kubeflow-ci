@@ -93,10 +93,12 @@ def test_create_pr_returns_url_and_labels(tmp_path):
 
     with patch("subprocess.run", side_effect=fake):
         url = git_ops.create_pr(
-            tmp_path, title="t", body="b", label="ai-generated"
+            tmp_path, head="bump/x-v1", title="t", body="b", label="ai-generated"
         )
     assert url == "https://github.com/foo/bar/pull/1"
     assert calls[0][:3] == ["gh", "pr", "create"]
+    head_idx = calls[0].index("--head")
+    assert calls[0][head_idx + 1] == "bump/x-v1"
     assert calls[1][:3] == ["gh", "pr", "edit"]
     assert "--add-label" in calls[1]
 
@@ -110,7 +112,7 @@ def test_create_pr_draft_passes_flag(tmp_path):
         return seq.pop(0)
 
     with patch("subprocess.run", side_effect=fake):
-        url = git_ops.create_pr(tmp_path, title="t", body="b", draft=True)
+        url = git_ops.create_pr(tmp_path, head="b", title="t", body="b", draft=True)
     assert url == "https://github.com/foo/bar/pull/9"
     assert "--draft" in captured[0]
 
@@ -126,6 +128,6 @@ def test_create_pr_swallows_label_failure(tmp_path):
 
     with patch("subprocess.run", side_effect=fake):
         url = git_ops.create_pr(
-            tmp_path, title="t", body="b", label="missing-label"
+            tmp_path, head="b", title="t", body="b", label="missing-label"
         )
     assert url == "https://github.com/foo/bar/pull/1"

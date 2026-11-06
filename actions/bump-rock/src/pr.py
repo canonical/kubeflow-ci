@@ -14,6 +14,13 @@ from . import repair as repair_mod
 
 LABEL_AI_GENERATED = "ai-generated"
 
+NOTE_LABELS = {
+    "dropped_deviation": "Dropped local deviation from upstream",
+    "skipped_upstream_change": "Upstream change not ported",
+    "test_suggestion": "Suggested test / tox change (not applied)",
+    "other": "Please double-check",
+}
+
 
 def build_metadata(
     *,
@@ -30,6 +37,8 @@ def build_metadata(
     sanity_ok: bool = True,
     sanity_failure: Optional[dict] = None,
     workflow_run_url: Optional[str] = None,
+    changes: Optional[List[dict]] = None,
+    reviewer_notes: Optional[List[dict]] = None,
 ) -> dict:
     """Snapshot everything the open-pr step needs into a JSON-able dict.
 
@@ -37,7 +46,8 @@ def build_metadata(
     detail so the open-pr step can surface it in the PR body and mark the
     PR as a draft for human review. `workflow_run_url`, when set, is the
     canonical URL of the GitHub Actions run that produced this PR — it
-    will be linked from the PR body.
+    will be linked from the PR body. `changes` and `reviewer_notes` are the
+    model's own account of its edits (`generate.Change` / `ReviewerNote`).
     """
     based_on = []
     for old_res, new_res in resolved_pairs:
@@ -65,6 +75,8 @@ def build_metadata(
         "sanity_ok": sanity_ok,
         "sanity_failure": sanity_failure,
         "workflow_run_url": workflow_run_url,
+        "changes": changes or [],
+        "reviewer_notes": reviewer_notes or [],
     }
 
 
@@ -143,8 +155,8 @@ def pr_body(metadata: dict) -> str:
     if workflow_run_url:
         lines.append(f"- Triggered by [GitHub Actions run]({workflow_run_url}).")
     lines.append(
-        f"- Generated an updated `{rock}/rockcraft.yaml` using `{model}` via "
-        f"OpenRouter, in {attempts} attempt(s)."
+        f"- Generated an updated `{rock}/rockcraft.yaml` using `{model}`, "
+        f"in {attempts} attempt(s)."
     )
     if skip_tox:
         lines.append(
@@ -161,7 +173,14 @@ def pr_body(metadata: dict) -> str:
         )
     lines.append("")
 
-    follow_ups = _reviewer_follow_ups(based_on)
+    changes = metadata.get("changes") or []
+    if changes:
+        lines.append("## Changes (as explained by the model)")
+        lines.append("")
+        lines.extend(f"- {c['reason']}" for c in changes)
+        lines.append("")
+
+    follow_ups = _reviewer_follow_ups(based_on, metadata.get("reviewer_notes") or [])
     if follow_ups:
         lines.append("## Reviewer follow-ups")
         lines.append("")
@@ -225,13 +244,16 @@ def _details_block(summary: str, content: str) -> List[str]:
     ]
 
 
-def _reviewer_follow_ups(based_on: List[dict]) -> List[str]:
+def _reviewer_follow_ups(based_on: List[dict], reviewer_notes: List[dict]) -> List[str]:
     """Lines for the Reviewer follow-ups section. Empty list = section omitted.
 
-    Only URL-repair notes are surfaced today. When the prompt eventually
-    asks the model for test/tox suggestions, those will be added here too.
+    Covers auto-repaired `# Based on` URLs and the model's reviewer notes.
     """
     lines: List[str] = []
+    for note in reviewer_notes:
+        label = NOTE_LABELS.get(note["kind"], note["kind"])
+        lines.append(f"- **{label}:**")
+        lines.extend(f"  {line}" for line in note["detail"].splitlines())
     for i, entry in enumerate(based_on, start=1):
         suffix = f" #{i}" if len(based_on) > 1 else ""
         if entry.get("old_repaired_from"):

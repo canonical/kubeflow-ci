@@ -108,19 +108,22 @@ def create_commit_push(
 def create_pr(
     repo: Path,
     *,
+    head: str,
     title: str,
     body: str,
     base: str = "main",
     label: Optional[str] = None,
     draft: bool = False,
 ) -> str:
-    """Open a PR via `gh pr create`. Returns the PR URL from gh's stdout."""
+    """Open a PR from `head` via `gh pr create`. Returns the PR URL from gh's stdout."""
     cmd = [
         "gh",
         "pr",
         "create",
         "--base",
         base,
+        "--head",
+        head,
         "--title",
         title,
         "--body",

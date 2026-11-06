@@ -162,4 +162,4 @@ a clean `main` for `open-pr`. Useful `run` flags:
 | `gpg: signing failed: No secret key` | `GIT_COMMITTER_EMAIL` / `user.signingkey` don't match a local GPG key. |
 | PR commit shows *Unverified* | The commit email isn't a verified email of the GitHub account that owns the GPG key. |
 | `target repo ... is on branch ...` / `has uncommitted changes` | `open-pr` needs the rocks clone on a clean `main`. |
-| `no '# Based on <url>' or '# Dockerfile: <url>' comment` | The rock's `rockcraft.yaml` has no upstream Dockerfile header comment. |
+| `no '# Based on <url>', '# Dockerfile: <url>' or '# Source: <url>' comment` | The rock's `rockcraft.yaml` has no upstream Dockerfile header comment. |

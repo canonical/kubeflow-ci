@@ -285,7 +285,9 @@ def validate_output(
 
     new_urls = _extract_based_on_urls(new_yaml)
     if not new_urls:
-        errors.append("no `# Based on` / `# Dockerfile:` header comment in updated file")
+        errors.append(
+            "no `# Based on` / `# Dockerfile:` / `# Source:` header comment in updated file"
+        )
     else:
         for url in new_urls:
             if not BASED_ON_RE.search(f"# Based on {url}"):  # defensive

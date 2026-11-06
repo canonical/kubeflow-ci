@@ -61,10 +61,11 @@ These assumptions hold for repos like
   `sklearnserver/`, …).
 - Each rock folder contains:
   - `rockcraft.yaml` whose first non-empty comment lines reference the
-    upstream Dockerfile(s), in either form:
+    upstream Dockerfile(s), in any of these forms:
     ```
     # Based on https://github.com/<org>/<repo>/blob/<ref>/<path>/<name>.Dockerfile
     # Dockerfile: https://github.com/<org>/<repo>/blob/<ref>/<path>/<name>.Dockerfile
+    # Source: https://github.com/<org>/<repo>/blob/<ref>/<path>/<name>.Dockerfile
     ```
     where `<ref>` is a git tag/branch/SHA that encodes the current version.
     The bump keeps whichever form the rock uses.

@@ -8,6 +8,9 @@ derived from, in either of the forms:
 
     # Based on https://github.com/<org>/<repo>/blob/<ref>/<path>
     # Dockerfile: https://github.com/<org>/<repo>/blob/<ref>/<path>
+    # Source: https://github.com/<org>/<repo>/blob/<ref>/<path>
+
+(the colon is optional).
 
 This module extracts those URLs and the YAML `version:` field. It does not
 attempt to round-trip the YAML; downstream stages handle rewriting.
@@ -23,7 +26,9 @@ import yaml
 
 from .errors import RockcraftParseError
 
-BASED_ON_RE = re.compile(r"#\s*(?:Based\s+on|Dockerfile:)\s+(\S+)", re.IGNORECASE)
+BASED_ON_RE = re.compile(
+    r"#\s*(?:Based\s+on|Dockerfile|Source):?\s+(https?://\S+)", re.IGNORECASE
+)
 
 
 @dataclass(frozen=True)
@@ -59,8 +64,8 @@ def load(rock_dir: Path) -> RockcraftDoc:
     based_on_urls = _extract_based_on_urls(raw_text)
     if not based_on_urls:
         raise RockcraftParseError(
-            f"{yaml_path}: no '# Based on <url>' or '# Dockerfile: <url>' comment "
-            "found at top of file"
+            f"{yaml_path}: no '# Based on <url>', '# Dockerfile: <url>' or "
+            "'# Source: <url>' comment found at top of file"
         )
 
     try:

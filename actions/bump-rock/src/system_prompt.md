@@ -65,8 +65,9 @@ reason: <one line for the pull request's change list, see below>
 
 Rules — follow them all:
   - Update the leading header comments that point at the upstream
-    Dockerfiles (`# Based on <url>` or `# Dockerfile: <url>`) so the <ref>
-    segment of each URL matches the target version. Keep the comment form.
+    Dockerfiles (`# Based on <url>`, `# Dockerfile: <url>` or
+    `# Source: <url>`) so the <ref> segment of each URL matches the
+    target version. Keep the comment form.
   - Update the `version:` field to the target version. The version field
     usually omits a leading `v` even when the upstream tag has one (e.g.
     tag `v0.18.0` -> `version: "0.18.0"`). Preserve the original quoting

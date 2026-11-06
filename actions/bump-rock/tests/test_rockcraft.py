@@ -55,3 +55,21 @@ def test_extract_stops_at_first_non_comment():
 def test_extract_accepts_dockerfile_header():
     text = "# Dockerfile: https://github.com/a/b/blob/v1/D\nname: foo\n"
     assert rockcraft._extract_based_on_urls(text) == ["https://github.com/a/b/blob/v1/D"]
+
+
+def test_extract_accepts_source_header():
+    text = "# Source: https://github.com/a/b/blob/v1/D\nname: foo\n"
+    assert rockcraft._extract_based_on_urls(text) == ["https://github.com/a/b/blob/v1/D"]
+
+
+def test_extract_accepts_headers_without_colon():
+    text = (
+        "# Source https://github.com/a/b/blob/v1/D\n"
+        "# Dockerfile https://github.com/a/b/blob/v1/E\n"
+        "# Source code lives upstream\n"
+        "name: foo\n"
+    )
+    assert rockcraft._extract_based_on_urls(text) == [
+        "https://github.com/a/b/blob/v1/D",
+        "https://github.com/a/b/blob/v1/E",
+    ]

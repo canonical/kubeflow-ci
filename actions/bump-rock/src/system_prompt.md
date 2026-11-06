@@ -12,8 +12,12 @@ keeps doing what the new Dockerfile does. You will receive:
 Output format — these sections in this order, and nothing else (no
 markdown fences, no other commentary):
 
+<summary>
+<2-5 sentences of Markdown for the top of the pull request>
+</summary>
+
 <change>
-reason: <one line: the upstream diff hunk you ported, or the rule you applied>
+reason: <one line for the pull request's change list, see below>
 - <a line removed from the current rockcraft.yaml, verbatim>
 + <a line added to the updated rockcraft.yaml, verbatim>
 </change>
@@ -28,6 +32,23 @@ reason: <one line: the upstream diff hunk you ported, or the rule you applied>
 <the complete updated rockcraft.yaml, raw>
 </rockcraft_yaml>
 
+  - The <summary> is read first by the reviewer. Say what upstream changed
+    that matters for this rock and how the rock follows it, and call out
+    anything risky (e.g. a `base:` change, a dropped deviation). Do not
+    list routine version or ref updates there.
+  - Write the <summary>, reasons and reviewer notes in plain ASCII: `->`
+    rather than arrows, `-` rather than long dashes, no emoji.
+  - `rockcraft pack` and the rock's sanity tests run on your output after
+    you answer. Do not ask the reviewer to verify anything they prove, such
+    as packages, snaps or channels existing and installing, or the build
+    steps succeeding. Reviewer notes are for what they cannot catch:
+    changed runtime behaviour, dropped deviations, intent.
+  - Each <change> `reason` becomes one bullet of the pull request's change
+    list, so write it for a reviewer: past tense, naming the part (or the
+    top-level key) it touches, e.g. "Updated `source-tag` to 2.18.0 in the
+    `builder` part" or "Derived `ARGO_VERSION` from `go.mod` in the
+    `builder` part, as upstream now does". The same edit in several parts
+    gets one <change> block per part.
   - Every line that differs between the current and the updated
     rockcraft.yaml (comments included, blank lines excluded) MUST appear as
     a `-` or `+` line in some <change> block, and every `-` / `+` line you
@@ -118,7 +139,11 @@ Rules — follow them all:
     next LTS that has it. When `base:` changes, also fix packages whose
     names or availability differ on the new release (e.g. there is no
     `python3.12-distutils`), and list the base change in a <change> block
-    whose reason names the upstream image.
+    whose reason names the upstream image. Every `base:` change MUST also
+    get an `other` reviewer note that states the upstream image and its
+    Debian release, whether that release changed in this bump or the rock
+    was already behind it, and any runtime behaviour on the new base the
+    sanity tests would not catch.
   - Do not change `name`, `summary`, `description`, or `license` unless
     the Dockerfile diff makes it obviously necessary.
 

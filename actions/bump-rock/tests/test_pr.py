@@ -60,6 +60,9 @@ def test_build_metadata_round_trip():
     assert md["model"] == "moonshotai/kimi-k2"
     assert md["sanity_envs_run"] == ["pack", "sanity"]
     assert md["skip_tox"] is False
+    assert md["based_on"][0]["compare_url"] == (
+        "https://github.com/kserve/kserve/compare/v0.17.0...v0.18.0"
+    )
 
 
 def test_build_metadata_captures_repair_history():
@@ -102,9 +105,9 @@ def test_pr_body_happy_path_has_no_follow_ups():
     assert OLD_REF.blob_url() in body
     assert NEW_REF.blob_url() in body
     assert "moonshotai/kimi-k2" in body
-    assert "in 2 attempt(s)" in body
+    assert "in 2 attempts." in body
     assert "tox -e pack" in body
-    assert "Reviewer follow-ups" not in body
+    assert "Needs reviewer attention" not in body
     assert "AI-generated" in body
     assert body.endswith("\n")
 
@@ -143,6 +146,7 @@ def test_pr_body_sanity_failure_shows_warning_and_log_tail():
     assert "<details>" in body
     assert "<summary>" in body
     assert "</details>" in body
+    assert body.isascii()
 
 
 def test_pr_body_surfaces_validator_errors_when_generate_failed():
@@ -205,20 +209,48 @@ def test_pr_body_omits_workflow_run_when_unset():
     assert "GitHub Actions run" not in body
 
 
-def test_pr_body_renders_model_changes_and_notes():
+def test_pr_body_renders_model_summary_changes_and_notes():
     md = _happy_metadata(
-        changes=[{"reason": "Derive ARGO_VERSION from go.mod", "removed": [], "added": []}],
+        summary="Upstream now derives the Argo CLI version from `go.mod`.",
+        changes=[
+            {"reason": "Updated `source-tag` in the `builder` part", "lines": ["+  source-tag: 2"]},
+            {"reason": "Derived `ARGO_VERSION` from <go.mod>", "lines": ["+  go list -m"]},
+        ],
         reviewer_notes=[
             {"kind": "dropped_deviation", "detail": "- ARGO_VERSION: v3.7.17\nsee issue 58"},
             {"kind": "test_suggestion", "detail": "check /bin/argo"},
         ],
     )
     body = pr.pr_body(md)
-    assert "## Changes (as explained by the model)" in body
-    assert "- Derive ARGO_VERSION from go.mod" in body
-    assert "Reviewer follow-ups" in body
-    assert "**Dropped local deviation from upstream:**\n  - ARGO_VERSION: v3.7.17\n  see issue 58" in body
-    assert "**Suggested test / tox change (not applied):**\n  check /bin/argo" in body
+    assert "Upstream now derives the Argo CLI version from `go.mod`." in body
+    # Reviewer attention comes before the change list.
+    assert body.index("## Needs reviewer attention") < body.index("## Changes")
+    assert "**Dropped local deviation from upstream**\n\n- ARGO_VERSION: v3.7.17\nsee issue 58" in body
+    assert "**Suggested test / tox change (not applied)**\n\ncheck /bin/argo" in body
+    assert (
+        "- Updated `source-tag` in the `builder` part\n"
+        "- Derived `ARGO_VERSION` from <go.mod>\n" in body
+    )
+    assert "```diff\n+  go list -m" not in body
+
+
+def test_pr_body_links_compare_and_embeds_dockerfile_diff():
+    md = pr.build_metadata(
+        rock_name="pmml",
+        old_version="0.17.0",
+        target_version="v0.18.0",
+        resolved_pairs=[(_result(OLD_REF), _result(NEW_REF))],
+        model="x",
+        attempts=1,
+        sanity_envs_run=[],
+        skip_tox=True,
+        dockerfile_diffs=["--- v0.17.0\n+++ v0.18.0\n-FROM a\n+FROM b"],
+    )
+    body = pr.pr_body(md)
+    assert "[compare `v0.17.0...v0.18.0`](https://github.com/kserve/kserve/compare/v0.17.0...v0.18.0)" in body
+    assert "<summary>Dockerfile diff</summary>\n\n```diff\n--- v0.17.0" in body
+    assert "in 1 attempt." in body
+    assert body.isascii()
 
 
 def test_pr_body_happy_path_omits_model_sections():
@@ -256,6 +288,6 @@ def test_pr_body_surfaces_repair_in_follow_ups():
         skip_tox=False,
     )
     body = pr.pr_body(md)
-    assert "Reviewer follow-ups" in body
+    assert "Needs reviewer attention" in body
     assert broken.blob_url() in body
     assert OLD_REF.blob_url() in body

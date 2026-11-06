@@ -161,6 +161,7 @@ def test_build_user_prompt_includes_all_inputs():
 
 def test_parse_response_splits_sections():
     text = (
+        "<summary>\nUpstream now derives `ARGO_VERSION`.\n</summary>\n"
         "<change>\n"
         "reason: port the new build flag\n"
         "-   - cmake\n"
@@ -176,12 +177,16 @@ def test_parse_response_splits_sections():
     )
     parsed = generate.parse_response(text)
     assert parsed.errors == []
+    assert parsed.summary == "Upstream now derives `ARGO_VERSION`."
     assert parsed.rockcraft_yaml == "name: x\n# <change> inside the file is not a change block\n"
     assert parsed.changes == [
         generate.Change(
-            reason="port the new build flag", removed=["- cmake"], added=["go build -trimpath"]
+            reason="port the new build flag",
+            lines=["-   - cmake", "+   go build -trimpath"],
         )
     ]
+    assert parsed.changes[0].removed == ["- cmake"]
+    assert parsed.changes[0].added == ["go build -trimpath"]
     assert parsed.reviewer_notes == [
         generate.ReviewerNote(kind="dropped_deviation", detail="- ARGO_VERSION: v3.7.17")
     ]
@@ -204,7 +209,7 @@ def test_parse_response_rejects_bad_kind_and_missing_reason():
 
 
 def test_validate_changes_accepts_fully_listed_diff():
-    changes = [generate.Change(reason="r", removed=["version: 1"], added=["version: 2"])]
+    changes = [generate.Change(reason="r", lines=["- version: 1", "+ version: 2"])]
     assert generate.validate_changes("a\nversion: 1\n", "a\nversion: 2\n", changes) == []
 
 
@@ -217,7 +222,7 @@ def test_validate_changes_flags_unlisted_and_indentation_edits():
 
 
 def test_validate_changes_flags_phantom_lines():
-    changes = [generate.Change(reason="r", removed=["c: 1"], added=["c: 2", "d: 9"])]
+    changes = [generate.Change(reason="r", lines=["- c: 1", "+ c: 2", "+ d: 9"])]
     errors = generate.validate_changes("c: 1\n", "c: 2\n", changes)
     assert len(errors) == 1
     assert "+ d: 9" in errors[0]

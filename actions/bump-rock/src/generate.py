@@ -42,11 +42,18 @@ NOTE_KINDS = ("dropped_deviation", "skipped_upstream_change", "test_suggestion",
 
 @dataclass
 class Change:
-    """One <change> block: why, plus the stripped lines it removes and adds."""
+    """One <change> block: why, and its `-` / `+` lines as the model wrote them."""
 
     reason: str
-    removed: List[str] = field(default_factory=list)
-    added: List[str] = field(default_factory=list)
+    lines: List[str] = field(default_factory=list)
+
+    @property
+    def removed(self) -> List[str]:
+        return [line[1:].strip() for line in self.lines if line.startswith("-")]
+
+    @property
+    def added(self) -> List[str]:
+        return [line[1:].strip() for line in self.lines if line.startswith("+")]
 
 
 @dataclass
@@ -62,6 +69,7 @@ class ParsedResponse:
     """An LLM response split into its parts; `errors` lists format problems."""
 
     rockcraft_yaml: str
+    summary: str = ""
     changes: List[Change] = field(default_factory=list)
     reviewer_notes: List[ReviewerNote] = field(default_factory=list)
     errors: List[str] = field(default_factory=list)
@@ -88,8 +96,22 @@ class GenerateResult:
     ok: bool = True
     validator_errors: List[str] = field(default_factory=list)
     per_attempt_errors: List[List[str]] = field(default_factory=list)
+    summary: str = ""
     changes: List[Change] = field(default_factory=list)
     reviewer_notes: List[ReviewerNote] = field(default_factory=list)
+
+
+def dockerfile_diff(pair: DockerfilePair) -> str:
+    """Unified diff between the old and new upstream Dockerfile (empty if equal)."""
+    return "\n".join(
+        difflib.unified_diff(
+            pair.old_text.splitlines(),
+            pair.new_text.splitlines(),
+            fromfile=pair.old_ref.ref,
+            tofile=pair.new_ref.ref,
+            lineterm="",
+        )
+    )
 
 
 def build_user_prompt(
@@ -115,17 +137,8 @@ def build_user_prompt(
         sections.append(pair.old_text)
         sections.append(f"=== {new_label} — {pair.new_ref.blob_url()} ===")
         sections.append(pair.new_text)
-        diff = "\n".join(
-            difflib.unified_diff(
-                pair.old_text.splitlines(),
-                pair.new_text.splitlines(),
-                fromfile=pair.old_ref.ref,
-                tofile=pair.new_ref.ref,
-                lineterm="",
-            )
-        )
         sections.append(f"=== upstream Dockerfile {i} diff (old -> new) ===")
-        sections.append(diff or "(no changes)")
+        sections.append(dockerfile_diff(pair) or "(no changes)")
     if additional_context:
         sections.append("=== prior sanity-test attempts ===")
         sections.append(additional_context)
@@ -142,6 +155,7 @@ def build_user_prompt(
 
 _FENCE_RE = re.compile(r"^```(?:ya?ml)?\s*\n(?P<body>.*?)\n```\s*$", re.DOTALL)
 _YAML_BLOCK_RE = re.compile(r"<rockcraft_yaml>[ \t]*\n?(?P<body>.*?)</rockcraft_yaml>", re.DOTALL)
+_SUMMARY_RE = re.compile(r"<summary>(?P<body>.*?)</summary>", re.DOTALL)
 _CHANGE_RE = re.compile(r"<change>(?P<body>.*?)</change>", re.DOTALL)
 _NOTE_RE = re.compile(
     r'<reviewer_note\s+kind="(?P<kind>[^"]*)"\s*>(?P<detail>.*?)</reviewer_note>', re.DOTALL
@@ -149,10 +163,10 @@ _NOTE_RE = re.compile(
 
 
 def parse_response(text: str) -> ParsedResponse:
-    """Split a response into <change> blocks, reviewer notes and the YAML.
+    """Split a response into summary, <change> blocks, reviewer notes and YAML.
 
-    Changes and notes are only read before <rockcraft_yaml>, so the file
-    body can never be mistaken for them.
+    Everything but the YAML is only read before <rockcraft_yaml>, so the file
+    body can never be mistaken for it.
     """
     match = _YAML_BLOCK_RE.search(text)
     if not match:
@@ -162,16 +176,17 @@ def parse_response(text: str) -> ParsedResponse:
         )
     parsed = ParsedResponse(rockcraft_yaml=strip_fences(match.group("body")))
     preamble = text[: match.start()]
+    summary = _SUMMARY_RE.search(preamble)
+    if summary:
+        parsed.summary = summary.group("body").strip()
     for block in _CHANGE_RE.finditer(preamble):
         change = Change(reason="")
         for line in block.group("body").splitlines():
             line = line.lstrip()
             if line.startswith("reason:"):
                 change.reason = line[len("reason:") :].strip()
-            elif line.startswith("-"):
-                change.removed.append(line[1:].strip())
-            elif line.startswith("+"):
-                change.added.append(line[1:].strip())
+            elif line.startswith(("-", "+")):
+                change.lines.append(line)
         if not change.reason:
             parsed.errors.append("a <change> block has no `reason:` line")
         parsed.changes.append(change)
@@ -345,6 +360,7 @@ def generate(
                 attempts=attempt,
                 raw_responses=raw_responses,
                 per_attempt_errors=per_attempt_errors,
+                summary=parsed.summary,
                 changes=parsed.changes,
                 reviewer_notes=parsed.reviewer_notes,
             )
@@ -384,6 +400,7 @@ def generate(
         ok=False,
         validator_errors=last_errors,
         per_attempt_errors=per_attempt_errors,
+        summary=last_parsed.summary,
         changes=last_parsed.changes,
         reviewer_notes=last_parsed.reviewer_notes,
     )

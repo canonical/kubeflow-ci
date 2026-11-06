@@ -61,7 +61,7 @@ def _github_workflow_run_url() -> str | None:
 
 
 def _print_json(payload) -> None:
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    print(json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False))
 
 
 def _llm_spec(value: str) -> str:
@@ -345,8 +345,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         sanity_ok=result.ok,
         sanity_failure=sanity_failure,
         workflow_run_url=_github_workflow_run_url(),
+        summary=result.attempts[-1].summary,
         changes=[asdict(c) for c in result.attempts[-1].changes],
         reviewer_notes=[asdict(n) for n in result.attempts[-1].reviewer_notes],
+        dockerfile_diffs=[generate_mod.dockerfile_diff(p) for p in fetched],
     )
     (out_dir / "metadata.json").write_text(json.dumps(metadata, indent=2))
 

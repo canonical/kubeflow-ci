@@ -234,10 +234,13 @@ Inputs to the prompt:
   LTS if a needed package is missing), and how to treat local deviations
   from upstream.
 
-Output contract: the LLM returns three tagged sections:
+Output contract: the LLM returns four tagged sections:
 
-- `<change>` blocks, one per logical change: a one-line `reason:` plus the
-  `-` removed / `+` added `rockcraft.yaml` lines.
+- `<summary>`: 2–5 sentences opening the PR description (what upstream
+  changed that matters, how the rock follows it, what is risky).
+- `<change>` blocks, one per logical change and part: a one-line
+  `reason:` worded as a PR bullet (e.g. "Updated `source-tag` in the
+  `builder` part"), plus the `-` removed / `+` added `rockcraft.yaml` lines.
 - `<reviewer_note kind="…">` blocks, where `kind` is `dropped_deviation`,
   `skipped_upstream_change`, `test_suggestion`, or `other`.
 - `<rockcraft_yaml>` with the complete new file, raw.
@@ -246,7 +249,7 @@ Tagged text rather than JSON keeps the YAML free of escaping (Copilot's
 Claude models also ignore `response_format` JSON schemas). The workflow
 validates:
 
-- All three sections parse; every reviewer note has a known `kind`.
+- All sections parse; every change and reviewer note has a known `kind`.
 - It is valid YAML.
 - `name` is unchanged.
 - `version` equals `target_version`.
@@ -304,18 +307,15 @@ Inside the rock folder, on the updated `rockcraft.yaml`:
 - The PR diff contains a single file: `<rock_name>/rockcraft.yaml`.
 - Commit message: `chore(<rock_name>): bump to <target_version>`.
 - PR title: `chore(<rock_name>): bump to <target_version>`.
-- PR body (templated): summarises old → new version, links to upstream
-  Dockerfiles old/new, lists which sanity tests ran on the CI worker, notes
-  that the change was AI-generated and requires human review, lists the
-  model's one-line reason for each `<change>` block under **"Changes (as
-  explained by the model)"**, and includes a **"Reviewer follow-ups"**
-  section that may contain:
-  - Any `# Based on` URL that had to be repaired (§6.4) — old URL, new URL,
-    and how it was discovered.
-  - The model's reviewer notes (§6.6): dropped local deviations (quoted, so
-    the reason they existed can be re-checked), upstream changes it chose
-    not to port, and test/tox changes it suggests but was not allowed to
-    apply.
+- PR body (templated), in this order: the model's `<summary>` under the
+  old → new version line; **"Needs reviewer attention"** with the model's
+  reviewer notes (dropped local deviations quoted so their reason can be
+  re-checked, upstream changes not ported, test/tox suggestions it was not
+  allowed to apply) and any `# Based on` URL repaired in §6.4; **"Changes"**
+  with one bullet per `<change>` block (its reason);
+  **"Upstream"** with old/new Dockerfile links, a GitHub compare link and
+  the collapsed Dockerfile diff; **"How this was generated"** (workflow
+  run, model, attempts, sanity tests run); the AI-generated disclaimer.
 - Apply a label such as `ai-generated` if it exists on the target repo
   (best-effort, don't fail if the label is absent).
 

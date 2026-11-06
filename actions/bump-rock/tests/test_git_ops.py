@@ -80,6 +80,24 @@ def test_create_commit_push_invokes_expected_commands(tmp_path):
     assert calls[3] == ["git", "push", "-u", "origin", "bump/x"]
 
 
+def test_create_commit_push_identity_env_overrides_default(tmp_path, monkeypatch):
+    for var in ("GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("GIT_COMMITTER_EMAIL", "me@example.com")
+    envs = []
+
+    def fake(cmd, **kwargs):
+        envs.append(kwargs["env"])
+        return _completed(stdout="ok\n")
+
+    with patch("subprocess.run", side_effect=fake):
+        git_ops.create_commit_push(
+            tmp_path, branch="b", file_to_stage="f", commit_message="m"
+        )
+    assert envs[2]["GIT_COMMITTER_EMAIL"] == "me@example.com"
+    assert envs[2]["GIT_AUTHOR_EMAIL"] == git_ops.GitIdentity().email
+
+
 def test_create_pr_returns_url_and_labels(tmp_path):
     seq = [
         _completed(stdout="https://github.com/foo/bar/pull/1\n"),

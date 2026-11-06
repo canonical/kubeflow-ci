@@ -88,17 +88,20 @@ def create_commit_push(
     commit_message: str,
     identity: GitIdentity = GitIdentity(),
 ) -> None:
-    """Create `branch` from HEAD, stage one file, commit, push to origin."""
+    """Create `branch` from HEAD, stage one file, commit, push to origin.
+
+    `identity` is a default: GIT_AUTHOR_* / GIT_COMMITTER_* already set in
+    the environment win, so a local run can commit as the signing key's owner.
+    """
     env = {
         "GIT_AUTHOR_NAME": identity.name,
         "GIT_AUTHOR_EMAIL": identity.email,
         "GIT_COMMITTER_NAME": identity.name,
         "GIT_COMMITTER_EMAIL": identity.email,
     }
-    # Preserve the caller's env (PATH, etc.) and overlay the identity.
     import os
 
-    merged_env = {**os.environ, **env}
+    merged_env = {**env, **os.environ}
     _run(["git", "checkout", "-b", branch], cwd=repo, env=merged_env)
     _run(["git", "add", file_to_stage], cwd=repo, env=merged_env)
     _run(["git", "commit", "-m", commit_message], cwd=repo, env=merged_env)

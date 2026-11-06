@@ -76,7 +76,9 @@ Mirror [actions/get-charm-paths/](actions/get-charm-paths/) or
 
 ## The bump-rock action specifically
 
-See [spec.md](spec.md) for the full design. Quick map:
+See [spec.md](spec.md) for the full design and
+[actions/bump-rock/README.md](actions/bump-rock/README.md) for running it
+locally (Copilot token, GPG/identity setup). Quick map:
 
 - [src/rockcraft.py](actions/bump-rock/src/rockcraft.py) — parse a rock's
   `rockcraft.yaml` (extract `# Based on` URLs + `version`).

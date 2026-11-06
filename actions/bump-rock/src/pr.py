@@ -1,0 +1,311 @@
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+"""PR-shape helpers: metadata, branch names, and the body template.
+
+Pure functions only — no subprocess calls, no git operations. Those live
+in `git_ops`. Keeping the shape logic here makes it cheap to unit-test.
+"""
+from __future__ import annotations
+
+import time
+from typing import Iterable, List, Optional, Tuple
+
+from . import repair as repair_mod
+
+LABEL_AI_GENERATED = "ai-generated"
+
+NOTE_LABELS = {
+    "dropped_deviation": "Dropped local deviation from upstream",
+    "skipped_upstream_change": "Upstream change not ported",
+    "test_suggestion": "Suggested test / tox change (not applied)",
+    "other": "Please double-check",
+}
+
+
+def build_metadata(
+    *,
+    rock_name: str,
+    old_version: str,
+    target_version: str,
+    resolved_pairs: List[
+        Tuple[repair_mod.ValidationResult, repair_mod.ValidationResult]
+    ],
+    model: str,
+    attempts: int,
+    sanity_envs_run: List[str],
+    skip_tox: bool,
+    sanity_ok: bool = True,
+    sanity_failure: Optional[dict] = None,
+    workflow_run_url: Optional[str] = None,
+    summary: str = "",
+    changes: Optional[List[dict]] = None,
+    reviewer_notes: Optional[List[dict]] = None,
+    dockerfile_diffs: Optional[List[str]] = None,
+) -> dict:
+    """Snapshot everything the open-pr step needs into a JSON-able dict.
+
+    `sanity_ok=False` plus `sanity_failure` captures the structured failure
+    detail so the open-pr step can surface it in the PR body and mark the
+    PR as a draft for human review. `workflow_run_url`, when set, is the
+    canonical URL of the GitHub Actions run that produced this PR — it
+    will be linked from the PR body. `summary`, `changes` and
+    `reviewer_notes` are the model's own account of its edits
+    (`generate.Change` / `ReviewerNote`). `dockerfile_diffs` is aligned
+    with `resolved_pairs`.
+    """
+    diffs = dockerfile_diffs or []
+    based_on = []
+    for i, (old_res, new_res) in enumerate(resolved_pairs):
+        old_ref, new_ref = old_res.ref, new_res.ref
+        same_repo = (old_ref.org, old_ref.repo) == (new_ref.org, new_ref.repo)
+        based_on.append(
+            {
+                "old_url": old_ref.blob_url(),
+                "new_url": new_ref.blob_url(),
+                "old_ref": old_ref.ref,
+                "new_ref": new_ref.ref,
+                "compare_url": (
+                    f"https://github.com/{new_ref.org}/{new_ref.repo}/compare/"
+                    f"{old_ref.ref}...{new_ref.ref}"
+                    if same_repo
+                    else None
+                ),
+                "diff": diffs[i] if i < len(diffs) else "",
+                "old_repaired_from": (
+                    old_res.repaired_from.blob_url() if old_res.repaired_from else None
+                ),
+                "new_repaired_from": (
+                    new_res.repaired_from.blob_url() if new_res.repaired_from else None
+                ),
+            }
+        )
+    return {
+        "rock_name": rock_name,
+        "old_version": old_version,
+        "target_version": target_version,
+        "based_on": based_on,
+        "model": model,
+        "attempts": attempts,
+        "sanity_envs_run": sanity_envs_run,
+        "skip_tox": skip_tox,
+        "sanity_ok": sanity_ok,
+        "sanity_failure": sanity_failure,
+        "workflow_run_url": workflow_run_url,
+        "summary": summary,
+        "changes": changes or [],
+        "reviewer_notes": reviewer_notes or [],
+    }
+
+
+def branch_name(rock_name: str, target_version: str) -> str:
+    """Spec §6.8: `bump/<rock_name>-<target_version>`."""
+    return f"bump/{rock_name}-{target_version}"
+
+
+def branch_name_with_suffix(
+    rock_name: str, target_version: str, existing: Iterable[str]
+) -> str:
+    """Return the spec branch name, with a unix-timestamp suffix on collision.
+
+    `existing` is the set of branch names already present on the remote;
+    callers are responsible for fetching it (e.g. via `git ls-remote`).
+    """
+    base = branch_name(rock_name, target_version)
+    if base not in set(existing):
+        return base
+    return f"{base}-{int(time.time())}"
+
+
+def commit_message(rock_name: str, target_version: str) -> str:
+    """Conventional-commits style: `chore(<rock>): bump to <version>`."""
+    return f"chore({rock_name}): bump to {target_version}"
+
+
+def pr_title(rock_name: str, target_version: str) -> str:
+    return commit_message(rock_name, target_version)
+
+
+def pr_body(metadata: dict) -> str:
+    """Render the PR body from a metadata dict produced by build_metadata."""
+    rock = metadata["rock_name"]
+    old_version = metadata["old_version"]
+    target_version = metadata["target_version"]
+    model = metadata["model"]
+    attempts = metadata["attempts"]
+    skip_tox = metadata["skip_tox"]
+    sanity_envs_run = metadata["sanity_envs_run"]
+    based_on = metadata["based_on"]
+    sanity_ok = metadata.get("sanity_ok", True)
+    sanity_failure = metadata.get("sanity_failure")
+    workflow_run_url = metadata.get("workflow_run_url")
+
+    lines: List[str] = []
+
+    if not sanity_ok:
+        lines.append("> [!WARNING]")
+        lines.append(
+            "> **Sanity tests did not pass on the CI worker** after all "
+            "configured retries. This PR is opened as a draft so a human "
+            "engineer has a starting point; the generated `rockcraft.yaml` "
+            "may need manual fixes. See *What did not pass* below."
+        )
+        lines.append("")
+
+    lines.append("## Summary")
+    lines.append("")
+    lines.append(
+        f"Bumps `{rock}` from `{old_version}` to upstream `{target_version}`."
+    )
+    if metadata.get("summary"):
+        lines.append("")
+        lines.append(metadata["summary"])
+    lines.append("")
+
+    attention = _reviewer_follow_ups(based_on, metadata.get("reviewer_notes") or [])
+    if attention:
+        lines.append("## Needs reviewer attention")
+        lines.append("")
+        lines.extend(attention)
+
+    changes = metadata.get("changes") or []
+    if changes:
+        lines.append("## Changes")
+        lines.append("")
+        lines.append("_As explained by the model._")
+        lines.append("")
+        lines.extend(f"- {c['reason']}" for c in changes)
+        lines.append("")
+
+    lines.append("## Upstream")
+    lines.append("")
+    for i, entry in enumerate(based_on, start=1):
+        suffix = f" #{i}" if len(based_on) > 1 else ""
+        old_ref = entry.get("old_ref", "old")
+        new_ref = entry.get("new_ref", "new")
+        link = (
+            f"- Dockerfile{suffix}: [`{old_ref}`]({entry['old_url']}) -> "
+            f"[`{new_ref}`]({entry['new_url']})"
+        )
+        if entry.get("compare_url"):
+            link += f" ([compare `{old_ref}...{new_ref}`]({entry['compare_url']}))"
+        lines.append(link)
+    lines.append("")
+    for i, entry in enumerate(based_on, start=1):
+        if entry.get("diff"):
+            suffix = f" #{i}" if len(based_on) > 1 else ""
+            lines.extend(_details_block(f"Dockerfile{suffix} diff", entry["diff"], lang="diff"))
+
+    lines.append("## How this was generated")
+    lines.append("")
+    if workflow_run_url:
+        lines.append(f"- Triggered by [GitHub Actions run]({workflow_run_url}).")
+    lines.append(
+        f"- Generated an updated `{rock}/rockcraft.yaml` using `{model}`, "
+        f"in {attempts} {'attempt' if attempts == 1 else 'attempts'}."
+    )
+    if skip_tox:
+        lines.append(
+            "- **Sanity tests were skipped** (`--skip-tox`); rely on this "
+            "repo's PR CI to validate the build."
+        )
+    elif sanity_envs_run:
+        envs = ", ".join(f"`tox -e {e}`" for e in sanity_envs_run)
+        lines.append(f"- Ran sanity tests on the CI worker: {envs}.")
+    else:
+        lines.append(
+            "- Sanity tests did not complete successfully on the CI worker; "
+            "rely on this repo's PR CI to validate the build."
+        )
+    lines.append("")
+
+    if not sanity_ok and sanity_failure:
+        lines.append("## What did not pass")
+        lines.append("")
+        lines.append(f"_{sanity_failure.get('error', '')}_")
+        lines.append("")
+        for entry in sanity_failure.get("attempts", []):
+            failed_env = entry.get("failed_env")
+            validator_errors = entry.get("validator_errors") or []
+            if failed_env:
+                timed_out = " (timed out)" if entry.get("timed_out") else ""
+                summary = (
+                    f"Attempt {entry['attempt']}: `tox -e {failed_env}` "
+                    f"rc={entry.get('returncode')}{timed_out}"
+                )
+                log_tail = entry.get("log_tail", "") or "(no captured output)"
+                lines.extend(_details_block(summary, log_tail))
+            elif validator_errors:
+                summary = (
+                    f"Attempt {entry['attempt']}: validators rejected the "
+                    "model's output"
+                )
+                # Each error can be multi-line (e.g. embedded diff hunks).
+                # Concatenate with blank-line separators and let the details
+                # block render the full content inside a single code fence.
+                content = "\n\n".join(validator_errors)
+                lines.extend(_details_block(summary, content))
+
+    lines.append("---")
+    lines.append("")
+    lines.append(
+        "This change was AI-generated by the `bump-rock` workflow in "
+        "[canonical/kubeflow-ci](https://github.com/canonical/kubeflow-ci). "
+        "Please review carefully before merging."
+    )
+    return "\n".join(lines) + "\n"
+
+
+def _details_block(summary: str, content: str, lang: str = "") -> List[str]:
+    """Render a collapsed GitHub `<details>` block wrapping a code fence.
+
+    Blank lines around the inner code fence are required for GitHub
+    Markdown to render the fence inside the HTML element. `summary` is
+    inserted as HTML, so callers must escape it.
+    """
+    fence = "```"
+    while fence in content:
+        fence += "`"
+    return [
+        "<details>",
+        f"<summary>{summary}</summary>",
+        "",
+        f"{fence}{lang}",
+        *content.splitlines(),
+        fence,
+        "",
+        "</details>",
+        "",
+    ]
+
+
+def _reviewer_follow_ups(based_on: List[dict], reviewer_notes: List[dict]) -> List[str]:
+    """Lines for the Needs reviewer attention section. Empty list = omitted.
+
+    Covers the model's reviewer notes and auto-repaired `# Based on` URLs.
+    """
+    lines: List[str] = []
+    for note in reviewer_notes:
+        label = NOTE_LABELS.get(note["kind"], note["kind"])
+        lines.append(f"**{label}**")
+        lines.append("")
+        lines.extend(note["detail"].splitlines())
+        lines.append("")
+    for i, entry in enumerate(based_on, start=1):
+        suffix = f" #{i}" if len(based_on) > 1 else ""
+        if entry.get("old_repaired_from"):
+            lines.append(
+                f"- `# Based on` URL{suffix} (old) was auto-repaired during "
+                f"this run."
+            )
+            lines.append(f"  - was: {entry['old_repaired_from']}")
+            lines.append(f"  - now: {entry['old_url']}")
+        if entry.get("new_repaired_from"):
+            lines.append(
+                f"- `# Based on` URL{suffix} (new) was auto-repaired during "
+                f"this run."
+            )
+            lines.append(f"  - was: {entry['new_repaired_from']}")
+            lines.append(f"  - now: {entry['new_url']}")
+    if lines and lines[-1]:
+        lines.append("")
+    return lines

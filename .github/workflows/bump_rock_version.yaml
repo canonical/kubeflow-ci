@@ -4,7 +4,7 @@ name: Bump Rock Version
 # canonical/*-rocks repositories to a new upstream version. The heavy
 # lifting is in the bump-rock CLI under actions/bump-rock/; this YAML is
 # orchestration plus the GitHub-side plumbing (clone with PAT, install
-# rockcraft+LXD, open PR, watch checks). See spec.md for design rationale.
+# rockcraft+LXD, open PR). See actions/bump-rock/README.md for details.
 
 on:
   workflow_dispatch:
@@ -37,17 +37,17 @@ on:
         type: boolean
         default: false
       max_sanity_attempts:
-        description: "How many times to regenerate + re-run sanity tests before giving up (each attempt = LLM call + tox pack/sanity)."
+        description: "How many times to generate a rockcraft.yaml and run tox pack/sanity on it. After a failed attempt, the tox log is sent to the LLM for the next one."
         required: false
         type: string
         default: "3"
       max_llm_retries:
-        description: "Inner LLM retries per generate call when the post-LLM validators reject the output. Total inner attempts = 1 + this value."
+        description: "Within one sanity attempt, how many extra times to ask the LLM when its answer fails the automatic checks run before tox (valid YAML, version updated, every changed line explained). The check errors are sent back to the LLM. LLM calls per attempt = 1 + this value."
         required: false
         type: string
         default: "2"
 
-# Spec §7.2: the workflow's own GITHUB_TOKEN only needs read on this repo.
+# The workflow's own GITHUB_TOKEN only needs read on this repo.
 # Writes to the target rocks repo use ROCKS_REPO_TOKEN explicitly.
 permissions:
   contents: read
@@ -89,7 +89,7 @@ jobs:
         working-directory: kubeflow-ci
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-bump_rock.txt tox
+          pip install -r actions/bump-rock/requirements.txt tox
 
       # Same LXD+rockcraft incantation that build-rock.yaml in
       # canonical/charmed-kubeflow-workflows uses. `sudo --user "$USER"`
@@ -105,7 +105,7 @@ jobs:
           # Workaround for Docker & LXD on the same machine.
           sudo iptables -F FORWARD
           sudo iptables -P FORWARD ACCEPT
-          sudo snap install rockcraft --classic
+          sudo snap install rockcraft --classic --channel=latest/stable
 
       - name: Verify target rock folder exists
         run: |

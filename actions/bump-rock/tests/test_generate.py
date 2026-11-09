@@ -127,7 +127,7 @@ def test_generate_retries_with_validation_errors():
 
 
 def test_generate_returns_invalid_result_after_retry_cap():
-    """Spec §6.6 ladder: after total_attempts the call returns ok=False
+    """After total_attempts the call returns ok=False
     with the last candidate so callers can publish a best-effort PR."""
     doc = rockcraft.load(FIXTURES / "happy")
     bad = _respond(_bumped_yaml(version="0.17.0", ref_in_url="v0.17.0"))

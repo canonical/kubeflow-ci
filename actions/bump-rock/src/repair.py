@@ -2,7 +2,7 @@
 # See LICENSE file for licensing details.
 """Validate and repair upstream # Based on URLs.
 
-Spec §6.4: the `# Based on` URL is human-maintained and is sometimes wrong,
+The `# Based on` URL is human-maintained and is sometimes wrong,
 stale, or pointing at a moved file. Before fetching, validate the URL and,
 when broken, attempt a bounded repair: one GitHub tree listing at the ref,
 look for files whose basename matches. If a unique match is found, use it.
@@ -19,6 +19,7 @@ from typing import List, Optional
 import requests
 
 from .errors import UpstreamRepairError
+from .fetch import retrying_session
 from .urls import UpstreamRef
 
 GITHUB_API = "https://api.github.com"
@@ -112,7 +113,7 @@ def validate_or_repair(
     Network errors during validation are surfaced as `ok=False` with an
     `error` message; they are not re-raised.
     """
-    sess = session or requests.Session()
+    sess = session or retrying_session()
 
     log.info("validating upstream URL %s", ref.blob_url())
     if validate(ref, sess, timeout=timeout):

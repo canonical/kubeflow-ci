@@ -9,13 +9,36 @@ from pathlib import Path
 from typing import Optional
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from .errors import UpstreamFetchError
 from .urls import UpstreamRef
 
 DEFAULT_TIMEOUT = 30  # seconds
+HTTP_RETRIES = 4
 
 log = logging.getLogger("bump-rock.fetch")
+
+
+def retrying_session() -> requests.Session:
+    """A Session that retries GET/HEAD on connection errors, 429 and 5xx.
+
+    Backoff is exponential (1s, 2s, 4s, ...) and honours `Retry-After`. Other
+    statuses such as 404 are returned as-is: URL repair relies on seeing them.
+    """
+    retry = Retry(
+        total=HTTP_RETRIES,
+        backoff_factor=1,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=frozenset({"GET", "HEAD"}),
+        raise_on_status=False,
+    )
+    session = requests.Session()
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
 
 
 @dataclass(frozen=True)
@@ -58,7 +81,7 @@ def fetch_pair(
     timeout: int = DEFAULT_TIMEOUT,
 ) -> DockerfilePair:
     """Fetch both the old and new Dockerfile content for an UpstreamRef pair."""
-    sess = session or requests.Session()
+    sess = session or retrying_session()
     old_text = fetch_text(old_ref, sess, timeout=timeout)
     new_text = fetch_text(new_ref, sess, timeout=timeout)
     return DockerfilePair(

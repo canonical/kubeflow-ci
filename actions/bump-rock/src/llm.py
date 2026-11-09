@@ -30,7 +30,7 @@ DEFAULT_MAX_TOKENS = 16_000
 COPILOT_MAX_TOKENS = 64_000
 REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 DEFAULT_REASONING_EFFORT = "high"
-DEFAULT_TIMEOUT = 300  # seconds; spec §7.3.
+DEFAULT_TIMEOUT = 300  # seconds
 
 COPILOT_BASE_URL = "https://api.githubcopilot.com"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"

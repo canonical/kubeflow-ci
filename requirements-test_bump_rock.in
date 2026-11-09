@@ -1,3 +1,0 @@
--r requirements-bump_rock.in
-pytest
-responses

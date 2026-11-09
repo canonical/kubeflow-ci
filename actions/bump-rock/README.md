@@ -7,28 +7,22 @@ whose only change is that `rockcraft.yaml`.
 
 In CI this runs through the
 [Bump Rock Version](../../.github/workflows/bump_rock_version.yaml)
-workflow. This document covers running it **locally**. The design is in
-[spec.md](../../spec.md).
+workflow. This document covers running it **locally**.
 
 ## Prerequisites
 
-- Python 3.12 and the action's dependencies:
+- Python 3.12 and the action's dependencies, from the repo root:
 
   ```bash
-  pip install -r requirements-bump_rock.txt     # from the repo root
+  python3 -m venv venv
+  . venv/bin/activate
+  pip install -r actions/bump-rock/requirements.txt
   ```
 
 - The `gh` CLI, logged in (`gh auth login`). It is used for the Copilot
   token **and** to open the PR (see the next two sections).
 - For the sanity tests (optional with `--skip-tox`): `tox`, `rockcraft` and
   LXD, as for building any rock locally.
-- A clone of the target rocks repo, on a clean `main`:
-
-  ```bash
-  git clone https://github.com/canonical/pipelines-rocks ~/rocks/pipelines-rocks
-  ```
-
-All commands below run from `actions/bump-rock/`.
 
 ## ⚠️ Copilot token
 
@@ -56,15 +50,15 @@ gh auth switch --user <your-copilot-user>         # if it's the wrong one
 To check that the token works before spending a full run (expect `200`):
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' \
-  -H "Authorization: Bearer $(env -u GITHUB_TOKEN -u GH_TOKEN gh auth token)" \
+TOKEN=$(env -u GITHUB_TOKEN -u GH_TOKEN gh auth token)
+curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer $TOKEN" \
   https://api.githubcopilot.com/models
 ```
 
 Each LLM call counts against that account's Copilot **premium requests**,
 and model thinking (`--reasoning-effort`, default `high`) makes calls more
 expensive. A `run` makes at most `max_sanity_attempts × (1 + max_retries)`
-calls, which is 9 with the defaults.
+calls, which is 9 with the defaults (see *How a run retries*).
 
 To use OpenRouter instead, export `OPENROUTER_API_KEY` and pass
 `--llm openrouter/<vendor>/<model>`.
@@ -103,13 +97,17 @@ Otherwise the PR is opened by a different user than the one who pushed.
 
 ## Running it
 
-Paths below assume the clone from the prerequisites; replace `api-server`
-and `2.18.0` with your rock and target version.
+Replace `api-server` and `2.18.0` with your rock and target version.
 
 ```bash
-cd actions/bump-rock
-ROCK=~/rocks/pipelines-rocks/api-server
+# The target rocks repo; `open-pr` needs it on a clean `main`.
+git clone https://github.com/canonical/pipelines-rocks
+ROCKS_REPO=$PWD/pipelines-rocks
+ROCK=$ROCKS_REPO/api-server
 OUT=/tmp/bump-api-server
+
+# All bump-rock commands run from the action's directory.
+cd <path-to-kubeflow-ci>/actions/bump-rock
 
 # 1. Inspect the rock (no network, no LLM).
 python -m src.bump_rock parse "$ROCK"
@@ -117,30 +115,56 @@ python -m src.bump_rock parse "$ROCK"
 # 2. Check the old and new upstream Dockerfile URLs resolve.
 python -m src.bump_rock validate-urls "$ROCK" --target-version 2.18.0
 
-# 3. Generate only: one LLM pass, no rockcraft pack. Fast prompt iteration.
+# 3. Generate only: one sanity attempt, no rockcraft pack. Fast prompt iteration.
 python -m src.bump_rock run "$ROCK" --target-version 2.18.0 --out "$OUT" --skip-tox
 
 # 4. Full run: generate + tox pack / export-to-docker / sanity, with retries.
 python -m src.bump_rock run "$ROCK" --target-version 2.18.0 --out "$OUT"
 
 # 5. Preview the PR (dry run: prints branch, title and body, touches nothing).
-python -m src.bump_rock open-pr ~/rocks/pipelines-rocks --out-dir "$OUT"
+python -m src.bump_rock open-pr "$ROCKS_REPO" --out-dir "$OUT"
 
 # 6. Commit, push and open the PR (see the two warnings above first).
-python -m src.bump_rock open-pr ~/rocks/pipelines-rocks --out-dir "$OUT" --confirm
+python -m src.bump_rock open-pr "$ROCKS_REPO" --out-dir "$OUT" --confirm
 ```
 
 `run` works on a copy of the rock under `$OUT/work/`, so your clone stays on
 a clean `main` for `open-pr`. Useful `run` flags:
 
-- `--llm copilot/<model>`: pick another Copilot model.
+- `--llm copilot/<model>` or `--llm openrouter/<vendor>/<model>`: pick the
+  LLM (default `copilot/claude-opus-5.5`; OpenRouter needs
+  `OPENROUTER_API_KEY`).
 - `--reasoning-effort low|medium|high|xhigh|max|none`: thinking effort
   (Copilot only).
-- `--max-sanity-attempts N`: outer generate + tox attempts.
-- `--max-retries N`: extra LLM attempts when the validators reject the
-  output.
-- `--allow-sanity-failure`: exit 0 anyway, so `open-pr` publishes a draft
-  PR.
+- `--max-sanity-attempts N` and `--max-retries N`: the two retry limits
+  explained below.
+- `--allow-sanity-failure`: exit with status 0 even when the run did not
+  succeed, i.e. no sanity attempt passed tox, or the LLM never produced an
+  answer that passed the automatic checks. The last generated
+  `rockcraft.yaml` and `metadata.json` are still written, and `open-pr`
+  then opens the PR as a **draft** with the failure logs in its body, so a
+  human has a starting point. Without the flag the run exits with status 1
+  and nothing should be published. CI always sets it.
+
+## How a run retries
+
+A `run` has two nested retry loops:
+
+- **Sanity attempts** (`--max-sanity-attempts`, default 3). One sanity
+  attempt asks the LLM for an updated `rockcraft.yaml`, then runs
+  `tox -e pack`, `tox -e export-to-docker` and `tox -e sanity` on it. If tox
+  fails, the next sanity attempt starts a fresh LLM conversation that
+  includes the YAML and tox log tail of every earlier attempt.
+- **LLM attempts** (`--max-retries`, default 2 extra). Inside one sanity
+  attempt, every LLM answer is checked automatically *before* tox runs: it
+  must be valid YAML, keep `name`, set `version` and the header URLs to the
+  target version, and list every changed line in a `<change>` block. If a
+  check fails, the errors are sent back to the LLM in the same conversation
+  and it answers again, up to `1 + max-retries` answers in total. If none
+  passes, the run stops without trying tox.
+
+In `$OUT/attempts/`, `attempt-N` is the N-th sanity attempt and
+`inner-K` inside it is the K-th LLM attempt.
 
 ## Output directory
 
@@ -149,8 +173,8 @@ a clean `main` for `open-pr`. Useful `run` flags:
 | `rockcraft.yaml.new` | the generated file |
 | `metadata.json` | input for `open-pr`: versions, URLs, model, change reasons, reviewer notes, sanity result |
 | `Dockerfile.old` / `Dockerfile.new` | the fetched upstream files |
-| `attempts/attempt-N/` | per outer attempt: candidate YAML and `tox-<env>.log` tails |
-| `attempts/attempt-N/inner-K/` | raw LLM response (change list, notes, YAML) and validator errors |
+| `attempts/attempt-N/` | per sanity attempt: candidate YAML and `tox-<env>.log` tails |
+| `attempts/attempt-N/inner-K/` | per LLM attempt: raw LLM response (change list, notes, YAML) and check errors |
 | `work/` | the rock copy that tox ran in |
 
 ## Troubleshooting

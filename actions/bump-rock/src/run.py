@@ -2,7 +2,7 @@
 # See LICENSE file for licensing details.
 """Full pre-PR pipeline: generate + sanity tests, with capped retry.
 
-Spec §6.7 contract:
+Contract:
     - 1 initial sanity attempt + up to MAX_SANITY_ATTEMPTS - 1 re-generations.
     - On sanity failure, the tox log tail is fed back to the LLM as
       `additional_context` for the next generate call.
@@ -229,7 +229,7 @@ def _build_history_context(attempts: List[AttemptOutcome]) -> str:
 def prepare_work_dir(rock_dir: Path, work_dir: Path) -> Path:
     """Copy the rock folder into `work_dir` for tox to chew on.
 
-    Spec safety rail: the workflow always operates on a copy, never the
+    Safety rail: the workflow always operates on a copy, never the
     user's checkout. Caller is responsible for managing the lifetime of
     `work_dir`.
     """
@@ -270,7 +270,7 @@ def _is_build_artifact(rel_path: Path) -> bool:
 
 
 def assert_only_rockcraft_changed(rock_dir: Path, work_dir: Path) -> None:
-    """Defence in depth for spec §6.6: no file other than rockcraft.yaml differs.
+    """Defence in depth: no file other than rockcraft.yaml differs.
 
     Walks both trees and compares file bytes. Raises BumpRockError on any
     drift outside rockcraft.yaml. Files produced by tox / rockcraft pack /

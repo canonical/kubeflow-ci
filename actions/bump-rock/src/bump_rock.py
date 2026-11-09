@@ -2,7 +2,7 @@
 # See LICENSE file for licensing details.
 """Command-line entrypoint for the bump-rock workflow.
 
-Each stage from the spec (parse, validate-urls, fetch, generate, run,
+Each pipeline stage (parse, validate-urls, fetch, generate, run,
 open-pr) is exposed as a sub-command so that it can be exercised
 independently while developing locally, without burning LLM tokens or
 touching GitHub. The CLI is rock-agnostic: it works for any rock folder
@@ -107,7 +107,7 @@ def cmd_validate_urls(args: argparse.Namespace) -> int:
     doc = rockcraft.load(Path(args.rock_dir))
     old_refs = parse_all(doc.based_on_urls)
 
-    session = requests.Session()
+    session = fetch_mod.retrying_session()
     token = _github_token_from_env()
     timeout = args.timeout
 
@@ -153,7 +153,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
     doc = rockcraft.load(Path(args.rock_dir))
     old_refs = parse_all(doc.based_on_urls)
 
-    session = requests.Session()
+    session = fetch_mod.retrying_session()
     token = _github_token_from_env()
     out_dir = Path(args.out)
 
@@ -217,13 +217,13 @@ def cmd_generate(args: argparse.Namespace) -> int:
     """Implement `bump-rock generate <rock_dir> --target-version X --out DIR`.
 
     Runs the full pre-PR pipeline: parse, validate-or-repair, fetch, LLM
-    generate (with the §6.6 validators and capped retries), then writes
+    generate (with the automatic checks and capped retries), then writes
     both the proposed rockcraft.yaml and debug artifacts to `--out`.
     """
     doc = rockcraft.load(Path(args.rock_dir))
     old_refs = parse_all(doc.based_on_urls)
 
-    session = requests.Session()
+    session = fetch_mod.retrying_session()
     token = _github_token_from_env()
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -268,7 +268,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
 def cmd_run(args: argparse.Namespace) -> int:
     """Implement `bump-rock run <rock_dir> --target-version X --out DIR`.
 
-    Full pre-PR pipeline per spec §6.6+§6.7: parse, validate-or-repair,
+    Full pre-PR pipeline: parse, validate-or-repair,
     fetch, then generate-+-sanity-test with capped retry. Operates on a
     copy of the rock folder under `<out>/work/` so the user's source tree
     is never touched.
@@ -277,7 +277,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     doc = rockcraft.load(rock_dir)
     old_refs = parse_all(doc.based_on_urls)
 
-    session = requests.Session()
+    session = fetch_mod.retrying_session()
     token = _github_token_from_env()
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -631,13 +631,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--max-retries",
         type=int,
         default=generate_mod.MAX_LLM_RETRIES,
-        help="Inner LLM retries per generate call.",
+        help="Extra LLM calls within one sanity attempt when the answer fails "
+        "the automatic checks; the errors are sent back to the model.",
     )
     p_run.add_argument(
         "--max-sanity-attempts",
         type=int,
         default=run_mod.MAX_SANITY_ATTEMPTS,
-        help="Outer attempts before giving up (each = generate + tox).",
+        help="Sanity attempts before giving up (each = LLM generation + tox).",
     )
     p_run.add_argument(
         "--skip-tox",

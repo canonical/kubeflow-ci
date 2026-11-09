@@ -95,7 +95,7 @@ def parse_all(urls: Iterable[str]) -> List[UpstreamRef]:
 
     A single rockcraft.yaml derived from multiple Dockerfiles is supported
     only when those Dockerfiles all live at the same upstream ref. Mixed
-    refs are out of scope for v1 (spec §6.3) and must fail fast.
+    refs are out of scope and must fail fast.
 
     Raises:
         UpstreamUrlError: if URLs reference different refs.

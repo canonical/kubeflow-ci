@@ -98,14 +98,14 @@ def build_metadata(
 
 
 def branch_name(rock_name: str, target_version: str) -> str:
-    """Spec §6.8: `bump/<rock_name>-<target_version>`."""
+    """`bump/<rock_name>-<target_version>`."""
     return f"bump/{rock_name}-{target_version}"
 
 
 def branch_name_with_suffix(
     rock_name: str, target_version: str, existing: Iterable[str]
 ) -> str:
-    """Return the spec branch name, with a unix-timestamp suffix on collision.
+    """Return the branch name, with a unix-timestamp suffix on collision.
 
     `existing` is the set of branch names already present on the remote;
     callers are responsible for fetching it (e.g. via `git ls-remote`).

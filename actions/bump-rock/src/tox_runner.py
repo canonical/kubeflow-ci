@@ -3,7 +3,7 @@
 """Subprocess wrapper for tox commands.
 
 The wrapper captures combined stdout+stderr, returns a tail of the log
-(capped to keep prompt sizes sane for the §6.7 retry feedback loop), and
+(capped to keep prompt sizes sane for the sanity-attempt feedback loop), and
 surfaces a structured TestResult instead of raising on non-zero exit.
 No per-env time limits are enforced — `tox -e <env>` runs until it
 finishes on its own.

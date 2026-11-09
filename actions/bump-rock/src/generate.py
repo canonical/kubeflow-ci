@@ -2,7 +2,7 @@
 # See LICENSE file for licensing details.
 """Stage 4: ask an LLM for an updated rockcraft.yaml, then validate it.
 
-This module implements spec §6.6:
+This module:
     * Build a prompt from the current rockcraft.yaml + old/new upstream
       Dockerfile pairs + target version.
     * Call the configured LLM.
@@ -124,7 +124,7 @@ def build_user_prompt(
     """Render the user-side prompt that frames the inputs for the model.
 
     `additional_context`, if given, is appended at the end and is intended
-    for the outer sanity-retry loop (§6.7) to feed back the tail of a tox
+    for the sanity-attempt loop in `run.py` to feed back the tail of a tox
     failure log from the previous attempt.
     """
     sections: List[str] = [f"Target version: {target_version}"]
@@ -317,12 +317,12 @@ def generate(
 ) -> GenerateResult:
     """Drive the LLM until it produces a passing rockcraft.yaml or we give up.
 
-    Spec §6.6: at most `1 + max_retries` total attempts. On validation
+    At most `1 + max_retries` total attempts. On validation
     failure, the next attempt is preceded by the previous assistant turn
     and a new user turn carrying the validator errors.
 
     `additional_context` is folded into the initial user prompt; it is how
-    the outer sanity-retry loop (§6.7) feeds back the tail of a tox
+    the sanity-attempt loop in `run.py` feeds back the tail of a tox
     failure log from a previous attempt.
 
     Raises:

@@ -1,13 +1,13 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for LLM provider selection and the Copilot client."""
+
 import json
 import subprocess
 from unittest.mock import patch
 
 import pytest
 import responses
-
 from src import llm
 
 

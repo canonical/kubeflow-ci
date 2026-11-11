@@ -10,6 +10,7 @@ Both `blob` and `raw` forms are accepted on input; outputs always use the
 `blob` form for display (matching what humans write) and derive the raw
 download URL on demand.
 """
+
 from __future__ import annotations
 
 import re
@@ -40,8 +41,7 @@ class UpstreamRef:
     def raw_url(self) -> str:
         """Return the raw.githubusercontent.com URL used for downloads."""
         return (
-            f"https://raw.githubusercontent.com/"
-            f"{self.org}/{self.repo}/{self.ref}/{self.path}"
+            f"https://raw.githubusercontent.com/" f"{self.org}/{self.repo}/{self.ref}/{self.path}"
         )
 
     def with_ref(self, new_ref: str) -> "UpstreamRef":
@@ -68,9 +68,7 @@ def parse(url: str) -> UpstreamRef:
     if parsed.netloc == "github.com":
         match = _GITHUB_URL_RE.match(parsed.path)
         if not match:
-            raise UpstreamUrlError(
-                f"not a recognised github.com blob/raw URL: {url!r}"
-            )
+            raise UpstreamUrlError(f"not a recognised github.com blob/raw URL: {url!r}")
         return UpstreamRef(
             org=match.group("org"),
             repo=match.group("repo"),
@@ -81,9 +79,7 @@ def parse(url: str) -> UpstreamRef:
     if parsed.netloc == "raw.githubusercontent.com":
         parts = parsed.path.lstrip("/").split("/", 3)
         if len(parts) != 4:
-            raise UpstreamUrlError(
-                f"not a recognised raw.githubusercontent.com URL: {url!r}"
-            )
+            raise UpstreamUrlError(f"not a recognised raw.githubusercontent.com URL: {url!r}")
         org, repo, ref, path = parts
         return UpstreamRef(org=org, repo=repo, ref=ref, path=path)
 

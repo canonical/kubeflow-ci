@@ -15,6 +15,7 @@ derived from, in either of the forms:
 This module extracts those URLs and the YAML `version:` field. It does not
 attempt to round-trip the YAML; downstream stages handle rewriting.
 """
+
 from __future__ import annotations
 
 import re
@@ -26,9 +27,7 @@ import yaml
 
 from .errors import RockcraftParseError
 
-BASED_ON_RE = re.compile(
-    r"#\s*(?:Based\s+on|Dockerfile|Source):?\s+(https?://\S+)", re.IGNORECASE
-)
+BASED_ON_RE = re.compile(r"#\s*(?:Based\s+on|Dockerfile|Source):?\s+(https?://\S+)", re.IGNORECASE)
 
 
 @dataclass(frozen=True)

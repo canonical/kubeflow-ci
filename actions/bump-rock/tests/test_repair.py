@@ -1,9 +1,9 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for URL validation and bounded repair."""
+
 import pytest
 import responses
-
 from src import repair, urls
 
 REF = urls.UpstreamRef(org="k", repo="k", ref="v1", path="python/pmml.Dockerfile")
@@ -14,9 +14,7 @@ def _raw(path):
 
 
 def _tree(repo="k/k", ref="v1"):
-    return (
-        f"https://api.github.com/repos/{repo}/git/trees/{ref}?recursive=1"
-    )
+    return f"https://api.github.com/repos/{repo}/git/trees/{ref}?recursive=1"
 
 
 @responses.activate

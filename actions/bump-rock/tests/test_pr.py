@@ -1,6 +1,7 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for PR metadata, branch naming, and the body template."""
+
 from src import pr, repair, urls
 
 OLD_REF = urls.UpstreamRef(
@@ -213,7 +214,10 @@ def test_pr_body_renders_model_summary_changes_and_notes():
     md = _happy_metadata(
         summary="Upstream now derives the Argo CLI version from `go.mod`.",
         changes=[
-            {"reason": "Updated `source-tag` in the `builder` part", "lines": ["+  source-tag: 2"]},
+            {
+                "reason": "Updated `source-tag` in the `builder` part",
+                "lines": ["+  source-tag: 2"],
+            },
             {"reason": "Derived `ARGO_VERSION` from <go.mod>", "lines": ["+  go list -m"]},
         ],
         reviewer_notes=[
@@ -225,7 +229,10 @@ def test_pr_body_renders_model_summary_changes_and_notes():
     assert "Upstream now derives the Argo CLI version from `go.mod`." in body
     # Reviewer attention comes before the change list.
     assert body.index("## Needs reviewer attention") < body.index("## Changes")
-    assert "**Dropped local deviation from upstream**\n\n- ARGO_VERSION: v3.7.17\nsee issue 58" in body
+    assert (
+        "**Dropped local deviation from upstream**\n\n- ARGO_VERSION: v3.7.17\nsee issue 58"
+        in body
+    )
     assert "**Suggested test / tox change (not applied)**\n\ncheck /bin/argo" in body
     assert (
         "- Updated `source-tag` in the `builder` part\n"
@@ -247,7 +254,10 @@ def test_pr_body_links_compare_and_embeds_dockerfile_diff():
         dockerfile_diffs=["--- v0.17.0\n+++ v0.18.0\n-FROM a\n+FROM b"],
     )
     body = pr.pr_body(md)
-    assert "[compare `v0.17.0...v0.18.0`](https://github.com/kserve/kserve/compare/v0.17.0...v0.18.0)" in body
+    assert (
+        "[compare `v0.17.0...v0.18.0`](https://github.com/kserve/kserve/compare/v0.17.0...v0.18.0)"
+        in body
+    )
     assert "<summary>Dockerfile diff</summary>\n\n```diff\n--- v0.17.0" in body
     assert "in 1 attempt." in body
     assert body.isascii()

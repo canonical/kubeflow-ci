@@ -5,6 +5,7 @@
 Pure functions only — no subprocess calls, no git operations. Those live
 in `git_ops`. Keeping the shape logic here makes it cheap to unit-test.
 """
+
 from __future__ import annotations
 
 import time
@@ -27,9 +28,7 @@ def build_metadata(
     rock_name: str,
     old_version: str,
     target_version: str,
-    resolved_pairs: List[
-        Tuple[repair_mod.ValidationResult, repair_mod.ValidationResult]
-    ],
+    resolved_pairs: List[Tuple[repair_mod.ValidationResult, repair_mod.ValidationResult]],
     model: str,
     attempts: int,
     sanity_envs_run: List[str],
@@ -102,9 +101,7 @@ def branch_name(rock_name: str, target_version: str) -> str:
     return f"bump/{rock_name}-{target_version}"
 
 
-def branch_name_with_suffix(
-    rock_name: str, target_version: str, existing: Iterable[str]
-) -> str:
+def branch_name_with_suffix(rock_name: str, target_version: str, existing: Iterable[str]) -> str:
     """Return the branch name, with a unix-timestamp suffix on collision.
 
     `existing` is the set of branch names already present on the remote;
@@ -125,7 +122,7 @@ def pr_title(rock_name: str, target_version: str) -> str:
     return commit_message(rock_name, target_version)
 
 
-def pr_body(metadata: dict) -> str:
+def pr_body(metadata: dict) -> str:  # noqa: C901
     """Render the PR body from a metadata dict produced by build_metadata."""
     rock = metadata["rock_name"]
     old_version = metadata["old_version"]
@@ -153,9 +150,7 @@ def pr_body(metadata: dict) -> str:
 
     lines.append("## Summary")
     lines.append("")
-    lines.append(
-        f"Bumps `{rock}` from `{old_version}` to upstream `{target_version}`."
-    )
+    lines.append(f"Bumps `{rock}` from `{old_version}` to upstream `{target_version}`.")
     if metadata.get("summary"):
         lines.append("")
         lines.append(metadata["summary"])
@@ -235,10 +230,7 @@ def pr_body(metadata: dict) -> str:
                 log_tail = entry.get("log_tail", "") or "(no captured output)"
                 lines.extend(_details_block(summary, log_tail))
             elif validator_errors:
-                summary = (
-                    f"Attempt {entry['attempt']}: validators rejected the "
-                    "model's output"
-                )
+                summary = f"Attempt {entry['attempt']}: validators rejected the " "model's output"
                 # Each error can be multi-line (e.g. embedded diff hunks).
                 # Concatenate with blank-line separators and let the details
                 # block render the full content inside a single code fence.
@@ -294,15 +286,13 @@ def _reviewer_follow_ups(based_on: List[dict], reviewer_notes: List[dict]) -> Li
         suffix = f" #{i}" if len(based_on) > 1 else ""
         if entry.get("old_repaired_from"):
             lines.append(
-                f"- `# Based on` URL{suffix} (old) was auto-repaired during "
-                f"this run."
+                f"- `# Based on` URL{suffix} (old) was auto-repaired during " f"this run."
             )
             lines.append(f"  - was: {entry['old_repaired_from']}")
             lines.append(f"  - now: {entry['old_url']}")
         if entry.get("new_repaired_from"):
             lines.append(
-                f"- `# Based on` URL{suffix} (new) was auto-repaired during "
-                f"this run."
+                f"- `# Based on` URL{suffix} (new) was auto-repaired during " f"this run."
             )
             lines.append(f"  - was: {entry['new_repaired_from']}")
             lines.append(f"  - now: {entry['new_url']}")

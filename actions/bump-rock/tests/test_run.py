@@ -1,10 +1,10 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for the full pre-PR pipeline (generate + sanity, capped retry)."""
+
 from pathlib import Path
 
 import pytest
-
 from src import rockcraft, run, tox_runner
 from src.errors import BumpRockError
 from src.fetch import DockerfilePair
@@ -26,8 +26,8 @@ def _good_yaml(version="0.18.0", ref="v0.18.0"):
         "# See ../CONTRIBUTING.md for more details about the patterns used in this rock.\n"
         f"name: pmmlserver\n"
         f"summary: Pmml server for Kserve deployments\n"
-        f"description: \"Kserve Pmml server\"\n"
-        f"version: \"{version}\"\n"
+        f'description: "Kserve Pmml server"\n'
+        f'version: "{version}"\n'
         f"license: Apache-2.0\n"
         f"base: ubuntu@24.04\n"
         f"platforms:\n"

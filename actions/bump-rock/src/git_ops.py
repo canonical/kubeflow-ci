@@ -6,6 +6,7 @@ Everything in this module shells out — no Python-level git operations.
 The wrappers are deliberately tiny so they can be patched in tests via
 `unittest.mock.patch('subprocess.run', ...)`.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -57,14 +58,10 @@ def assert_clean_main(repo: Path) -> None:
     """Refuse to operate on a dirty checkout or a non-main branch."""
     branch = _run(["git", "branch", "--show-current"], cwd=repo).stdout.strip()
     if branch != "main":
-        raise BumpRockError(
-            f"target repo at {repo} is on branch {branch!r}, expected 'main'"
-        )
+        raise BumpRockError(f"target repo at {repo} is on branch {branch!r}, expected 'main'")
     status = _run(["git", "status", "--porcelain"], cwd=repo).stdout
     if status.strip():
-        raise BumpRockError(
-            f"target repo at {repo} has uncommitted changes; cowardly refusing"
-        )
+        raise BumpRockError(f"target repo at {repo} has uncommitted changes; cowardly refusing")
 
 
 def remote_branches(repo: Path) -> List[str]:

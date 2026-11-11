@@ -9,6 +9,7 @@ Contract:
     - `tests/` (and every file other than `rockcraft.yaml`) is never touched.
     - When the cap is hit, no PR is opened; the last failure log is surfaced.
 """
+
 from __future__ import annotations
 
 import logging
@@ -146,9 +147,7 @@ def run(
                 reviewer_notes=gen.reviewer_notes,
             )
             attempts.append(outcome)
-            return RunResult(
-                ok=True, attempts=attempts, final_rockcraft_yaml=gen.rockcraft_yaml
-            )
+            return RunResult(ok=True, attempts=attempts, final_rockcraft_yaml=gen.rockcraft_yaml)
 
         log.info("running tox sanity pipeline in %s", work_dir)
         results = tox_mod.run_sanity_pipeline(work_dir, runner=runner)
@@ -166,9 +165,7 @@ def run(
 
         if outcome.ok:
             log.info("sanity pipeline passed on attempt %d", attempt_no)
-            return RunResult(
-                ok=True, attempts=attempts, final_rockcraft_yaml=gen.rockcraft_yaml
-            )
+            return RunResult(ok=True, attempts=attempts, final_rockcraft_yaml=gen.rockcraft_yaml)
 
         failed = tox_mod.first_failure(results)
         assert failed is not None  # ok=False implies at least one failure
@@ -212,12 +209,9 @@ def _build_history_context(attempts: List[AttemptOutcome]) -> str:
         failed = tox_mod.first_failure(outcome.test_results)
         if failed is None:
             continue
-        descriptor = (
-            "timed out" if failed.timed_out else f"returncode {failed.returncode}"
-        )
+        descriptor = "timed out" if failed.timed_out else f"returncode {failed.returncode}"
         sections.append(
-            f"--- attempt {outcome.attempt} — `tox -e {failed.env}` "
-            f"failed ({descriptor}) ---"
+            f"--- attempt {outcome.attempt} — `tox -e {failed.env}` " f"failed ({descriptor}) ---"
         )
         sections.append("rockcraft.yaml produced:")
         sections.append(outcome.rockcraft_yaml)
@@ -251,9 +245,7 @@ _IGNORE_PATH_PREFIXES = (
     "prime",
 )
 
-_IGNORE_GLOBS = (
-    "*.rock",  # rockcraft pack output (also gitignored upstream)
-)
+_IGNORE_GLOBS = ("*.rock",)  # rockcraft pack output (also gitignored upstream)
 
 
 def _is_build_artifact(rel_path: Path) -> bool:

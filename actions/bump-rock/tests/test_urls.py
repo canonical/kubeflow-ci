@@ -1,8 +1,8 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for upstream URL parsing."""
-import pytest
 
+import pytest
 from src import urls
 from src.errors import UpstreamUrlError
 
@@ -33,9 +33,7 @@ def test_parse_round_trip_urls():
 def test_with_ref_swaps_version():
     ref = urls.parse("https://github.com/k/k/blob/v1.0.0/p/Dockerfile")
     assert ref.with_ref("v2.0.0").ref == "v2.0.0"
-    assert ref.with_ref("v2.0.0").blob_url() == (
-        "https://github.com/k/k/blob/v2.0.0/p/Dockerfile"
-    )
+    assert ref.with_ref("v2.0.0").blob_url() == ("https://github.com/k/k/blob/v2.0.0/p/Dockerfile")
 
 
 def test_parse_rejects_bad_host():

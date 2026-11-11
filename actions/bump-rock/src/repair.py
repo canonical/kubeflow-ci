@@ -10,6 +10,7 @@ Multiple matches are returned to the caller for further (LLM-assisted)
 disambiguation in a later stage. Never trust a guessed URL without
 re-validating it by HTTP fetch.
 """
+
 from __future__ import annotations
 
 import logging
@@ -122,9 +123,7 @@ def validate_or_repair(
     log.info("  -> 404, attempting bounded repair via tree listing")
 
     try:
-        paths = list_repo_tree(
-            ref.org, ref.repo, ref.ref, sess, timeout=timeout, token=token
-        )
+        paths = list_repo_tree(ref.org, ref.repo, ref.ref, sess, timeout=timeout, token=token)
     except UpstreamRepairError as exc:
         log.warning("  -> tree listing failed: %s", exc)
         return ValidationResult(ref=ref, ok=False, error=str(exc))
@@ -134,16 +133,11 @@ def validate_or_repair(
         return ValidationResult(
             ref=ref,
             ok=False,
-            error=(
-                f"no file named {ref.basename!r} found in "
-                f"{ref.org}/{ref.repo}@{ref.ref}"
-            ),
+            error=(f"no file named {ref.basename!r} found in " f"{ref.org}/{ref.repo}@{ref.ref}"),
         )
 
     if len(matches) == 1:
-        candidate = UpstreamRef(
-            org=ref.org, repo=ref.repo, ref=ref.ref, path=matches[0]
-        )
+        candidate = UpstreamRef(org=ref.org, repo=ref.repo, ref=ref.ref, path=matches[0])
         log.info("  -> unique candidate %s, re-validating", candidate.blob_url())
         if validate(candidate, sess, timeout=timeout):
             log.info("  -> repaired")
@@ -164,8 +158,5 @@ def validate_or_repair(
         ref=ref,
         ok=False,
         candidates=candidate_refs,
-        error=(
-            f"multiple files named {ref.basename!r} in tree: "
-            + ", ".join(p for p in matches)
-        ),
+        error=(f"multiple files named {ref.basename!r} in tree: " + ", ".join(p for p in matches)),
     )

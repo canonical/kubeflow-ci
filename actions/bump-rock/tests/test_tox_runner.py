@@ -1,6 +1,7 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for the tox runner wrapper."""
+
 from unittest.mock import MagicMock, patch
 
 from src import tox_runner

@@ -8,6 +8,7 @@ without caring which provider is on the other end. Clients are picked by a
 talk to the OpenAI-compatible chat-completions endpoints of GitHub Copilot
 or OpenRouter. A MockClient backs the unit tests.
 """
+
 from __future__ import annotations
 
 import json
@@ -152,9 +153,7 @@ class OpenRouterClient:
     def complete(self, system: str, messages: List[Message]) -> str:
         api_key = self.api_key or os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
-            raise RuntimeError(
-                "OPENROUTER_API_KEY is not set; required to call OpenRouter."
-            )
+            raise RuntimeError("OPENROUTER_API_KEY is not set; required to call OpenRouter.")
         return _chat_completion(
             provider="OpenRouter",
             url=f"{self.base_url}/chat/completions",

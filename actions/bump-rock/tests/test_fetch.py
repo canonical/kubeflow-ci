@@ -1,6 +1,7 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for the upstream fetch helpers."""
+
 from src import fetch
 
 

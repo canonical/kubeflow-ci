@@ -1,6 +1,7 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Fetch old and new upstream Dockerfiles for a (ref, target_version) pair."""
+
 from __future__ import annotations
 
 import logging
@@ -66,9 +67,7 @@ def fetch_text(
     log.info("fetching %s", ref.raw_url())
     resp = sess.get(ref.raw_url(), timeout=timeout, allow_redirects=True)
     if resp.status_code != 200:
-        raise UpstreamFetchError(
-            f"failed to fetch {ref.raw_url()}: HTTP {resp.status_code}"
-        )
+        raise UpstreamFetchError(f"failed to fetch {ref.raw_url()}: HTTP {resp.status_code}")
     log.info("  -> %d bytes", len(resp.text))
     return resp.text
 
@@ -84,9 +83,7 @@ def fetch_pair(
     sess = session or retrying_session()
     old_text = fetch_text(old_ref, sess, timeout=timeout)
     new_text = fetch_text(new_ref, sess, timeout=timeout)
-    return DockerfilePair(
-        old_ref=old_ref, new_ref=new_ref, old_text=old_text, new_text=new_text
-    )
+    return DockerfilePair(old_ref=old_ref, new_ref=new_ref, old_text=old_text, new_text=new_text)
 
 
 def write_pair_to_disk(pair: DockerfilePair, out_dir: Path) -> dict:

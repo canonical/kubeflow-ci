@@ -8,6 +8,7 @@ surfaces a structured TestResult instead of raising on non-zero exit.
 No per-env time limits are enforced — `tox -e <env>` runs until it
 finishes on its own.
 """
+
 from __future__ import annotations
 
 import collections

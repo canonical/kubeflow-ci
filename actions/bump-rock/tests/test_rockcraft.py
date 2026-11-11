@@ -1,10 +1,10 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for rockcraft.yaml parsing."""
+
 from pathlib import Path
 
 import pytest
-
 from src import rockcraft
 from src.errors import RockcraftParseError
 
@@ -47,9 +47,7 @@ def test_extract_stops_at_first_non_comment():
         "name: foo\n"
         "# Based on https://github.com/x/y/blob/v9/D\n"
     )
-    assert rockcraft._extract_based_on_urls(text) == [
-        "https://github.com/a/b/blob/v1/D"
-    ]
+    assert rockcraft._extract_based_on_urls(text) == ["https://github.com/a/b/blob/v1/D"]
 
 
 def test_extract_accepts_dockerfile_header():

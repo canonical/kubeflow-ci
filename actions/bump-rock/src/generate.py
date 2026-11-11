@@ -14,6 +14,7 @@ This module:
     * On validation failure, append the error to the conversation and ask
       the model to fix it, up to MAX_LLM_RETRIES additional times.
 """
+
 from __future__ import annotations
 
 import difflib
@@ -25,13 +26,13 @@ from typing import List, Tuple
 
 import yaml
 
-log = logging.getLogger("bump-rock.generate")
-
 from .errors import BumpRockError
 from .fetch import DockerfilePair
 from .llm import LLMClient, Message
 from .rockcraft import BASED_ON_RE, RockcraftDoc, _extract_based_on_urls
 from .urls import UpstreamRef, parse_all
+
+log = logging.getLogger("bump-rock.generate")
 
 MAX_LLM_RETRIES = 2  # additional attempts after the first; total = 3.
 
@@ -256,7 +257,7 @@ def strip_fences(text: str) -> str:
     return body
 
 
-def validate_output(
+def validate_output(  # noqa: C901
     new_yaml: str, original: RockcraftDoc, target_version: str
 ) -> List[str]:
     """Return a list of validator error messages. Empty list = passing."""
@@ -271,9 +272,7 @@ def validate_output(
         return ["output YAML top level must be a mapping"]
 
     if str(doc.get("name", "")) != original.name:
-        errors.append(
-            f"`name` changed: expected {original.name!r}, got {doc.get('name')!r}"
-        )
+        errors.append(f"`name` changed: expected {original.name!r}, got {doc.get('name')!r}")
 
     yaml_version_expected = target_version.lstrip("v")
     actual_version = str(doc.get("version", "")).lstrip("v")
@@ -408,6 +407,8 @@ def generate(
     )
 
 
-def fetched_pairs_to_refs(pairs: List[DockerfilePair]) -> Tuple[List[UpstreamRef], List[UpstreamRef]]:
+def fetched_pairs_to_refs(
+    pairs: List[DockerfilePair],
+) -> Tuple[List[UpstreamRef], List[UpstreamRef]]:
     """Split a list of DockerfilePairs into parallel lists of (old, new) refs."""
     return [p.old_ref for p in pairs], [p.new_ref for p in pairs]

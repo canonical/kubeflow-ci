@@ -14,6 +14,7 @@ Examples:
     bump-rock validate-urls <rock-folder> --target-version vX.Y.Z
     bump-rock fetch <rock-folder> --target-version vX.Y.Z --out tmp/
 """
+
 from __future__ import annotations
 
 import argparse
@@ -115,12 +116,8 @@ def cmd_validate_urls(args: argparse.Namespace) -> int:
     overall_ok = True
     for old_ref in old_refs:
         new_ref = old_ref.with_ref(args.target_version)
-        old_res = repair_mod.validate_or_repair(
-            old_ref, session, timeout=timeout, token=token
-        )
-        new_res = repair_mod.validate_or_repair(
-            new_ref, session, timeout=timeout, token=token
-        )
+        old_res = repair_mod.validate_or_repair(old_ref, session, timeout=timeout, token=token)
+        new_res = repair_mod.validate_or_repair(new_ref, session, timeout=timeout, token=token)
         if not (old_res.ok and new_res.ok):
             overall_ok = False
         results.append(
@@ -194,9 +191,7 @@ def _resolve_pairs(
     resolved: List[Tuple[repair_mod.ValidationResult, repair_mod.ValidationResult]] = []
     for old_ref in old_refs:
         new_ref_target = old_ref.with_ref(target_version)
-        old_res = repair_mod.validate_or_repair(
-            old_ref, session, timeout=timeout, token=token
-        )
+        old_res = repair_mod.validate_or_repair(old_ref, session, timeout=timeout, token=token)
         new_res = repair_mod.validate_or_repair(
             new_ref_target, session, timeout=timeout, token=token
         )
@@ -206,8 +201,7 @@ def _resolve_pairs(
             )
         if not new_res.ok:
             raise BumpRockError(
-                f"cannot resolve new upstream URL {new_ref_target.blob_url()}: "
-                f"{new_res.error}"
+                f"cannot resolve new upstream URL {new_ref_target.blob_url()}: " f"{new_res.error}"
             )
         resolved.append((old_res, new_res))
     return resolved
@@ -228,9 +222,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    resolved_pairs = _resolve_pairs(
-        old_refs, args.target_version, session, args.timeout, token
-    )
+    resolved_pairs = _resolve_pairs(old_refs, args.target_version, session, args.timeout, token)
     fetched: List[fetch_mod.DockerfilePair] = []
     for old_res, new_res in resolved_pairs:
         pair = fetch_mod.fetch_pair(old_res.ref, new_res.ref, session, timeout=args.timeout)
@@ -282,9 +274,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    resolved_pairs = _resolve_pairs(
-        old_refs, args.target_version, session, args.timeout, token
-    )
+    resolved_pairs = _resolve_pairs(old_refs, args.target_version, session, args.timeout, token)
     fetched: List[fetch_mod.DockerfilePair] = []
     for old_res, new_res in resolved_pairs:
         pair = fetch_mod.fetch_pair(old_res.ref, new_res.ref, session, timeout=args.timeout)
@@ -328,9 +318,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     final_path.write_text(result.final_rockcraft_yaml or "")
 
     sanity_envs = (
-        []
-        if args.skip_tox
-        else [tr.env for tr in result.attempts[-1].test_results if tr.ok]
+        [] if args.skip_tox else [tr.env for tr in result.attempts[-1].test_results if tr.ok]
     )
     sanity_failure = _sanity_failure_summary(result) if not result.ok else None
     metadata = pr_mod.build_metadata(
@@ -381,8 +369,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                     "Exiting 0 because --allow-sanity-failure is set; the "
                     "open-pr step will publish a draft PR for human review."
                     if args.allow_sanity_failure
-                    else "Re-run with --allow-sanity-failure to publish a "
-                    "draft PR anyway."
+                    else "Re-run with --allow-sanity-failure to publish a " "draft PR anyway."
                 )
             ),
         }
@@ -448,9 +435,7 @@ def _write_attempt_artifacts(out_dir: Path, result: run_mod.RunResult) -> None:
                 else []
             )
             if errors:
-                (inner_dir / "validator-errors.txt").write_text(
-                    "\n\n".join(errors)
-                )
+                (inner_dir / "validator-errors.txt").write_text("\n\n".join(errors))
 
 
 def cmd_open_pr(args: argparse.Namespace) -> int:

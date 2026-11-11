@@ -1,6 +1,7 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for the LLM generate stage (prompt, validators, retry cap)."""
+
 from pathlib import Path
 
 from src import generate, rockcraft
@@ -40,8 +41,8 @@ def _bumped_yaml(version="0.18.0", ref_in_url="v0.18.0", name="pmmlserver"):
         "# See ../CONTRIBUTING.md for more details about the patterns used in this rock.\n"
         f"name: {name}\n"
         "summary: Pmml server for Kserve deployments\n"
-        "description: \"Kserve Pmml server\"\n"
-        f"version: \"{version}\"\n"
+        'description: "Kserve Pmml server"\n'
+        f'version: "{version}"\n'
         "license: Apache-2.0\n"
         "base: ubuntu@24.04\n"
         "platforms:\n"

@@ -1,12 +1,12 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 """Tests for the git/gh subprocess wrappers (subprocess mocked)."""
+
 import subprocess
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from src import git_ops
 from src.errors import BumpRockError
 
@@ -91,9 +91,7 @@ def test_create_commit_push_identity_env_overrides_default(tmp_path, monkeypatch
         return _completed(stdout="ok\n")
 
     with patch("subprocess.run", side_effect=fake):
-        git_ops.create_commit_push(
-            tmp_path, branch="b", file_to_stage="f", commit_message="m"
-        )
+        git_ops.create_commit_push(tmp_path, branch="b", file_to_stage="f", commit_message="m")
     assert envs[2]["GIT_COMMITTER_EMAIL"] == "me@example.com"
     assert envs[2]["GIT_AUTHOR_EMAIL"] == git_ops.GitIdentity().email
 
@@ -145,7 +143,5 @@ def test_create_pr_swallows_label_failure(tmp_path):
         return seq.pop(0)
 
     with patch("subprocess.run", side_effect=fake):
-        url = git_ops.create_pr(
-            tmp_path, head="b", title="t", body="b", label="missing-label"
-        )
+        url = git_ops.create_pr(tmp_path, head="b", title="t", body="b", label="missing-label")
     assert url == "https://github.com/foo/bar/pull/1"

@@ -11,10 +11,10 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - name: Set up Python 3.8
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5.3.0
         with:
-          python-version: 3.8
+          python-version: "3.12"
       - run: pip install tox
       - run: tox -e lint
 
@@ -45,6 +45,20 @@ jobs:
           python-version: 3.8
       - run: pip install tox
       - run: tox -e test_batch_release_charms
+
+  gather_rocks_tests:
+    name: Gather Rocks Script Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: "3.12"
+      - run: pip install tox
+      - run: tox -e test_gather_rocks
 
   test-dump-charm-debug-artifacts:
     name: Test dump-charm-debug-artifacts

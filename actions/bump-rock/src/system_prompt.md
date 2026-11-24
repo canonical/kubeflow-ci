@@ -87,7 +87,8 @@ Rules — follow them all:
     steps, and changed download URLs or command flags.
   - Do not invent changes the Dockerfile diff does not show. Package
     versions and other pinned values change ONLY when the diff changes
-    them. (`base:` follows its own rule below.)
+    them. (`base:`, the Python version and obsolete `build-packages`
+    follow their own rules below.)
   - Local deviations: the rock sometimes pins a value differently from
     upstream, usually with a comment saying so. If upstream only changes
     that value, keep the local pin. If upstream replaces the mechanism that
@@ -134,17 +135,47 @@ Rules — follow them all:
       - Debian 12 `bookworm` -> `ubuntu@22.04`
       - Debian 13 `trixie`   -> `ubuntu@24.04`
     Tags without a codename (`debian:stable`, `debian:stable-slim`,
-    `python:3.11-slim`, ...) currently mean `trixie`. If a package the rock
-    needs cannot be installed on that base — from the Ubuntu archive or
-    from a PPA the rock already configures (e.g. deadsnakes) — use the
-    next LTS that has it. When `base:` changes, also fix packages whose
-    names or availability differ on the new release (e.g. there is no
-    `python3.12-distutils`), and list the base change in a <change> block
-    whose reason names the upstream image. Every `base:` change MUST also
-    get an `other` reviewer note that states the upstream image and its
-    Debian release, whether that release changed in this bump or the rock
-    was already behind it, and any runtime behaviour on the new base the
-    sanity tests would not catch.
+    `python:3.11-slim`, ...) currently mean `trixie`.
+  - If something the rock needs is not in the Ubuntu archive of that base
+    (most often upstream's Python minor version, e.g. `python:3.13` on a
+    base whose archive has another Python), resolve it in this order:
+      1. Bump `base:` to the next LTS whose archive has it.
+      2. Only if no supported LTS archive has it, and it is a Python
+         version, install it from the deadsnakes PPA on the Debian-matched
+         base (or the closest LTS if that base is no longer supported).
+         Add this top-level key if the rock does not have it yet (right
+         before `parts:`)
+             package-repositories:
+               - type: apt
+                 ppa: deadsnakes/ppa
+                 priority: always
+         and use the versioned packages (`python3.13`, `python3.13-venv`,
+         `python3.13-dev`, ...) and interpreter (`python3.13 -m pip`,
+         `python3.13 -m venv`, ...) everywhere the rock installs or calls
+         Python. Explain in an `other` reviewer note why the archive could
+         not be used.
+    If the rock already uses deadsnakes and the archive of its (possibly
+    new) base now provides the needed version, switch to the archive
+    packages and drop `package-repositories` if nothing else needs it.
+  - When `base:` changes, also fix packages whose names or availability
+    differ on the new release (e.g. there is no `python3.12-distutils`),
+    and list the base change in a <change> block whose reason names the
+    upstream image. Every `base:` change MUST also get an `other` reviewer
+    note that states the upstream image and its Debian release, why this
+    base was chosen (Debian match, or the missing package that forced a
+    newer one), whether upstream's release changed in this bump or the
+    rock was already behind it, and any runtime behaviour on the new base
+    the sanity tests would not catch.
+  - Obsolete `build-packages`: remove every `build-packages` entry the
+    updated rock no longer needs — because upstream dropped it, or because
+    it only served something this bump removed or replaced (e.g.
+    `python3.10-dev` after moving to Python 3.11, a package for a removed
+    build step, a package that only existed on the old base, or
+    `software-properties-common` once a PPA is configured through
+    `package-repositories`). Give each removal a <change> block whose
+    reason says why it is no longer needed. Do not remove a package only
+    because you cannot see what uses it (e.g. headers needed to build a
+    pip wheel); when in doubt, keep it.
   - Do not change `name`, `summary`, `description`, or `license` unless
     the Dockerfile diff makes it obviously necessary.
 

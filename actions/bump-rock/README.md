@@ -72,8 +72,9 @@ line up. Otherwise the commit shows as *Unverified* and the PR can't be
 merged, or `git commit` fails outright.
 
 By default the commit is authored as `kubeflow-bot`
-(`git_ops.GitIdentity`). That is right for CI, but **locally you must
-override it** with the email on your GPG key:
+(`git_ops.GitIdentity`). In CI the workflow imports chaci's GPG key
+(`CHACI_GPG_PRIVATE` / `CHACI_GPG_PASSPHRASE`) and commits as that key's
+owner. **Locally you must override it** with the email on your GPG key:
 
 ```bash
 export GIT_AUTHOR_NAME="Your Name"

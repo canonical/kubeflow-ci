@@ -153,6 +153,8 @@ It needs these secrets configured on the repo:
 - `OPENROUTER_API_KEY` — only needed for `openrouter/*` LLMs.
 - `ROCKS_REPO_TOKEN` — fine-grained PAT with `contents:write` +
   `pull_requests:write` on the target rocks repo(s), nothing else.
+- `CHACI_GPG_PRIVATE` / `CHACI_GPG_PASSPHRASE` — chaci's signing key; the
+  PR commit is signed with it and authored as the key's owner.
 
 The workflow's own `GITHUB_TOKEN` is locked to `contents: read`. Sanity
 tests **do** run on the GHA runner: the workflow installs

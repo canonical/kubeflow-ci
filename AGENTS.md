@@ -161,6 +161,11 @@ LXD + rockcraft and invokes the CLI via `sudo --user "$USER"
 an escape hatch if a particular rock's `tox -e pack` exceeds the runner
 ceiling.
 
+Sanity tests run code from the generated recipe, so tox gets an
+environment without the LLM / GitHub tokens (`tox_runner.SECRET_ENV_VARS`),
+and neither checkout persists its token. `ROCKS_REPO_TOKEN` is only
+present in the `Open PR` step.
+
 ## Safety rails baked in
 
 - The `run` sub-command always operates on a **copy** of the rock folder

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import collections
 import logging
+import os
 import subprocess
 import sys
 import time
@@ -25,6 +26,24 @@ log = logging.getLogger("bump-rock.tox")
 DEFAULT_SANITY_PIPELINE: List[str] = ["pack", "export-to-docker", "sanity"]
 
 LOG_TAIL_LINES = 200
+
+# Credentials the bump-rock process holds that the rock's own tox envs
+# (often `passenv = *`) must not see: they run code from the recipe under test.
+SECRET_ENV_VARS = frozenset(
+    {
+        "COPILOT_GITHUB_TOKEN",
+        "OPENROUTER_API_KEY",
+        "GITHUB_TOKEN",
+        "GH_TOKEN",
+        "ACTIONS_RUNTIME_TOKEN",
+        "ACTIONS_ID_TOKEN_REQUEST_TOKEN",
+    }
+)
+
+
+def scrubbed_env() -> dict:
+    """Return a copy of the current environment without `SECRET_ENV_VARS`."""
+    return {k: v for k, v in os.environ.items() if k not in SECRET_ENV_VARS}
 
 
 @dataclass
@@ -47,7 +66,8 @@ class ToxRunner(Protocol):
 class SubprocessToxRunner:
     """The real tox runner: shells out to `tox -e <env>`.
 
-    Streams each line of tox output to stderr the moment it arrives so the
+    Runs tox without the credentials in `SECRET_ENV_VARS`. Streams each
+    line of tox output to stderr the moment it arrives so the
     GitHub Actions log shows live progress, while keeping a bounded ring
     buffer of the most recent lines to surface as the log tail (for the
     inner LLM retry loop and for the workflow artifact).
@@ -59,6 +79,7 @@ class SubprocessToxRunner:
         proc = subprocess.Popen(
             ["tox", "-e", env],
             cwd=str(cwd),
+            env=scrubbed_env(),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,

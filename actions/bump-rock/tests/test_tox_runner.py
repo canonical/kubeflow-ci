@@ -36,6 +36,19 @@ def test_subprocess_runner_success(tmp_path):
     assert popen_mock.call_args.kwargs["cwd"] == str(tmp_path)
 
 
+def test_subprocess_runner_hides_credentials(tmp_path, monkeypatch):
+    monkeypatch.setenv("COPILOT_GITHUB_TOKEN", "secret")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "secret")
+    monkeypatch.setenv("GITHUB_TOKEN", "secret")
+    monkeypatch.setenv("GH_TOKEN", "secret")
+    monkeypatch.setenv("SOME_ROCK_SETTING", "kept")
+    with patch("subprocess.Popen", return_value=_fake_popen([])) as popen_mock:
+        tox_runner.SubprocessToxRunner().run("sanity", cwd=tmp_path)
+    env = popen_mock.call_args.kwargs["env"]
+    assert "secret" not in env.values()
+    assert env["SOME_ROCK_SETTING"] == "kept"
+
+
 def test_subprocess_runner_nonzero(tmp_path):
     proc = _fake_popen(["boom\n", "err\n"], returncode=1)
     with patch("subprocess.Popen", return_value=proc):

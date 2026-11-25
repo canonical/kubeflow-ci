@@ -71,6 +71,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: kubeflow-ci
+          persist-credentials: false
 
       - name: Checkout target rocks repo
         uses: actions/checkout@v4
@@ -79,6 +80,9 @@ jobs:
           token: ${{ secrets.ROCKS_REPO_TOKEN }}
           path: target-repo
           ref: main
+          # The sanity tests run code from the generated recipe; don't leave
+          # the write token in .git/config. `Open PR` authenticates on its own.
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -174,6 +178,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.ROCKS_REPO_TOKEN }}
         run: |
+          # Push credential exists only in this step (checkout doesn't persist it).
+          gh auth setup-git
           python -m src.bump_rock open-pr \
               "${TARGET_REPO}" \
               --out-dir "${OUT_DIR}" \

@@ -87,6 +87,8 @@ def run(
     `skip_tox` is for local iteration on the prompt: short-circuits after
     the first successful generate, no rockcraft pack involved.
     """
+    if max_sanity_attempts < 1:
+        raise BumpRockError(f"max_sanity_attempts must be >= 1, got {max_sanity_attempts}")
     runner = runner or tox_mod.SubprocessToxRunner()
     attempts: List[AttemptOutcome] = []
 

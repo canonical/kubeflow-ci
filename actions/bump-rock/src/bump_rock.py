@@ -65,6 +65,18 @@ def _print_json(payload) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False))
 
 
+def _int_at_least(minimum: int):
+    """Return an argparse `type` that parses an int and rejects values below `minimum`."""
+
+    def parse_int(value: str) -> int:
+        number = int(value)
+        if number < minimum:
+            raise argparse.ArgumentTypeError(f"must be >= {minimum}, got {number}")
+        return number
+
+    return parse_int
+
+
 def _llm_spec(value: str) -> str:
     """argparse type for `--llm`: fail fast on bad specs, fill in the default model."""
     try:
@@ -587,7 +599,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_gen.add_argument(
         "--max-retries",
-        type=int,
+        type=_int_at_least(0),
         default=generate_mod.MAX_LLM_RETRIES,
         help="Additional attempts after the first if validation fails.",
     )
@@ -616,14 +628,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_run.add_argument(
         "--max-retries",
-        type=int,
+        type=_int_at_least(0),
         default=generate_mod.MAX_LLM_RETRIES,
         help="Extra LLM calls within one sanity attempt when the answer fails "
         "the automatic checks; the errors are sent back to the model.",
     )
     p_run.add_argument(
         "--max-sanity-attempts",
-        type=int,
+        type=_int_at_least(1),
         default=run_mod.MAX_SANITY_ATTEMPTS,
         help="Sanity attempts before giving up (each = LLM generation + tox).",
     )

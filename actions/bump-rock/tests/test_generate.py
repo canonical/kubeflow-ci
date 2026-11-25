@@ -4,7 +4,9 @@
 
 from pathlib import Path
 
+import pytest
 from src import generate, rockcraft
+from src.errors import BumpRockError
 from src.fetch import DockerfilePair
 from src.llm import MockClient
 from src.urls import UpstreamRef
@@ -120,6 +122,18 @@ def test_validate_output_accepts_repaired_path_from_pairs():
     pair = DockerfilePair(old_ref=PMML_OLD, new_ref=repaired, old_text="", new_text="")
     good = _bumped_yaml().replace("python/pmml.Dockerfile", "moved/pmml.Dockerfile")
     assert generate.validate_output(good, doc, "v0.18.0", [pair]) == []
+
+
+def test_generate_rejects_negative_max_retries():
+    doc = rockcraft.load(FIXTURES / "happy")
+    with pytest.raises(BumpRockError, match="max_retries"):
+        generate.generate(
+            client=MockClient(responses=[]),
+            doc=doc,
+            pairs=[_make_pair()],
+            target_version="v0.18.0",
+            max_retries=-1,
+        )
 
 
 def test_validate_output_rejects_invalid_yaml():

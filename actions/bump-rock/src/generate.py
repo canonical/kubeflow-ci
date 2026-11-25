@@ -351,8 +351,10 @@ def generate(
     failure log from a previous attempt.
 
     Raises:
-        BumpRockError: if no attempt produced a passing output.
+        BumpRockError: if `max_retries` is negative.
     """
+    if max_retries < 0:
+        raise BumpRockError(f"max_retries must be >= 0, got {max_retries}")
     user_prompt = build_user_prompt(
         doc, pairs, target_version, additional_context=additional_context
     )

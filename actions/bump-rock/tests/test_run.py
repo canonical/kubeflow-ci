@@ -198,6 +198,20 @@ def test_prepare_work_dir_rejects_overlapping_paths(tmp_path, work_rel):
     assert (src / "rockcraft.yaml").read_text() == "name: pmml"
 
 
+@pytest.mark.parametrize("attempts", [0, -1])
+def test_run_rejects_non_positive_sanity_attempts(tmp_path, attempts):
+    doc = rockcraft.load(FIXTURES / "happy")
+    with pytest.raises(BumpRockError, match="max_sanity_attempts"):
+        run.run(
+            client=MockClient(responses=[]),
+            doc=doc,
+            pairs=[PAIR],
+            target_version="v0.18.0",
+            work_dir=tmp_path,
+            max_sanity_attempts=attempts,
+        )
+
+
 def test_assert_only_rockcraft_changed_passes(tmp_path):
     src = tmp_path / "src"
     src.mkdir()

@@ -248,13 +248,15 @@ def cmd_generate(args: argparse.Namespace) -> int:
 
     _print_json(
         {
+            "ok": result.ok,
+            "validator_errors": result.validator_errors,
             "rockcraft_yaml_new": str(out_path),
             "attempts": result.attempts,
             "llm": args.llm,
             "raw_responses_log": str(debug_path),
         }
     )
-    return 0
+    return 0 if result.ok else 1
 
 
 def cmd_run(args: argparse.Namespace) -> int:

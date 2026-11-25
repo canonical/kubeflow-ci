@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import requests
 
@@ -54,6 +54,16 @@ def validate(
     sess = session or requests
     resp = sess.get(ref.raw_url(), timeout=timeout, allow_redirects=True)
     return resp.status_code == 200
+
+
+def _check(
+    ref: UpstreamRef, session: requests.Session, timeout: int
+) -> Tuple[bool, Optional[str]]:
+    """Like `validate`, but return a request failure as an error string."""
+    try:
+        return validate(ref, session, timeout=timeout), None
+    except requests.RequestException as exc:
+        return False, f"request for {ref.raw_url()} failed: {exc}"
 
 
 def list_repo_tree(
@@ -117,14 +127,18 @@ def validate_or_repair(
     sess = session or retrying_session()
 
     log.info("validating upstream URL %s", ref.blob_url())
-    if validate(ref, sess, timeout=timeout):
+    found, error = _check(ref, sess, timeout)
+    if error:
+        log.warning("  -> %s", error)
+        return ValidationResult(ref=ref, ok=False, error=error)
+    if found:
         log.info("  -> OK")
         return ValidationResult(ref=ref, ok=True)
     log.info("  -> 404, attempting bounded repair via tree listing")
 
     try:
         paths = list_repo_tree(ref.org, ref.repo, ref.ref, sess, timeout=timeout, token=token)
-    except UpstreamRepairError as exc:
+    except (UpstreamRepairError, requests.RequestException) as exc:
         log.warning("  -> tree listing failed: %s", exc)
         return ValidationResult(ref=ref, ok=False, error=str(exc))
 
@@ -139,7 +153,10 @@ def validate_or_repair(
     if len(matches) == 1:
         candidate = UpstreamRef(org=ref.org, repo=ref.repo, ref=ref.ref, path=matches[0])
         log.info("  -> unique candidate %s, re-validating", candidate.blob_url())
-        if validate(candidate, sess, timeout=timeout):
+        found, error = _check(candidate, sess, timeout)
+        if error:
+            return ValidationResult(ref=ref, ok=False, error=error)
+        if found:
             log.info("  -> repaired")
             return ValidationResult(ref=candidate, ok=True, repaired_from=ref)
         return ValidationResult(

@@ -3,6 +3,7 @@
 """Tests for URL validation and bounded repair."""
 
 import pytest
+import requests
 import responses
 from src import repair, urls
 
@@ -94,3 +95,20 @@ def test_repair_tree_api_failure_returns_error():
     res = repair.validate_or_repair(REF)
     assert res.ok is False
     assert "tree listing failed" in res.error.lower()
+
+
+@responses.activate
+def test_validate_or_repair_reports_network_error():
+    responses.get(_raw("python/pmml.Dockerfile"), body=requests.ConnectionError("boom"))
+    res = repair.validate_or_repair(REF, requests.Session())
+    assert res.ok is False
+    assert "boom" in res.error
+
+
+@responses.activate
+def test_repair_tree_network_error_returns_error():
+    responses.get(_raw("python/pmml.Dockerfile"), status=404)
+    responses.get(_tree(), body=requests.Timeout("slow"))
+    res = repair.validate_or_repair(REF, requests.Session())
+    assert res.ok is False
+    assert "slow" in res.error

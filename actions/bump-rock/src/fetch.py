@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from dataclasses import dataclass
 from pathlib import Path
@@ -89,14 +90,17 @@ def fetch_pair(
 def write_pair_to_disk(pair: DockerfilePair, out_dir: Path) -> dict:
     """Write the old/new files into `out_dir` with a stable naming scheme.
 
-    Files are named after the Dockerfile basename plus an `.old` / `.new`
-    suffix so that multiple Dockerfile pairs from one rock don't collide.
+    Files are named after the Dockerfile basename, a short hash of the old
+    upstream URL and an `.old` / `.new` suffix, so pairs whose paths share
+    a basename (e.g. `builder/Dockerfile`, `runtime/Dockerfile`) don't
+    collide.
 
     Returns:
         A mapping with keys ``old`` and ``new`` pointing at the written paths.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
-    base = pair.old_ref.basename
+    url_id = hashlib.sha256(pair.old_ref.blob_url().encode()).hexdigest()[:8]
+    base = f"{pair.old_ref.basename}.{url_id}"
     old_path = out_dir / f"{base}.old"
     new_path = out_dir / f"{base}.new"
     old_path.write_text(pair.old_text)

@@ -172,7 +172,7 @@ In `$OUT/attempts/`, `attempt-N` is the N-th sanity attempt and
 |------|---------|
 | `rockcraft.yaml.new` | the generated file |
 | `metadata.json` | input for `open-pr`: versions, URLs, model, change reasons, reviewer notes, sanity result |
-| `Dockerfile.old` / `Dockerfile.new` | the fetched upstream files |
+| `<basename>.<hash>.old` / `.new` | the fetched upstream files (`<hash>` keeps same-named Dockerfiles apart) |
 | `attempts/attempt-N/` | per sanity attempt: candidate YAML and `tox-<env>.log` tails |
 | `attempts/attempt-N/inner-K/` | per LLM attempt: raw LLM response (change list, notes, YAML) and check errors |
 | `work/` | the rock copy that tox ran in |

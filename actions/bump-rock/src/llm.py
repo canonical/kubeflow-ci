@@ -6,12 +6,11 @@ A thin wrapper that lets the rest of the workflow ask for a text response
 without caring which provider is on the other end. Clients are picked by a
 `provider[/model]` spec (e.g. `copilot/claude-opus-5.5`); the live backends
 talk to the OpenAI-compatible chat-completions endpoints of GitHub Copilot
-or OpenRouter. A MockClient backs the unit tests.
+or OpenRouter through the `openai` SDK. A MockClient backs the unit tests.
 """
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 import subprocess
@@ -19,7 +18,8 @@ import time
 from dataclasses import dataclass, field
 from typing import List, Optional, Protocol, Tuple
 
-import requests
+import httpx
+import openai
 
 log = logging.getLogger("bump-rock.llm")
 
@@ -52,22 +52,21 @@ class LLMClient(Protocol):
 
 
 def _chat_completion(
+    client: openai.OpenAI,
     *,
     provider: str,
-    url: str,
-    headers: dict,
     model: str,
     max_tokens: int,
-    timeout: int,
     system: str,
     messages: List[Message],
     stream: bool = False,
     reasoning_effort: Optional[str] = None,
 ) -> str:
-    """POST to an OpenAI-compatible /chat/completions endpoint, return the text.
+    """Run one chat completion through the OpenAI SDK and return the text.
 
     The system prompt is prepended to `messages` as a `role=system` turn.
-    With `stream`, `timeout` bounds the wait between chunks, not the whole call.
+    The SDK retries connection errors, 429 and 5xx; any other API error is
+    raised as RuntimeError.
     """
     prompt_chars = len(system) + sum(len(m.content) for m in messages)
     log.info(
@@ -78,62 +77,46 @@ def _chat_completion(
         prompt_chars,
         reasoning_effort or "off",
     )
-    payload = {
-        "model": model,
-        "max_tokens": max_tokens,
-        "messages": (
-            [{"role": "system", "content": system}]
-            + [{"role": m.role, "content": m.content} for m in messages]
-        ),
-    }
-    if stream:
-        payload["stream"] = True
-    if reasoning_effort:
-        payload["reasoning_effort"] = reasoning_effort
+    extra = {"reasoning_effort": reasoning_effort} if reasoning_effort else {}
     t0 = time.monotonic()
-    resp = requests.post(url, headers=headers, json=payload, timeout=timeout, stream=stream)
-    if resp.status_code != 200:
-        log.error(
-            "%s %d in %.1fs: %s",
-            provider,
-            resp.status_code,
-            time.monotonic() - t0,
-            resp.text[:200],
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            max_tokens=max_tokens,
+            messages=(
+                [{"role": "system", "content": system}]
+                + [{"role": m.role, "content": m.content} for m in messages]
+            ),
+            stream=stream,
+            **extra,
         )
-        raise RuntimeError(f"{provider} API error {resp.status_code}: {resp.text[:500]}")
-    content = _read_stream(provider, resp) if stream else _read_body(provider, resp)
+        content = _read_stream(provider, response) if stream else _read_body(provider, response)
+    except openai.APIStatusError as exc:
+        log.error("%s %d in %.1fs: %s", provider, exc.status_code, time.monotonic() - t0, exc)
+        raise RuntimeError(f"{provider} API error {exc.status_code}: {exc.message}") from exc
+    except openai.APIError as exc:
+        raise RuntimeError(f"{provider} API error: {exc.message}") from exc
     log.info("  -> %d response chars in %.1fs", len(content), time.monotonic() - t0)
     return content
 
 
-def _read_body(provider: str, resp: requests.Response) -> str:
-    body = resp.json()
-    try:
-        return body["choices"][0]["message"]["content"]
-    except (KeyError, IndexError) as exc:
-        raise RuntimeError(f"{provider} response missing expected fields: {body!r}") from exc
+def _read_body(provider: str, response) -> str:
+    if not response.choices or response.choices[0].message.content is None:
+        raise RuntimeError(f"{provider} response has no content: {response!r}")
+    return response.choices[0].message.content
 
 
-def _read_stream(provider: str, resp: requests.Response) -> str:
-    """Concatenate the `content` deltas of a server-sent-events completion."""
+def _read_stream(provider: str, stream) -> str:
+    """Concatenate the `content` deltas of a streamed completion."""
     content: List[str] = []
     reasoning_chars = 0
     finish_reason = None
-    for raw in resp.iter_lines():
-        line = raw.decode("utf-8")
-        if not line.startswith("data:"):
-            continue
-        data = line[len("data:") :].strip()
-        if data == "[DONE]":
-            break
-        event = json.loads(data)
-        if "error" in event:
-            raise RuntimeError(f"{provider} stream error: {event['error']!r}")
-        for choice in event.get("choices", []):
-            delta = choice.get("delta") or {}
-            content.append(delta.get("content") or "")
-            reasoning_chars += len(delta.get("reasoning_text") or "")
-            finish_reason = choice.get("finish_reason") or finish_reason
+    for chunk in stream:
+        for choice in chunk.choices:
+            content.append(choice.delta.content or "")
+            # Copilot-specific extra field carrying the model's thinking.
+            reasoning_chars += len(getattr(choice.delta, "reasoning_text", None) or "")
+            finish_reason = choice.finish_reason or finish_reason
     log.info("  -> %d reasoning chars, finish_reason=%s", reasoning_chars, finish_reason)
     if finish_reason == "length":
         log.warning("%s hit max_tokens; the response is truncated", provider)
@@ -149,22 +132,27 @@ class OpenRouterClient:
     api_key: Optional[str] = None
     base_url: str = OPENROUTER_BASE_URL
     timeout: int = DEFAULT_TIMEOUT
+    http_client: Optional[httpx.Client] = field(default=None, repr=False)
 
     def complete(self, system: str, messages: List[Message]) -> str:
         api_key = self.api_key or os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
             raise RuntimeError("OPENROUTER_API_KEY is not set; required to call OpenRouter.")
-        return _chat_completion(
-            provider="OpenRouter",
-            url=f"{self.base_url}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
+        client = openai.OpenAI(
+            api_key=api_key,
+            base_url=self.base_url,
+            timeout=self.timeout,
+            default_headers={
                 "HTTP-Referer": "https://github.com/canonical/kubeflow-ci",
                 "X-Title": "kubeflow-ci bump-rock",
             },
+            http_client=self.http_client,
+        )
+        return _chat_completion(
+            client,
+            provider="OpenRouter",
             model=self.model,
             max_tokens=self.max_tokens,
-            timeout=self.timeout,
             system=system,
             messages=messages,
         )
@@ -206,15 +194,20 @@ class CopilotClient:
     base_url: str = COPILOT_BASE_URL
     timeout: int = DEFAULT_TIMEOUT
     reasoning_effort: Optional[str] = DEFAULT_REASONING_EFFORT
+    http_client: Optional[httpx.Client] = field(default=None, repr=False)
 
     def complete(self, system: str, messages: List[Message]) -> str:
+        client = openai.OpenAI(
+            api_key=self.api_key or copilot_token(),
+            base_url=self.base_url,
+            timeout=self.timeout,
+            http_client=self.http_client,
+        )
         return _chat_completion(
+            client,
             provider="Copilot",
-            url=f"{self.base_url}/chat/completions",
-            headers={"Authorization": f"Bearer {self.api_key or copilot_token()}"},
             model=self.model,
             max_tokens=self.max_tokens,
-            timeout=self.timeout,
             system=system,
             messages=messages,
             stream=True,

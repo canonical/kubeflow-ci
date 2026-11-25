@@ -88,7 +88,8 @@ it locally (Copilot token, GPG/identity setup, retry loops). Quick map:
   Dockerfile pair; `retrying_session()` retries connection errors, 429
   and 5xx.
 - [src/llm.py](actions/bump-rock/src/llm.py) — Copilot + OpenRouter
-  chat-completions clients and a MockClient for tests, picked by
+  chat-completions clients (on the `openai` SDK, which also retries
+  429/5xx) and a MockClient for tests, picked by
   `--llm provider/model` (default `copilot/claude-opus-5.5`). Copilot calls
   stream with thinking on (`--reasoning-effort`, default `high`).
 - [src/generate.py](actions/bump-rock/src/generate.py) — prompt building,

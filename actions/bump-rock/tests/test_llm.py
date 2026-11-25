@@ -6,8 +6,8 @@ import json
 import subprocess
 from unittest.mock import patch
 
+import httpx
 import pytest
-import responses
 from src import llm
 
 
@@ -71,23 +71,44 @@ def _sse(*events):
     return "".join(f"data: {json.dumps(e)}\n\n" for e in events) + "data: [DONE]\n\n"
 
 
-@responses.activate
+def _transport(status=200, body="", content_type="text/event-stream"):
+    """Return (http_client, requests_seen) answering every call with one response."""
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        return httpx.Response(
+            status, content=body.encode(), headers={"content-type": content_type}
+        )
+
+    return httpx.Client(transport=httpx.MockTransport(handler)), seen
+
+
+def _chunk(delta, finish_reason=None):
+    return {
+        "id": "c",
+        "object": "chat.completion.chunk",
+        "created": 0,
+        "model": "m",
+        "choices": [{"index": 0, "delta": delta, "finish_reason": finish_reason}],
+    }
+
+
 def test_copilot_client_streams_chat_completion():
-    responses.post(
-        f"{llm.COPILOT_BASE_URL}/chat/completions",
+    http, seen = _transport(
         body=_sse(
-            {"choices": [{"delta": {"reasoning_text": "thinking…"}}]},
-            {"choices": [{"delta": {"content": "name: "}}]},
-            {"choices": [{"delta": {"content": "x — y\n"}, "finish_reason": "stop"}]},
-        ),
-        content_type="text/event-stream",
+            _chunk({"reasoning_text": "thinking…"}),
+            _chunk({"content": "name: "}),
+            _chunk({"content": "x — y\n"}, finish_reason="stop"),
+        )
     )
-    client = llm.CopilotClient(model="claude-opus-5.5", api_key="tok")
+    client = llm.CopilotClient(model="claude-opus-5.5", api_key="tok", http_client=http)
     out = client.complete("sys", [llm.Message(role="user", content="hi")])
     assert out == "name: x — y\n"
-    request = responses.calls[0].request
+    request = seen[0]
+    assert str(request.url) == f"{llm.COPILOT_BASE_URL}/chat/completions"
     assert request.headers["Authorization"] == "Bearer tok"
-    body = json.loads(request.body)
+    body = json.loads(request.content)
     assert body["model"] == "claude-opus-5.5"
     assert body["stream"] is True
     assert body["reasoning_effort"] == llm.DEFAULT_REASONING_EFFORT
@@ -98,31 +119,44 @@ def test_copilot_client_streams_chat_completion():
     ]
 
 
-@responses.activate
 def test_copilot_client_omits_reasoning_when_disabled():
-    responses.post(
-        f"{llm.COPILOT_BASE_URL}/chat/completions",
-        body=_sse({"choices": [{"delta": {"content": "ok"}}]}),
-        content_type="text/event-stream",
-    )
-    llm.CopilotClient(api_key="tok", reasoning_effort=None).complete("s", [])
-    assert "reasoning_effort" not in json.loads(responses.calls[0].request.body)
+    http, seen = _transport(body=_sse(_chunk({"content": "ok"})))
+    llm.CopilotClient(api_key="tok", reasoning_effort=None, http_client=http).complete("s", [])
+    assert "reasoning_effort" not in json.loads(seen[0].content)
 
 
-@responses.activate
 def test_copilot_client_raises_on_stream_error():
-    responses.post(
-        f"{llm.COPILOT_BASE_URL}/chat/completions",
-        body=_sse({"error": {"message": "overloaded"}}),
-        content_type="text/event-stream",
-    )
+    http, _ = _transport(body=_sse({"error": {"message": "overloaded"}}))
     with pytest.raises(RuntimeError, match="overloaded"):
-        llm.CopilotClient(api_key="tok").complete("s", [])
+        llm.CopilotClient(api_key="tok", http_client=http).complete("s", [])
 
 
-@responses.activate
 def test_copilot_client_raises_on_http_error():
-    responses.post(f"{llm.COPILOT_BASE_URL}/chat/completions", status=401, body="bad creds")
-    client = llm.CopilotClient(api_key="tok")
+    http, _ = _transport(
+        status=401, body='{"error": {"message": "bad creds"}}', content_type="application/json"
+    )
+    client = llm.CopilotClient(api_key="tok", http_client=http)
     with pytest.raises(RuntimeError, match="Copilot API error 401"):
         client.complete("sys", [llm.Message(role="user", content="hi")])
+
+
+def test_openrouter_client_reads_plain_completion():
+    body = {
+        "id": "c",
+        "object": "chat.completion",
+        "created": 0,
+        "model": "m",
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": "done"},
+                "finish_reason": "stop",
+            }
+        ],
+    }
+    http, seen = _transport(body=json.dumps(body), content_type="application/json")
+    client = llm.OpenRouterClient(api_key="key", http_client=http)
+    assert client.complete("s", [llm.Message(role="user", content="hi")]) == "done"
+    assert str(seen[0].url) == f"{llm.OPENROUTER_BASE_URL}/chat/completions"
+    assert seen[0].headers["X-Title"] == "kubeflow-ci bump-rock"
+    assert not json.loads(seen[0].content).get("stream")

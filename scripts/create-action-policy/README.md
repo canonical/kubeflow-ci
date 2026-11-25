@@ -21,7 +21,7 @@ admission-webhook-operator
 canonical/argo-operators
 ```
 
-This directory also provides a sample `repositories.txt`, copied from [`../environments/repositories.txt`](../environments/repositories.txt).
+This directory also provides a sample `repositories.txt` with the non-archived repositories of the [`mlops` team](https://github.com/orgs/canonical/teams/mlops) that have a `.github/workflows/on_pull_request_closed.yaml` workflow, as of 2026-11-25.
 
 ### Policy
 You have to provide a JSON file with the policy, in the format expected by the [Create a repository Actions policy](https://docs.github.com/en/rest/actions/policies#create-a-repository-actions-policy) endpoint. The `name` of the policy is used to find an existing policy in each repository; if one is found, it is overwritten, otherwise a new one is created.

@@ -226,7 +226,17 @@ def prepare_work_dir(rock_dir: Path, work_dir: Path) -> Path:
     Safety rail: the workflow always operates on a copy, never the
     user's checkout. Caller is responsible for managing the lifetime of
     `work_dir`.
+
+    Raises:
+        BumpRockError: if `rock_dir` and `work_dir` are the same directory
+            or one contains the other; the removal below would delete the
+            source otherwise.
     """
+    src, dst = rock_dir.resolve(), work_dir.resolve()
+    if src == dst or src in dst.parents or dst in src.parents:
+        raise BumpRockError(
+            f"work dir {dst} and rock dir {src} must not overlap; pick a different --out"
+        )
     if work_dir.exists():
         shutil.rmtree(work_dir)
     shutil.copytree(rock_dir, work_dir)

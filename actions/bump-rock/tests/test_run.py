@@ -187,6 +187,17 @@ def test_prepare_work_dir_copies_and_overwrites(tmp_path):
     assert not (work / "stale.txt").exists()
 
 
+@pytest.mark.parametrize("work_rel", ["src", "src/out/work", "."])
+def test_prepare_work_dir_rejects_overlapping_paths(tmp_path, work_rel):
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "rockcraft.yaml").write_text("name: pmml")
+
+    with pytest.raises(BumpRockError, match="must not overlap"):
+        run.prepare_work_dir(src, tmp_path / work_rel)
+    assert (src / "rockcraft.yaml").read_text() == "name: pmml"
+
+
 def test_assert_only_rockcraft_changed_passes(tmp_path):
     src = tmp_path / "src"
     src.mkdir()

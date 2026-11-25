@@ -9,6 +9,7 @@ The wrappers are deliberately tiny so they can be patched in tests via
 
 from __future__ import annotations
 
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -96,8 +97,6 @@ def create_commit_push(
         "GIT_COMMITTER_NAME": identity.name,
         "GIT_COMMITTER_EMAIL": identity.email,
     }
-    import os
-
     merged_env = {**env, **os.environ}
     _run(["git", "checkout", "-b", branch], cwd=repo, env=merged_env)
     _run(["git", "add", file_to_stage], cwd=repo, env=merged_env)

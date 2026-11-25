@@ -22,15 +22,15 @@ import logging
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Sequence, Tuple
 
 import yaml
 
 from .errors import BumpRockError
 from .fetch import DockerfilePair
 from .llm import LLMClient, Message
-from .rockcraft import BASED_ON_RE, RockcraftDoc, _extract_based_on_urls
-from .urls import UpstreamRef, parse_all
+from .rockcraft import RockcraftDoc, _extract_based_on_urls
+from .urls import UpstreamRef, parse
 
 log = logging.getLogger("bump-rock.generate")
 
@@ -258,9 +258,17 @@ def strip_fences(text: str) -> str:
 
 
 def validate_output(  # noqa: C901
-    new_yaml: str, original: RockcraftDoc, target_version: str
+    new_yaml: str,
+    original: RockcraftDoc,
+    target_version: str,
+    pairs: Sequence[DockerfilePair] = (),
 ) -> List[str]:
-    """Return a list of validator error messages. Empty list = passing."""
+    """Return a list of validator error messages. Empty list = passing.
+
+    Header URLs must keep their count, reference exactly `target_version`,
+    and point at a file the rock was already based on or one of the
+    resolved new refs in `pairs` (which may carry a repaired path).
+    """
     errors: List[str] = []
 
     try:
@@ -287,22 +295,40 @@ def validate_output(  # noqa: C901
         errors.append(
             "no `# Based on` / `# Dockerfile:` / `# Source:` header comment in updated file"
         )
-    else:
-        for url in new_urls:
-            if not BASED_ON_RE.search(f"# Based on {url}"):  # defensive
-                continue
-            if target_version not in url:
-                errors.append(
-                    f"`# Based on` URL does not reference target version "
-                    f"{target_version!r}: {url}"
-                )
+    elif len(new_urls) != len(original.based_on_urls):
+        errors.append(
+            f"expected {len(original.based_on_urls)} `# Based on` header URL(s), "
+            f"got {len(new_urls)}; keep one header per upstream Dockerfile"
+        )
 
-    try:
-        parse_all(new_urls)
-    except BumpRockError as exc:
-        errors.append(str(exc))
+    known_files = {(r.org, r.repo, r.path) for r in _safe_parse(original.based_on_urls)}
+    known_files |= {(p.new_ref.org, p.new_ref.repo, p.new_ref.path) for p in pairs}
+    for url in new_urls:
+        try:
+            ref = parse(url)
+        except BumpRockError as exc:
+            errors.append(str(exc))
+            continue
+        if ref.ref != target_version:
+            errors.append(
+                f"`# Based on` URL must reference ref {target_version!r} exactly, "
+                f"got {ref.ref!r}: {url}"
+            )
+        if (ref.org, ref.repo, ref.path) not in known_files:
+            errors.append(f"`# Based on` URL points at an unexpected upstream file: {url}")
 
     return errors
+
+
+def _safe_parse(urls: Sequence[str]) -> List[UpstreamRef]:
+    """Parse the URLs that parse; skip the rest (they were validated earlier)."""
+    refs = []
+    for url in urls:
+        try:
+            refs.append(parse(url))
+        except BumpRockError:
+            continue
+    return refs
 
 
 def generate(
@@ -350,7 +376,7 @@ def generate(
         candidate = parsed.rockcraft_yaml
         last_parsed = parsed
         errors = parsed.errors or (
-            validate_output(candidate, doc, target_version)
+            validate_output(candidate, doc, target_version, pairs)
             + validate_changes(doc.raw_text, candidate, parsed.changes)
         )
         per_attempt_errors.append(errors)

@@ -89,6 +89,39 @@ def test_validate_output_rejects_stale_based_on_url():
     assert any("based on" in e.lower() for e in errors)
 
 
+def test_validate_output_rejects_prerelease_ref_containing_target():
+    doc = rockcraft.load(FIXTURES / "happy")
+    bad = _bumped_yaml(ref_in_url="v0.18.0-rc1")
+    errors = generate.validate_output(bad, doc, "v0.18.0")
+    assert any("exactly" in e for e in errors)
+
+
+def test_validate_output_rejects_dropped_header():
+    doc = rockcraft.load(FIXTURES / "happy")
+    doc.based_on_urls.append(
+        "https://github.com/kserve/kserve/blob/v0.17.0/python/other.Dockerfile"
+    )
+    errors = generate.validate_output(_bumped_yaml(), doc, "v0.18.0")
+    assert any("expected 2" in e for e in errors)
+
+
+def test_validate_output_rejects_unknown_upstream_file():
+    doc = rockcraft.load(FIXTURES / "happy")
+    bad = _bumped_yaml().replace("python/pmml.Dockerfile", "python/other.Dockerfile")
+    errors = generate.validate_output(bad, doc, "v0.18.0")
+    assert any("unexpected upstream file" in e for e in errors)
+
+
+def test_validate_output_accepts_repaired_path_from_pairs():
+    doc = rockcraft.load(FIXTURES / "happy")
+    repaired = UpstreamRef(
+        org="kserve", repo="kserve", ref="v0.18.0", path="moved/pmml.Dockerfile"
+    )
+    pair = DockerfilePair(old_ref=PMML_OLD, new_ref=repaired, old_text="", new_text="")
+    good = _bumped_yaml().replace("python/pmml.Dockerfile", "moved/pmml.Dockerfile")
+    assert generate.validate_output(good, doc, "v0.18.0", [pair]) == []
+
+
 def test_validate_output_rejects_invalid_yaml():
     doc = rockcraft.load(FIXTURES / "happy")
     errors = generate.validate_output("not: valid: yaml:::", doc, "v0.18.0")

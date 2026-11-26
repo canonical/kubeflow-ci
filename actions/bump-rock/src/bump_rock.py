@@ -65,6 +65,19 @@ def _github_workflow_run_url() -> str | None:
 ROCK_AGENTS_FILE = "AGENTS.md"
 
 
+def _context_arg(value: str) -> str:
+    """argparse type for `--context`: inline text, `@path` for a file, `@@` for a literal `@`."""
+    if value.startswith("@@"):
+        return value[1:]
+    if not value.startswith("@"):
+        return value
+    path = Path(value[1:]).expanduser()
+    try:
+        return path.read_text()
+    except (OSError, UnicodeDecodeError) as exc:
+        raise argparse.ArgumentTypeError(f"cannot read context file {path}: {exc}") from exc
+
+
 def _rock_context(rock_dir: Path, extra: str | None) -> str:
     """Combine the rock's AGENTS.md (if present) with the `--context` text."""
     parts = []
@@ -660,9 +673,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_gen.add_argument(
         "--context",
+        type=_context_arg,
         default="",
         help="Extra rock-specific guidance for the LLM, added to the prompt after "
-        f"the rock folder's {ROCK_AGENTS_FILE} (if any).",
+        f"the rock folder's {ROCK_AGENTS_FILE} (if any). Inline text, or @path to "
+        "read it from a file (@@ for a literal leading @).",
     )
     p_gen.add_argument("--timeout", type=int, default=30, help="HTTP timeout (s).")
     p_gen.set_defaults(func=cmd_generate)
@@ -714,9 +729,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_run.add_argument(
         "--context",
+        type=_context_arg,
         default="",
         help="Extra rock-specific guidance for the LLM, added to the prompt after "
-        f"the rock folder's {ROCK_AGENTS_FILE} (if any).",
+        f"the rock folder's {ROCK_AGENTS_FILE} (if any). Inline text, or @path to "
+        "read it from a file (@@ for a literal leading @).",
     )
     p_run.add_argument("--timeout", type=int, default=30, help="HTTP timeout (s).")
     p_run.set_defaults(func=cmd_run)

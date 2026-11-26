@@ -75,3 +75,18 @@ def test_open_pr_dry_run_lists_reviewers(tmp_path, capsys):
     with patch.object(bump_rock.pr_mod, "pr_body", return_value="body"):
         assert args.func(args) == 0
     assert json.loads(capsys.readouterr().out)["reviewers"] == ["alice", "canonical/mlops", "bob"]
+
+
+def test_context_arg_reads_file_or_keeps_inline_text(tmp_path):
+    notes = tmp_path / "notes.md"
+    notes.write_text("pin numpy\n")
+    assert bump_rock._context_arg(f"@{notes}") == "pin numpy\n"
+    assert bump_rock._context_arg("keep it simple") == "keep it simple"
+    assert bump_rock._context_arg("@@mention") == "@mention"
+
+
+def test_context_flag_rejects_missing_file(tmp_path):
+    with pytest.raises(SystemExit):
+        bump_rock.build_parser().parse_args(
+            ["run", "r", "--target-version", "v1", "--out", "o", "--context", f"@{tmp_path}/nope"]
+        )

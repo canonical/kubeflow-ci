@@ -147,6 +147,8 @@ jobs:
           # logs surface in the GHA UI in real time.
           PYTHONUNBUFFERED: "1"
           # Free text: passed via env, never interpolated into the script.
+          # Inline only: a leading @ is escaped below so the input can't make
+          # the CLI read a runner file (e.g. one holding the tokens) into the prompt.
           BUMP_ROCK_CONTEXT: ${{ inputs.context }}
         run: |
           SKIP_FLAG=""
@@ -168,7 +170,7 @@ jobs:
                 --llm "${{ inputs.llm }}" \
                 --max-sanity-attempts "${{ inputs.max_sanity_attempts }}" \
                 --max-retries "${{ inputs.max_llm_retries }}" \
-                --context "${BUMP_ROCK_CONTEXT}" \
+                --context "${BUMP_ROCK_CONTEXT/#@/@@}" \
                 --allow-sanity-failure \
                 $SKIP_FLAG
 

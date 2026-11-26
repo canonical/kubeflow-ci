@@ -21,6 +21,7 @@ import argparse
 import json
 import logging
 import os
+import subprocess
 import sys
 from dataclasses import asdict
 from pathlib import Path
@@ -91,6 +92,18 @@ def _int_at_least(minimum: int):
         return number
 
     return parse_int
+
+
+def _branch_name(value: str) -> str:
+    """argparse type for `--branch`: a valid git branch name other than `main`."""
+    check = subprocess.run(
+        ["git", "check-ref-format", "--branch", value], capture_output=True, text=True
+    )
+    if check.returncode != 0 or value.startswith("-"):
+        raise argparse.ArgumentTypeError(f"not a valid git branch name: {value!r}")
+    if value == "main":
+        raise argparse.ArgumentTypeError("refusing to use 'main' as the PR branch")
+    return value
 
 
 def _llm_spec(value: str) -> str:
@@ -502,7 +515,7 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
             "(does the target repo have this rock?)"
         )
 
-    base_branch = pr_mod.branch_name(rock_name, target_version)
+    base_branch = args.branch or pr_mod.branch_name(rock_name, target_version)
     commit_msg = pr_mod.commit_message(rock_name, target_version)
     title = pr_mod.pr_title(rock_name, target_version)
     body = pr_mod.pr_body(metadata)
@@ -531,7 +544,13 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
 
     git_ops_mod.assert_clean_main(target_repo)
     existing = git_ops_mod.remote_branches(target_repo)
-    branch = pr_mod.branch_name_with_suffix(rock_name, target_version, existing)
+    if args.branch:
+        # An explicit name is used as-is: never suffixed, never reused.
+        if args.branch in existing:
+            raise BumpRockError(f"branch {args.branch!r} already exists on the target repo")
+        branch = args.branch
+    else:
+        branch = pr_mod.branch_name_with_suffix(rock_name, target_version, existing)
 
     # Stage the change: overwrite the rock's rockcraft.yaml.
     (rock_subdir / "rockcraft.yaml").write_text(new_yaml)
@@ -697,6 +716,13 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="Output directory from a prior `bump-rock run` (must contain "
         "metadata.json and rockcraft.yaml.new).",
+    )
+    p_pr.add_argument(
+        "--branch",
+        type=_branch_name,
+        default=None,
+        help="Branch to push the change to (default: bump/<rock>-<version>, with a "
+        "timestamp suffix if taken). A custom branch must not exist on the remote yet.",
     )
     p_pr.add_argument(
         "--confirm",

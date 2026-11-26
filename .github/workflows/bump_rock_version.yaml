@@ -52,7 +52,7 @@ on:
         type: string
         default: ""
       branch:
-        description: "Branch name for the PR (default: bump/<rock_name>-<target_version>). A custom branch must not exist yet."
+        description: "Branch name for the PR (default: chore/bump-<rock_name>-to-<target_version>). A custom branch must not exist yet."
         required: false
         type: string
         default: ""

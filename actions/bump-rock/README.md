@@ -127,7 +127,7 @@ python -m src.bump_rock open-pr "$ROCKS_REPO" --out-dir "$OUT"
 
 # 6. Commit, push and open the PR (see the two warnings above first).
 python -m src.bump_rock open-pr "$ROCKS_REPO" --out-dir "$OUT" --confirm
-# Optional: --branch my/custom-branch (default bump/<rock>-<version>; must
+# Optional: --branch my/custom-branch (default chore/bump-<rock>-to-<version>; must
 # not exist on the remote yet).
 ```
 

@@ -721,7 +721,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--branch",
         type=_branch_name,
         default=None,
-        help="Branch to push the change to (default: bump/<rock>-<version>, with a "
+        help="Branch to push the change to (default: chore/bump-<rock>-to-<version>, with a "
         "timestamp suffix if taken). A custom branch must not exist on the remote yet.",
     )
     p_pr.add_argument(

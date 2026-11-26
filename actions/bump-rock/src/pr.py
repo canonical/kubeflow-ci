@@ -97,8 +97,8 @@ def build_metadata(
 
 
 def branch_name(rock_name: str, target_version: str) -> str:
-    """`bump/<rock_name>-<target_version>`."""
-    return f"bump/{rock_name}-{target_version}"
+    """`chore/bump-<rock_name>-to-<target_version>`."""
+    return f"chore/bump-{rock_name}-to-{target_version}"
 
 
 def branch_name_with_suffix(rock_name: str, target_version: str, existing: Iterable[str]) -> str:

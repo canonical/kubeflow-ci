@@ -17,22 +17,22 @@ def _result(ref, repaired_from=None):
 
 
 def test_branch_name_basic():
-    assert pr.branch_name("pmmlserver", "v0.18.0") == "bump/pmmlserver-v0.18.0"
+    assert pr.branch_name("pmmlserver", "v0.18.0") == "chore/bump-pmmlserver-to-v0.18.0"
 
 
 def test_branch_name_with_suffix_unused_when_unique():
     name = pr.branch_name_with_suffix("pmmlserver", "v0.18.0", existing=["main"])
-    assert name == "bump/pmmlserver-v0.18.0"
+    assert name == "chore/bump-pmmlserver-to-v0.18.0"
 
 
 def test_branch_name_with_suffix_appends_timestamp_on_collision():
     name = pr.branch_name_with_suffix(
         "pmmlserver",
         "v0.18.0",
-        existing=["main", "bump/pmmlserver-v0.18.0"],
+        existing=["main", "chore/bump-pmmlserver-to-v0.18.0"],
     )
-    assert name.startswith("bump/pmmlserver-v0.18.0-")
-    suffix = name.removeprefix("bump/pmmlserver-v0.18.0-")
+    assert name.startswith("chore/bump-pmmlserver-to-v0.18.0-")
+    suffix = name.removeprefix("chore/bump-pmmlserver-to-v0.18.0-")
     assert suffix.isdigit()
 
 

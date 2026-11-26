@@ -2,6 +2,8 @@
 # See LICENSE file for licensing details.
 """Tests for PR metadata, branch naming, and the body template."""
 
+import re
+
 from src import pr, repair, urls
 
 OLD_REF = urls.UpstreamRef(
@@ -111,6 +113,32 @@ def test_pr_body_happy_path_has_no_follow_ups():
     assert "Needs reviewer attention" not in body
     assert "AI-generated" in body
     assert body.endswith("\n")
+
+
+def test_pr_body_labels_multiple_dockerfiles_by_path_without_hash_numbers():
+    other_old = urls.UpstreamRef(
+        org="kserve", repo="kserve", ref="v0.17.0", path="base/Dockerfile"
+    )
+    other_new = other_old.with_ref("v0.18.0")
+    md = pr.build_metadata(
+        rock_name="pmmlserver",
+        old_version="0.17.0",
+        target_version="v0.18.0",
+        resolved_pairs=[
+            (_result(other_old), _result(other_new, repaired_from=other_new)),
+            (_result(OLD_REF), _result(NEW_REF)),
+        ],
+        model="m",
+        attempts=1,
+        sanity_envs_run=[],
+        skip_tox=True,
+        dockerfile_diffs=["-a\n+b", "-c\n+d"],
+    )
+    body = pr.pr_body(md)
+    assert re.search(r"#\d", body) is None
+    assert "- `base/Dockerfile`: [`v0.17.0`]" in body
+    assert "<summary><code>python/pmml.Dockerfile</code> diff</summary>" in body
+    assert "URL for `base/Dockerfile` (new) was auto-repaired" in body
 
 
 def test_pr_body_skip_tox_notes_it():

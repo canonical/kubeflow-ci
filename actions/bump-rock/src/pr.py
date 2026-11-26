@@ -8,6 +8,7 @@ in `git_ops`. Keeping the shape logic here makes it cheap to unit-test.
 
 from __future__ import annotations
 
+import html
 import time
 from typing import Iterable, List, Optional, Tuple
 
@@ -63,6 +64,7 @@ def build_metadata(
                 "new_url": new_ref.blob_url(),
                 "old_ref": old_ref.ref,
                 "new_ref": new_ref.ref,
+                "path": new_ref.path,
                 "compare_url": (
                     f"https://github.com/{new_ref.org}/{new_ref.repo}/compare/"
                     f"{old_ref.ref}...{new_ref.ref}"
@@ -174,11 +176,11 @@ def pr_body(metadata: dict) -> str:  # noqa: C901
     lines.append("## Upstream")
     lines.append("")
     for i, entry in enumerate(based_on, start=1):
-        suffix = f" #{i}" if len(based_on) > 1 else ""
+        label = _dockerfile_label(entry, i, len(based_on))
         old_ref = entry.get("old_ref", "old")
         new_ref = entry.get("new_ref", "new")
         link = (
-            f"- Dockerfile{suffix}: [`{old_ref}`]({entry['old_url']}) -> "
+            f"- {label}: [`{old_ref}`]({entry['old_url']}) -> "
             f"[`{new_ref}`]({entry['new_url']})"
         )
         if entry.get("compare_url"):
@@ -187,8 +189,8 @@ def pr_body(metadata: dict) -> str:  # noqa: C901
     lines.append("")
     for i, entry in enumerate(based_on, start=1):
         if entry.get("diff"):
-            suffix = f" #{i}" if len(based_on) > 1 else ""
-            lines.extend(_details_block(f"Dockerfile{suffix} diff", entry["diff"], lang="diff"))
+            label = _dockerfile_label(entry, i, len(based_on), as_html=True)
+            lines.extend(_details_block(f"{label} diff", entry["diff"], lang="diff"))
 
     lines.append("## How this was generated")
     lines.append("")
@@ -247,6 +249,19 @@ def pr_body(metadata: dict) -> str:  # noqa: C901
     return "\n".join(lines) + "\n"
 
 
+def _dockerfile_label(entry: dict, index: int, total: int, *, as_html: bool = False) -> str:
+    """Name one upstream Dockerfile, by path when there are several.
+
+    Avoids `#<n>`, which GitHub autolinks to issues/PRs of the target repo.
+    """
+    if total == 1:
+        return "Dockerfile"
+    path = entry.get("path")
+    if not path:
+        return f"Dockerfile {index}"
+    return f"<code>{html.escape(path)}</code>" if as_html else f"`{path}`"
+
+
 def _details_block(summary: str, content: str, lang: str = "") -> List[str]:
     """Render a collapsed GitHub `<details>` block wrapping a code fence.
 
@@ -283,7 +298,7 @@ def _reviewer_follow_ups(based_on: List[dict], reviewer_notes: List[dict]) -> Li
         lines.extend(note["detail"].splitlines())
         lines.append("")
     for i, entry in enumerate(based_on, start=1):
-        suffix = f" #{i}" if len(based_on) > 1 else ""
+        suffix = f" for {_dockerfile_label(entry, i, len(based_on))}" if len(based_on) > 1 else ""
         if entry.get("old_repaired_from"):
             lines.append(
                 f"- `# Based on` URL{suffix} (old) was auto-repaired during " f"this run."

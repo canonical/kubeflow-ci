@@ -64,3 +64,14 @@ def test_open_pr_refuses_existing_custom_branch(tmp_path):
 def test_branch_flag_rejects_invalid_names(name):
     with pytest.raises(SystemExit):
         bump_rock.build_parser().parse_args(["open-pr", "r", "--out-dir", "o", "--branch", name])
+
+
+def test_open_pr_dry_run_lists_reviewers(tmp_path, capsys):
+    repo, out = _open_pr_setup(tmp_path)
+    args = bump_rock.build_parser().parse_args(
+        ["open-pr", str(repo), "--out-dir", str(out)]
+        + ["--reviewer", "alice, canonical/mlops", "--reviewer", "bob", "--reviewer", "alice"]
+    )
+    with patch.object(bump_rock.pr_mod, "pr_body", return_value="body"):
+        assert args.func(args) == 0
+    assert json.loads(capsys.readouterr().out)["reviewers"] == ["alice", "canonical/mlops", "bob"]

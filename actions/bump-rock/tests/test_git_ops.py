@@ -145,3 +145,24 @@ def test_create_pr_swallows_label_failure(tmp_path):
     with patch("subprocess.run", side_effect=fake):
         url = git_ops.create_pr(tmp_path, head="b", title="t", body="b", label="missing-label")
     assert url == "https://github.com/foo/bar/pull/1"
+
+
+def test_request_reviewers_joins_names_and_reports_failure(tmp_path):
+    calls = []
+
+    def fake(cmd, **kwargs):
+        calls.append(list(cmd))
+        return _completed(returncode=1, stderr="team not found")
+
+    with patch("subprocess.run", side_effect=fake):
+        err = git_ops.request_reviewers(tmp_path, "https://x/pull/1", ["alice", "canonical/mlops"])
+    assert calls == [
+        ["gh", "pr", "edit", "https://x/pull/1", "--add-reviewer", "alice,canonical/mlops"]
+    ]
+    assert "team not found" in err
+
+
+def test_request_reviewers_noop_without_reviewers(tmp_path):
+    with patch("subprocess.run") as run:
+        assert git_ops.request_reviewers(tmp_path, "https://x/pull/1", []) is None
+    run.assert_not_called()

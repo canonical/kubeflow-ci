@@ -147,6 +147,8 @@ exposes the pipeline as a `workflow_dispatch` action with inputs:
   attempt when the automatic checks reject the answer; total = `1 + this`)
 - `context` (free text — rock-specific guidance for the LLM, passed as
   `--context`; a rock folder's `AGENTS.md`, if present, is always included)
+- `reviewers` (comma-separated users or `org/team`s to request a review
+  from, passed as `--reviewer`; default `canonical/mlops`, empty for none)
 - `branch` (optional PR branch, passed as `--branch`; default
   `chore/bump-<rock_name>-to-<target_version>`. A custom name must not exist yet)
 

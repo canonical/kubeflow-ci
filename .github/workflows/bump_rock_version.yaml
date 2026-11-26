@@ -51,6 +51,11 @@ on:
         required: false
         type: string
         default: ""
+      reviewers:
+        description: "Comma-separated users or org/teams to request a PR review from. Empty for none."
+        required: false
+        type: string
+        default: "canonical/mlops"
       branch:
         description: "Branch name for the PR (default: chore/bump-<rock_name>-to-<target_version>). A custom branch must not exist yet."
         required: false
@@ -181,11 +186,13 @@ jobs:
         working-directory: kubeflow-ci/actions/bump-rock
         env:
           PR_BRANCH: ${{ inputs.branch }}
+          PR_REVIEWERS: ${{ inputs.reviewers }}
         run: |
           python -m src.bump_rock open-pr \
               "${TARGET_REPO}" \
               --out-dir "${OUT_DIR}" \
-              ${PR_BRANCH:+--branch "${PR_BRANCH}"}
+              ${PR_BRANCH:+--branch "${PR_BRANCH}"} \
+              ${PR_REVIEWERS:+--reviewer "${PR_REVIEWERS}"}
 
       # Target repos require signed commits; sign as chaci, the same bot
       # identity charmed-kubeflow-workflows' integrate-rock.yaml uses.
@@ -212,6 +219,7 @@ jobs:
           GIT_COMMITTER_NAME: ${{ steps.gpg.outputs.name }}
           GIT_COMMITTER_EMAIL: ${{ steps.gpg.outputs.email }}
           PR_BRANCH: ${{ inputs.branch }}
+          PR_REVIEWERS: ${{ inputs.reviewers }}
         run: |
           # Push credential exists only in this step (checkout doesn't persist it).
           gh auth setup-git
@@ -219,6 +227,7 @@ jobs:
               "${TARGET_REPO}" \
               --out-dir "${OUT_DIR}" \
               ${PR_BRANCH:+--branch "${PR_BRANCH}"} \
+              ${PR_REVIEWERS:+--reviewer "${PR_REVIEWERS}"} \
               --confirm \
               > "${OUT_DIR}/pr-info.json"
           PR_URL=$(jq -r .pr_url "${OUT_DIR}/pr-info.json")
@@ -226,6 +235,10 @@ jobs:
           echo "pr_url=${PR_URL}" >> "$GITHUB_OUTPUT"
           echo "branch=${BRANCH}" >> "$GITHUB_OUTPUT"
           echo "Opened PR: ${PR_URL}"
+          REVIEWERS_ERROR=$(jq -r '.reviewers_error // empty' "${OUT_DIR}/pr-info.json")
+          if [ -n "${REVIEWERS_ERROR}" ]; then
+            echo "::warning title=Reviewers not requested::${REVIEWERS_ERROR//$'\n'/ }"
+          fi
 
       - name: Summary
         if: always()

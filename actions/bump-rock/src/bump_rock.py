@@ -106,6 +106,17 @@ def _branch_name(value: str) -> str:
     return value
 
 
+def _reviewers(values: List[str] | None) -> List[str]:
+    """Flatten repeated/comma-separated `--reviewer` values, dropping blanks and duplicates."""
+    out: List[str] = []
+    for value in values or []:
+        for name in value.split(","):
+            name = name.strip()
+            if name and name not in out:
+                out.append(name)
+    return out
+
+
 def _llm_spec(value: str) -> str:
     """argparse type for `--llm`: fail fast on bad specs, fill in the default model."""
     try:
@@ -520,6 +531,7 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
     title = pr_mod.pr_title(rock_name, target_version)
     body = pr_mod.pr_body(metadata)
     draft = not metadata.get("sanity_ok", True)
+    reviewers = _reviewers(args.reviewer)
 
     plan = {
         "target_repo": str(target_repo),
@@ -531,6 +543,7 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
         "pr_body_preview": body,
         "label": pr_mod.LABEL_AI_GENERATED,
         "draft": draft,
+        "reviewers": reviewers,
     }
 
     if not args.confirm:
@@ -569,6 +582,9 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
         label=pr_mod.LABEL_AI_GENERATED,
         draft=draft,
     )
+    reviewers_error = git_ops_mod.request_reviewers(target_repo, pr_url, reviewers)
+    if reviewers_error:
+        print(f"warning: could not request reviewers: {reviewers_error}", file=sys.stderr)
 
     _print_json(
         {
@@ -578,6 +594,8 @@ def cmd_open_pr(args: argparse.Namespace) -> int:
             "rock_name": rock_name,
             "target_version": target_version,
             "draft": draft,
+            "reviewers": reviewers,
+            "reviewers_error": reviewers_error,
         }
     )
     return 0
@@ -723,6 +741,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Branch to push the change to (default: chore/bump-<rock>-to-<version>, with a "
         "timestamp suffix if taken). A custom branch must not exist on the remote yet.",
+    )
+    p_pr.add_argument(
+        "--reviewer",
+        action="append",
+        metavar="USER_OR_ORG/TEAM",
+        help="Request a review from a user or an org/team (e.g. canonical/mlops). "
+        "Repeat the flag or pass a comma-separated list. Default: none.",
     )
     p_pr.add_argument(
         "--confirm",

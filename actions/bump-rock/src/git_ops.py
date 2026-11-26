@@ -140,3 +140,18 @@ def create_pr(
         except BumpRockError:
             pass
     return pr_url
+
+
+def request_reviewers(repo: Path, pr_url: str, reviewers: Sequence[str]) -> Optional[str]:
+    """Ask `reviewers` (users or `org/team` slugs) to review `pr_url`.
+
+    Best-effort, done after the PR exists so a bad reviewer can't strand a
+    pushed branch without a PR. Returns gh's error message on failure, else None.
+    """
+    if not reviewers:
+        return None
+    try:
+        _run(["gh", "pr", "edit", pr_url, "--add-reviewer", ",".join(reviewers)], cwd=repo)
+    except BumpRockError as exc:
+        return str(exc)
+    return None

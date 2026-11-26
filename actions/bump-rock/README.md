@@ -129,6 +129,8 @@ python -m src.bump_rock open-pr "$ROCKS_REPO" --out-dir "$OUT"
 python -m src.bump_rock open-pr "$ROCKS_REPO" --out-dir "$OUT" --confirm
 # Optional: --branch my/custom-branch (default chore/bump-<rock>-to-<version>; must
 # not exist on the remote yet).
+# Optional: --reviewer alice --reviewer canonical/mlops (or comma-separated).
+# Requested after the PR is created; a failure is reported, not fatal.
 ```
 
 `run` works on a copy of the rock under `$OUT/work/`, so your clone stays on

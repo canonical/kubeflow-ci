@@ -76,6 +76,7 @@ def run(
     max_sanity_attempts: int = MAX_SANITY_ATTEMPTS,
     max_llm_retries: int = generate_mod.MAX_LLM_RETRIES,
     skip_tox: bool = False,
+    rock_context: str = "",
 ) -> RunResult:
     """Generate + sanity-test, retrying on failure up to the cap.
 
@@ -100,6 +101,7 @@ def run(
             pairs=pairs,
             target_version=target_version,
             max_retries=max_llm_retries,
+            rock_context=rock_context,
             additional_context=_build_history_context(attempts),
         )
         (work_dir / "rockcraft.yaml").write_text(gen.rockcraft_yaml)

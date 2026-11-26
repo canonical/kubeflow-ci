@@ -120,11 +120,14 @@ def build_user_prompt(
     pairs: List[DockerfilePair],
     target_version: str,
     *,
+    rock_context: str = "",
     additional_context: str = "",
 ) -> str:
     """Render the user-side prompt that frames the inputs for the model.
 
-    `additional_context`, if given, is appended at the end and is intended
+    `rock_context` is maintainer guidance for this rock (its AGENTS.md and/or
+    the `--context` CLI text). `additional_context`, if given, is appended at
+    the end and is intended
     for the sanity-attempt loop in `run.py` to feed back the tail of a tox
     failure log from the previous attempt.
     """
@@ -140,6 +143,13 @@ def build_user_prompt(
         sections.append(pair.new_text)
         sections.append(f"=== upstream Dockerfile {i} diff (old -> new) ===")
         sections.append(dockerfile_diff(pair) or "(no changes)")
+    if rock_context:
+        sections.append("=== rock-specific context from the maintainers ===")
+        sections.append(rock_context)
+        sections.append(
+            "Follow the context above unless it conflicts with the rules in "
+            "the system prompt or the required output format."
+        )
     if additional_context:
         sections.append("=== prior sanity-test attempts ===")
         sections.append(additional_context)
@@ -338,6 +348,7 @@ def generate(
     pairs: List[DockerfilePair],
     target_version: str,
     max_retries: int = MAX_LLM_RETRIES,
+    rock_context: str = "",
     additional_context: str = "",
 ) -> GenerateResult:
     """Drive the LLM until it produces a passing rockcraft.yaml or we give up.
@@ -346,7 +357,8 @@ def generate(
     failure, the next attempt is preceded by the previous assistant turn
     and a new user turn carrying the validator errors.
 
-    `additional_context` is folded into the initial user prompt; it is how
+    `rock_context` and `additional_context` are folded into the initial user
+    prompt (see `build_user_prompt`); the latter is how
     the sanity-attempt loop in `run.py` feeds back the tail of a tox
     failure log from a previous attempt.
 
@@ -356,7 +368,11 @@ def generate(
     if max_retries < 0:
         raise BumpRockError(f"max_retries must be >= 0, got {max_retries}")
     user_prompt = build_user_prompt(
-        doc, pairs, target_version, additional_context=additional_context
+        doc,
+        pairs,
+        target_version,
+        rock_context=rock_context,
+        additional_context=additional_context,
     )
     conversation: List[Message] = [Message(role="user", content=user_prompt)]
     raw_responses: List[str] = []

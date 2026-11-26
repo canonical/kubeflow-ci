@@ -109,9 +109,12 @@ def test_run_retries_on_pack_failure_then_succeeds(tmp_path):
         target_version="v0.18.0",
         work_dir=work_dir,
         runner=stub,
+        rock_context="keep the pinned numpy",
     )
     assert result.ok is True
     assert len(result.attempts) == 2
+    # Rock context is part of every sanity attempt's prompt, not just the first.
+    assert all("keep the pinned numpy" in c["messages"][0].content for c in client.calls)
 
     # Second LLM call must include the prior attempt's candidate yaml and
     # the failure log as additional context.

@@ -61,6 +61,22 @@ def _github_workflow_run_url() -> str | None:
     return f"{server}/{repo}/actions/runs/{run_id}"
 
 
+ROCK_AGENTS_FILE = "AGENTS.md"
+
+
+def _rock_context(rock_dir: Path, extra: str | None) -> str:
+    """Combine the rock's AGENTS.md (if present) with the `--context` text."""
+    parts = []
+    agents = rock_dir / ROCK_AGENTS_FILE
+    if agents.is_file():
+        parts.append(
+            f"--- {ROCK_AGENTS_FILE} in the rock folder ---\n{agents.read_text().strip()}"
+        )
+    if extra and extra.strip():
+        parts.append(f"--- notes for this run ---\n{extra.strip()}")
+    return "\n\n".join(parts)
+
+
 def _print_json(payload) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False))
 
@@ -248,6 +264,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
         pairs=fetched,
         target_version=args.target_version,
         max_retries=args.max_retries,
+        rock_context=_rock_context(Path(args.rock_dir), args.context),
     )
 
     out_path = out_dir / "rockcraft.yaml.new"
@@ -308,6 +325,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         max_sanity_attempts=args.max_sanity_attempts,
         max_llm_retries=args.max_retries,
         skip_tox=args.skip_tox,
+        rock_context=_rock_context(rock_dir, args.context),
     )
 
     _write_attempt_artifacts(out_dir, result)
@@ -603,6 +621,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=generate_mod.MAX_LLM_RETRIES,
         help="Additional attempts after the first if validation fails.",
     )
+    p_gen.add_argument(
+        "--context",
+        default="",
+        help="Extra rock-specific guidance for the LLM, added to the prompt after "
+        f"the rock folder's {ROCK_AGENTS_FILE} (if any).",
+    )
     p_gen.add_argument("--timeout", type=int, default=30, help="HTTP timeout (s).")
     p_gen.set_defaults(func=cmd_generate)
 
@@ -650,6 +674,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Exit 0 even if sanity tests fail. The generated rockcraft.yaml "
         "and metadata.json are still written so a follow-up `open-pr` can "
         "publish a draft PR for human review.",
+    )
+    p_run.add_argument(
+        "--context",
+        default="",
+        help="Extra rock-specific guidance for the LLM, added to the prompt after "
+        f"the rock folder's {ROCK_AGENTS_FILE} (if any).",
     )
     p_run.add_argument("--timeout", type=int, default=30, help="HTTP timeout (s).")
     p_run.set_defaults(func=cmd_run)

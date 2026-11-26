@@ -145,6 +145,8 @@ exposes the pipeline as a `workflow_dispatch` action with inputs:
 - `max_sanity_attempts` (default `3` — sanity attempts: generate + tox)
 - `max_llm_retries` (default `2` — extra LLM attempts within a sanity
   attempt when the automatic checks reject the answer; total = `1 + this`)
+- `context` (free text — rock-specific guidance for the LLM, passed as
+  `--context`; a rock folder's `AGENTS.md`, if present, is always included)
 
 It needs these secrets configured on the repo:
 

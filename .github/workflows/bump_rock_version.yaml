@@ -46,6 +46,11 @@ on:
         required: false
         type: string
         default: "2"
+      context:
+        description: "Extra rock-specific guidance for the LLM (e.g. known build quirks). Added to the prompt after the rock folder's AGENTS.md, if it has one."
+        required: false
+        type: string
+        default: ""
 
 # The workflow's own GITHUB_TOKEN only needs read on this repo.
 # Writes to the target rocks repo use ROCKS_REPO_TOKEN explicitly.
@@ -131,6 +136,8 @@ jobs:
           # Force Python to flush stdout/stderr line-by-line so progress
           # logs surface in the GHA UI in real time.
           PYTHONUNBUFFERED: "1"
+          # Free text: passed via env, never interpolated into the script.
+          BUMP_ROCK_CONTEXT: ${{ inputs.context }}
         run: |
           SKIP_FLAG=""
           if [ "${{ inputs.skip_sanity }}" = "true" ]; then
@@ -151,6 +158,7 @@ jobs:
                 --llm "${{ inputs.llm }}" \
                 --max-sanity-attempts "${{ inputs.max_sanity_attempts }}" \
                 --max-retries "${{ inputs.max_llm_retries }}" \
+                --context "${BUMP_ROCK_CONTEXT}" \
                 --allow-sanity-failure \
                 $SKIP_FLAG
 

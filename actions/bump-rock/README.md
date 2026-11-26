@@ -139,6 +139,10 @@ a clean `main` for `open-pr`. Useful `run` flags:
   (Copilot only).
 - `--max-sanity-attempts N` and `--max-retries N`: the two retry limits
   explained below.
+- `--context TEXT`: rock-specific guidance for the LLM (known quirks, what
+  to keep, what to avoid). If the rock folder has an `AGENTS.md`, it is
+  always added to the prompt, and `--context` comes after it. Both are
+  advisory: the system-prompt rules still win.
 - `--allow-sanity-failure`: exit with status 0 even when the run did not
   succeed, i.e. no sanity attempt passed tox, or the LLM never produced an
   answer that passed the automatic checks. The last generated

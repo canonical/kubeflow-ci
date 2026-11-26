@@ -205,6 +205,20 @@ def test_build_user_prompt_includes_all_inputs():
     assert PMML_NEW.blob_url() in prompt
     assert "upstream Dockerfile 1 diff (old -> new)" in prompt
     assert "-FROM old\n+FROM new" in prompt
+    assert "rock-specific context" not in prompt
+
+
+def test_build_user_prompt_places_rock_context_before_history():
+    doc = rockcraft.load(FIXTURES / "happy")
+    prompt = generate.build_user_prompt(
+        doc,
+        [_make_pair()],
+        "v0.18.0",
+        rock_context="keep the pinned numpy",
+        additional_context="attempt 1 failed",
+    )
+    ctx = prompt.index("keep the pinned numpy")
+    assert prompt.index("upstream Dockerfile 1 diff") < ctx < prompt.index("attempt 1 failed")
 
 
 def test_parse_response_splits_sections():

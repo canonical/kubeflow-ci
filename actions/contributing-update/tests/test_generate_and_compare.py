@@ -1,10 +1,11 @@
 from pathlib import Path
+
 import pytest
-from src.generate_and_compare import generate_and_compare_contributing, ResiduePlaceholdersError
+from src.generate_and_compare import ResiduePlaceholdersError, generate_and_compare_contributing
 
 EXPECTED_DIFFS = {
-    "happy": [],  
-    "missing_placeholders": ["- Some expected line", "+ Some generated line"],  
+    "happy": [],
+    "missing_placeholders": ["- Some expected line", "+ Some generated line"],
     "no_contrib": [
         "+ # Contributing",
         "+ ",
@@ -62,10 +63,10 @@ EXPECTED_DIFFS = {
         "+ # Create a model",
         "+ juju add-model dev",
         "+ # Enable DEBUG logging",
-        "+ juju model-config logging-config=\"<root>=INFO;unit=DEBUG\"",
+        '+ juju model-config logging-config="<root>=INFO;unit=DEBUG"',
         "+ # Deploy the charm",
         "+ juju deploy ./test-charm_ubuntu-20.04-amd64.charm \\",
-        "+   --resource oci-image=$(yq '.resources.\"oci-image\".\"upstream-source\"' metadata.yaml)",
+        '+   --resource oci-image=$(yq \'.resources."oci-image"."upstream-source"\' metadata.yaml)',
         "+ ```",
         "+ ",
         "+ ## Updating the charm for new versions of the workload",
@@ -93,8 +94,9 @@ EXPECTED_DIFFS = {
         "-     - New or changed configurations passed to pebble workloads or through `pod.set_spec`",
         "- 1. Ensure integration and unit tests are passing; fix/adapt them otherwise",
         "- ",
-    ], 
+    ],
 }
+
 
 @pytest.mark.parametrize(
     "charm_path, expected_diff",
@@ -102,14 +104,14 @@ EXPECTED_DIFFS = {
         ("./happy", EXPECTED_DIFFS["happy"]),
         ("./no_contrib", EXPECTED_DIFFS["no_contrib"]),
         ("./outdated", EXPECTED_DIFFS["outdated"]),
-    ]
+    ],
 )
 def test_generate_and_compare_contributing_diff(charm_path, expected_diff):
     temp_path = "temp"
     diff, _ = generate_and_compare_contributing(temp_path, charm_path)
-    
+
     # Filter out lines that don't start with '+ ' or '- ' from the diff
-    relevant_diff = [line for line in diff if line.startswith('+ ') or line.startswith('- ')]
+    relevant_diff = [line for line in diff if line.startswith("+ ") or line.startswith("- ")]
 
     assert relevant_diff == expected_diff
 
@@ -117,8 +119,9 @@ def test_generate_and_compare_contributing_diff(charm_path, expected_diff):
 def read_expected_contents(charm_path: str) -> str:
     """Read the expected contents of the contributing file from the expected file."""
     expected_file_path = Path(charm_path) / "contributing.md.expected"
-    with open(expected_file_path, 'r') as f:
+    with open(expected_file_path, "r") as f:
         return f.read()
+
 
 @pytest.mark.parametrize(
     "charm_path",
@@ -126,22 +129,23 @@ def read_expected_contents(charm_path: str) -> str:
         "./happy",
         "./no_contrib",
         "./outdated",
-    ]
+    ],
 )
 def test_generate_and_compare_contributing_contents(charm_path):
     temp_path = "temp"
     _, generated_contents = generate_and_compare_contributing(temp_path, charm_path)
-    
+
     expected_contents = read_expected_contents(charm_path)
-    
+
     assert generated_contents == expected_contents
+
 
 @pytest.mark.parametrize(
     "temp_path, charm_path, expected_error",
     [
         ("bad_temp", "happy", FileNotFoundError),
-        ("temp", "missing_placeholders", ResiduePlaceholdersError),    
-    ]
+        ("temp", "missing_placeholders", ResiduePlaceholdersError),
+    ],
 )
 def test_generate_and_compare_contributing_failure(temp_path, charm_path, expected_error):
     with pytest.raises(expected_error):

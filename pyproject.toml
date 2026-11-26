@@ -17,7 +17,7 @@ lite="tests that are shared in all versions of lite bundle"
 # Formatting tools configuration
 [tool.black]
 line-length = 99
-target-version = ["py38"]
+target-version = ["py312"]
 
 [tool.isort]
 line_length = 99
@@ -30,9 +30,9 @@ max-doc-length = 99
 max-complexity = 10
 exclude = [".git", "__pycache__", ".tox", "build", "dist", "*.egg_info", "venv", "tests"]
 select = ["E", "W", "F", "C", "N", "R", "D", "H"]
-# Ignore W503, E501 because using black creates errors with this
+# Ignore W503, E501, E203, E704 because using black creates errors with this
 # Ignore D107 Missing docstring in __init__
-ignore = ["W503", "E501", "D107", "D415", "C801", "F541", "N812", ""]
+ignore = ["W503", "E501", "E203", "E704", "D107", "D415", "C801", "F541", "N812"]
 # D100, D101, D102, D103: Ignore missing docstrings in tests
 per-file-ignores = ["tests/*:D100,D101,D102,D103,D104"]
 docstring-convention = "google"
